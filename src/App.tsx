@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import Landing from '@/components/Landing';
 import SuitcaseInterior from '@/components/SuitcaseInterior';
@@ -33,8 +33,14 @@ export default function App() {
     if (id === 'cd') setMusicActivated(true);
   }, []);
 
+  const lastCloseRef = useRef(0);
+
   const handleCloseDetail = useCallback(() => {
-    if (activeItem) history.back();
+    if (!activeItem) return;
+    const now = Date.now();
+    if (now - lastCloseRef.current < 500) return;
+    lastCloseRef.current = now;
+    history.back();
   }, [activeItem]);
 
   useEffect(() => {
