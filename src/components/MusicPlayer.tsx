@@ -12,7 +12,7 @@ export default function MusicPlayer({ activated }: MusicPlayerProps) {
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-[60] overflow-hidden rounded-xl border border-white/10 bg-bg-dark shadow-2xl"
+      className="fixed bottom-4 right-4 z-[60] hidden overflow-hidden rounded-xl border border-white/10 bg-bg-dark shadow-2xl sm:block"
       style={{
         width: expanded ? 480 : 300,
         transition: 'width 0.3s ease, height 0.3s ease',
