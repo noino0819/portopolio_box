@@ -40,6 +40,18 @@ export interface Award {
   description: string;
 }
 
+export interface Album {
+  artist: string;
+  title: string;
+  comment: string;
+}
+
+export interface Book {
+  author: string;
+  titles: string[];
+  comment: string;
+}
+
 export interface Game {
   title: string;
   platform: string;
@@ -274,17 +286,24 @@ export const awards: Award[] = [
 ];
 
 export const games: Game[] = [
-  { title: '젤다의 전설: 티어스 오브 더 킹덤', platform: 'Nintendo Switch', comment: '하이랄의 자유도는 끝이 없다' },
+  { title: '젤다의 전설: 티어스 오브 더 킹덤', platform: 'Nintendo Switch', comment: '매끄러운 맵디자인으로 유저가 직접 만들어갈 수 있게 한 세계' },
+  { title: '할로우 나이트', platform: 'PC / Switch', comment: '탐험의 몰입감을 극대화한 완성도 높은 메트로배니아의 정수' },
   { title: '슈퍼 마리오 오디세이', platform: 'Nintendo Switch', comment: '순수한 즐거움의 집약체' },
-  { title: '셀레스트', platform: 'PC / Switch', comment: '도전과 성장의 메타포' },
-  { title: '할로우 나이트', platform: 'PC / Switch', comment: '아름답고 잔혹한 지하세계' },
+  { title: '셀레스트', platform: 'PC / Switch', comment: '실패와 도전 그뒤에 있는 딸기' },
+];
+
+export const albums: Album[] = [
+  { artist: 'AKMU (악뮤)', title: '항해', comment: '항해라는 이름처럼, 듣고 있으면 어딘가로 떠나고 싶어지는 앨범' },
+  { artist: '태연 (TAEYEON)', title: 'My Voice', comment: '목소리 하나로 감정의 모든 결을 담아낸 앨범' },
+];
+
+export const books: Book[] = [
+  { author: '베르나르 베르베르', titles: ['개미', '파피용', '신', '타나토노트'], comment: '상상력의 끝을 보여주는 작가' },
 ];
 
 export const hobbies: Hobby[] = [
   { label: '게임', emoji: '🎮' },
   { label: '음악 감상', emoji: '🎵' },
-  { label: '코딩', emoji: '💻' },
-  { label: '여행', emoji: '✈️' },
   { label: '독서', emoji: '📚' },
   { label: '사진', emoji: '📷' },
 ];

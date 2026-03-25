@@ -1,4 +1,4 @@
-import { games, hobbies } from '@/data/portfolio';
+import { games, hobbies, albums, books } from '@/data/portfolio';
 
 export default function SwitchDetail() {
   return (
@@ -23,7 +23,7 @@ export default function SwitchDetail() {
       {/* Games */}
       <section aria-labelledby="games-heading">
         <h3 id="games-heading" className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold">
-          Favorite Games
+          🎮 Favorite Games
         </h3>
         <div className="space-y-3">
           {games.map((game) => (
@@ -38,6 +38,55 @@ export default function SwitchDetail() {
                 </span>
               </div>
               <p className="mt-1 font-accent text-xs text-card/60 italic">"{game.comment}"</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Music - Albums */}
+      <section aria-labelledby="music-heading">
+        <h3 id="music-heading" className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold">
+          🎵 Favorite Albums
+        </h3>
+        <div className="space-y-3">
+          {albums.map((album) => (
+            <div
+              key={`${album.artist}-${album.title}`}
+              className="rounded-xl border border-white/5 bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.06]"
+            >
+              <div className="flex items-baseline gap-2">
+                <h4 className="font-display text-sm font-semibold text-card">{album.title}</h4>
+                <span className="text-xs text-card/50">— {album.artist}</span>
+              </div>
+              <p className="mt-1 font-accent text-xs text-card/60 italic">"{album.comment}"</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Books */}
+      <section aria-labelledby="books-heading">
+        <h3 id="books-heading" className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold">
+          📚 Favorite Books
+        </h3>
+        <div className="space-y-3">
+          {books.map((book) => (
+            <div
+              key={book.author}
+              className="rounded-xl border border-white/5 bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.06]"
+            >
+              <h4 className="font-display text-sm font-semibold text-card">{book.author}</h4>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {book.titles.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded bg-accent-purple/15 px-2 py-0.5 text-xs text-accent-purple"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-2 font-accent text-xs text-card/60 italic">"{book.comment}"</p>
             </div>
           ))}
         </div>
