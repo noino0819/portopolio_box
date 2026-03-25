@@ -10,9 +10,11 @@ export default function CDDetail() {
 
         <div className="overflow-hidden rounded-xl border border-white/5">
           <iframe
-            src={`https://www.youtube.com/embed/videoseries?list=${youtubePlaylistId}&rel=0`}
+            src={`https://www.youtube.com/embed/videoseries?list=${youtubePlaylistId}`}
             title="YouTube 플레이리스트"
-            allow="autoplay; encrypted-media"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
             className="aspect-video w-full"
             aria-label="YouTube 플레이리스트 플레이어"
