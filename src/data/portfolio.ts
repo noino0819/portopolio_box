@@ -212,4 +212,4 @@ export const hobbies: Hobby[] = [
   { label: '사진', emoji: '📷' },
 ];
 
-export const youtubePlaylistId = 'PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf';
+export const youtubePlaylistId = 'PL1VmbpV8boaqUHBsh0Z77yTqo7ooy5l4l';

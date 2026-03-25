@@ -180,12 +180,12 @@ export default function CDDetail() {
             재생 버튼을 눌러 들어보세요.
           </p>
           <a
-            href={`https://www.youtube.com/playlist?list=${youtubePlaylistId}`}
+            href={`https://music.youtube.com/playlist?list=${youtubePlaylistId}`}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-3 inline-block text-xs text-accent-blue hover:underline"
           >
-            YouTube에서 보기 →
+            YouTube Music에서 보기 →
           </a>
         </div>
       </section>
