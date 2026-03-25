@@ -213,7 +213,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                 left: `${pos.x}%`,
                 top: `${pos.y}%`,
                 cursor: dragState.current?.id === id ? 'grabbing' : 'grab',
-                zIndex: dragState.current?.id === id ? 20 : 1,
+                zIndex: tappedItem === id || dragState.current?.id === id ? 20 : 1,
               }}
               initial={reduced ? {} : { opacity: 0, y: 20, scale: 1 }}
               animate={{
