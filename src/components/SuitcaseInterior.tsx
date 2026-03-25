@@ -83,6 +83,8 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   const sounds = useItemSounds();
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const [tappedItem, setTappedItem] = useState<ItemId | null>(null);
+
   const [positions, setPositions] = useState<Record<ItemId, { x: number; y: number }>>(() => {
     const saved = sessionStorage.getItem('item-positions');
     if (saved) {
@@ -163,7 +165,11 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
 
       if (!wasDrag) {
         sounds[id]();
-        onSelectItem(id);
+        setTappedItem(id);
+        setTimeout(() => {
+          setTappedItem(null);
+          onSelectItem(id);
+        }, 200);
       }
     },
     [sounds, onSelectItem],
@@ -204,13 +210,22 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                 cursor: dragState.current?.id === id ? 'grabbing' : 'grab',
                 zIndex: dragState.current?.id === id ? 20 : 1,
               }}
-              initial={reduced ? {} : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: reduced ? 0 : 0.3 + i * 0.08,
-                duration: reduced ? 0 : 0.4,
-                ease: 'easeOut',
+              initial={reduced ? {} : { opacity: 0, y: 20, scale: 1 }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: tappedItem === id ? 1.15 : 1,
               }}
+              transition={
+                tappedItem === id
+                  ? { scale: { duration: 0.15, ease: 'easeOut' } }
+                  : {
+                      delay: reduced ? 0 : 0.3 + i * 0.08,
+                      duration: reduced ? 0 : 0.4,
+                      ease: 'easeOut',
+                    }
+              }
+              whileHover={reduced ? {} : { scale: 1.05 }}
               onPointerDown={(e) => handlePointerDown(e, id)}
               onPointerMove={handlePointerMove}
               onPointerUp={(e) => handlePointerUp(e, id)}
@@ -221,7 +236,11 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   sounds[id]();
-                  onSelectItem(id);
+                  setTappedItem(id);
+                  setTimeout(() => {
+                    setTappedItem(null);
+                    onSelectItem(id);
+                  }, 200);
                 }
               }}
             >
