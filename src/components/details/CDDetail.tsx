@@ -52,13 +52,14 @@ export default function CDDetail() {
     const initPlayer = () => {
       if (!mounted || !window.YT) return;
       playerRef.current = new window.YT.Player('yt-player', {
-        height: '0',
-        width: '0',
+        height: '1',
+        width: '1',
         playerVars: {
           listType: 'playlist',
           list: youtubePlaylistId,
           autoplay: 0,
           controls: 0,
+          origin: window.location.origin,
         },
         events: {
           onReady: () => {
@@ -107,8 +108,8 @@ export default function CDDetail() {
           Now Playing
         </h3>
 
-        {/* Hidden YouTube player */}
-        <div className="hidden">
+        {/* YouTube player (off-screen but rendered) */}
+        <div className="absolute -left-[9999px] h-px w-px overflow-hidden">
           <div id="yt-player" />
         </div>
 
