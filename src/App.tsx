@@ -35,6 +35,12 @@ export default function App() {
 
   const lastCloseRef = useRef(0);
 
+  useEffect(() => {
+    if (!activeItem) {
+      lastCloseRef.current = Date.now();
+    }
+  }, [activeItem]);
+
   const handleCloseDetail = useCallback(() => {
     if (!activeItem) return;
     const now = Date.now();
