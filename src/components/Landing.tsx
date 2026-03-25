@@ -27,19 +27,19 @@ export default function Landing({ onOpen }: LandingProps) {
         transition: { duration: 0.4, ease: 'easeInOut' },
       });
 
-      // 살짝 확대 후 열림
+      // 살짝 들어올림
       await controls.start({
-        scale: 1.08,
-        y: -10,
-        transition: { duration: 0.3, ease: 'easeOut' },
+        scale: 1.05,
+        y: -8,
+        transition: { duration: 0.2, ease: 'easeOut' },
       });
 
-      // 위로 올라가며 페이드
+      // 크게 줌인하며 내부를 들여다보는 느낌
       await controls.start({
-        scale: 1.15,
-        y: -40,
+        scale: 2.5,
+        y: 0,
         opacity: 0,
-        transition: { duration: 0.35, ease: 'easeIn' },
+        transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
       });
     }
 
