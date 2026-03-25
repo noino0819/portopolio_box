@@ -12,29 +12,16 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>('landing');
   const [activeItem, setActiveItem] = useState<ItemId | null>(null);
   const [musicActivated, setMusicActivated] = useState(false);
-  const [playerExpanded, setPlayerExpanded] = useState(false);
 
   const handleOpen = useCallback(() => setScreen('interior'), []);
   const handleBack = useCallback(() => setScreen('landing'), []);
 
   const handleSelectItem = useCallback((id: ItemId) => {
     setActiveItem(id);
-    if (id === 'cd') {
-      setMusicActivated(true);
-      setPlayerExpanded(true);
-    }
+    if (id === 'cd') setMusicActivated(true);
   }, []);
 
-  const handleCloseDetail = useCallback(() => {
-    if (activeItem === 'cd') {
-      setPlayerExpanded(false);
-    }
-    setActiveItem(null);
-  }, [activeItem]);
-
-  const handleToggleExpand = useCallback(() => {
-    setPlayerExpanded((prev) => !prev);
-  }, []);
+  const handleCloseDetail = useCallback(() => setActiveItem(null), []);
 
   return (
     <main className="min-h-dvh bg-bg-dark">
@@ -53,11 +40,7 @@ export default function App() {
 
       <DetailPanel activeItem={activeItem} onClose={handleCloseDetail} />
 
-      <MusicPlayer
-        activated={musicActivated}
-        expanded={playerExpanded}
-        onToggleExpand={handleToggleExpand}
-      />
+      <MusicPlayer activated={musicActivated} />
     </main>
   );
 }
