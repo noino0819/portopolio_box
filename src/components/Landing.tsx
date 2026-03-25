@@ -36,7 +36,7 @@ export default function Landing({ onOpen }: LandingProps) {
 
       // 크게 줌인하며 내부를 들여다보는 느낌
       await controls.start({
-        scale: 2.5,
+        scale: 1.8,
         y: 0,
         opacity: 0,
         transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
