@@ -40,7 +40,7 @@ const items: {
     Component: ItemBook,
     position: 'top-[18%] right-[12%] sm:top-[16%] sm:right-[14%]',
     rotation: 'rotate-6',
-    size: 'w-[135px] sm:w-[165px] md:w-[195px]',
+    size: 'w-[90px] sm:w-[110px] md:w-[130px]',
     color: 'hover:shadow-accent-purple/30',
   },
   {
