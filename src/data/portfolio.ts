@@ -293,12 +293,12 @@ export const games: Game[] = [
 ];
 
 export const albums: Album[] = [
-  { artist: 'AKMU (악뮤)', title: '항해', comment: '항해라는 이름처럼, 듣고 있으면 어딘가로 떠나고 싶어지는 앨범' },
-  { artist: '태연 (TAEYEON)', title: 'My Voice', comment: '목소리 하나로 감정의 모든 결을 담아낸 앨범' },
+  { artist: '악동뮤지션 (AKMU)', title: '항해', comment: '항해를 떠나고 있는 모든 사람들에게 들려주고 싶은 앨범' },
+  { artist: '태연 (TAEYEON)', title: 'Letter To Myself', comment: '나에게 전하고 싶은 말' },
 ];
 
 export const books: Book[] = [
-  { author: '베르나르 베르베르', titles: ['개미', '파피용', '신', '타나토노트'], comment: '상상력의 끝을 보여주는 작가' },
+  { author: '베르나르 베르베르', titles: ['개미', '파피용', '신', '타나토노트'], comment: '미래를 꿈꾼다면 이렇게 꿈꾸고 싶어요' },
 ];
 
 export const hobbies: Hobby[] = [
