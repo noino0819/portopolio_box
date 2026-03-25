@@ -228,9 +228,10 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                       delay: reduced ? 0 : 0.3 + i * 0.08,
                       duration: reduced ? 0 : 0.4,
                       ease: 'easeOut',
+                      scale: { duration: 0.1, ease: 'easeOut', delay: 0 },
                     }
               }
-              whileHover={reduced ? {} : { scale: 1.12, transition: { duration: 0.1 } }}
+              whileHover={reduced ? {} : { scale: 1.12 }}
               onPointerDown={(e) => handlePointerDown(e, id)}
               onPointerMove={handlePointerMove}
               onPointerUp={(e) => handlePointerUp(e, id)}
