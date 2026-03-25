@@ -24,19 +24,21 @@ export function useBumpSound() {
     lastBumpRef.current = now;
 
     const ctx = ensureCtx();
-    const t = ctx.currentTime;
+    const t = ctx.currentTime + 0.01;
 
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(160, t);
-    osc.frequency.exponentialRampToValueAtTime(60, t + 0.06);
-    gain.gain.setValueAtTime(0.18, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
-    osc.start(t);
-    osc.stop(t + 0.08);
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(160, t);
+      osc.frequency.exponentialRampToValueAtTime(60, t + 0.06);
+      gain.gain.setValueAtTime(0.18, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+      osc.start(t);
+      osc.stop(t + 0.09);
+    } catch { /* context not ready */ }
   }, [ensureCtx]);
 
   return { prepare: ensureCtx, play };

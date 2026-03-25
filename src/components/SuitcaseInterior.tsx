@@ -130,7 +130,8 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
 
   useEffect(() => {
     playOpen();
-  }, [playOpen]);
+    bump.prepare();
+  }, [playOpen, bump]);
 
   const dragState = useRef<{
     id: ItemId;
