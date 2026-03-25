@@ -35,8 +35,8 @@ export default function ItemNametag({ className = '' }: { className?: string }) 
       {/* Header band */}
       <rect x="20" y="87" width="100" height="24" rx="8" fill="#2D8F7B" />
       <rect x="20" y="99" width="100" height="12" fill="#2D8F7B" />
-      <text x="70" y="103" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold" fontFamily="Outfit">
-        HELLO
+      <text x="70" y="103" textAnchor="middle" fill="white" fontSize="8" fontWeight="bold" fontFamily="Noto Sans KR, sans-serif">
+        최시언
       </text>
 
       {/* Photo placeholder */}
