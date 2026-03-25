@@ -18,7 +18,7 @@ interface DetailPanelProps {
 
 const itemMeta: Record<ItemId, { label: string; subtitle?: string; Component: React.FC<{ className?: string }> }> = {
   nametag: { label: '이름표', subtitle: '만약 이름표를 직접 만들 수 있다면\n귀여운 얼굴이 그려져있었으면 좋겠어요.', Component: ItemNametag },
-  book: { label: '책', subtitle: '제가 걸어온 길들에 대한 이야기입니다.\n재밌는 것들을 잔뜩 했어요 !', Component: ItemBook },
+  book: { label: '책', subtitle: '제가 걸어온 길들에 대한 이야기입니다.\n즐거운 것들을 잔뜩 했어요 !', Component: ItemBook },
   switch: { label: '게임기', subtitle: '가장 좋아하는 걸 묻는다면 거리낌없이 게임이라 말할거에요.\n물론, 그외에도 좋아하는건 잔뜩 있지만요', Component: ItemSwitch },
   cd: { label: 'CD', subtitle: '노래에는 기억이 담긴다 생각해요.\n당신에게도 이 노래에 지금의 기억이 담긴다면 좋겠네요', Component: ItemCD },
 };
