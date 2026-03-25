@@ -68,16 +68,16 @@ export default function Landing({ onOpen }: LandingProps) {
       </motion.button>
 
       <motion.p
-        className="mt-8 font-accent text-lg tracking-wide text-gold"
+        className="mt-8 font-display text-xl font-semibold tracking-wider text-gold drop-shadow-md sm:text-2xl"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: reduced ? 0 : 0.5, duration: reduced ? 0 : 0.6 }}
       >
         <motion.span
-          animate={reduced ? {} : { opacity: [0.5, 1, 0.5] }}
+          animate={reduced ? {} : { opacity: [0.6, 1, 0.6] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         >
-          두드려 안을 보기
+          {isOpening ? '안에 뭐가 있을까 ?' : '두드려 안을 보기'}
         </motion.span>
       </motion.p>
     </motion.div>
