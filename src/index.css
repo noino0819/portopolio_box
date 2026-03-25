@@ -47,6 +47,19 @@ body {
   display: none;
 }
 
+@keyframes nudge-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(-4deg); }
+  30% { transform: rotate(4deg); }
+  45% { transform: rotate(-3deg); }
+  60% { transform: rotate(3deg); }
+  75% { transform: rotate(-1.5deg); }
+  90% { transform: rotate(1.5deg); }
+}
+.animate-nudge {
+  animation: nudge-wiggle 0.6s ease-in-out;
+}
+
 @keyframes soft-pulse {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }

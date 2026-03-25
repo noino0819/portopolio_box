@@ -86,6 +86,21 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [tappedItem, setTappedItem] = useState<ItemId | null>(null);
+  const [nudgeItem, setNudgeItem] = useState<ItemId | null>(null);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const resetIdleTimer = useCallback(() => {
+    setNudgeItem(null);
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(() => setNudgeItem('nametag'), 7000);
+  }, []);
+
+  useEffect(() => {
+    if (reduced) return;
+    resetIdleTimer();
+    return () => { if (idleTimer.current) clearTimeout(idleTimer.current); };
+  }, [resetIdleTimer, reduced]);
+
   const [zCounter, setZCounter] = useState(1);
   const [zOrders, setZOrders] = useState<Record<ItemId, number>>({
     nametag: 1, book: 1, switch: 1, cd: 1,
@@ -134,6 +149,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     (e: React.PointerEvent, id: ItemId) => {
       e.preventDefault();
       e.currentTarget.setPointerCapture(e.pointerId);
+      resetIdleTimer();
       bringToFront(id);
       clampedEdges.current = { left: false, right: false, top: false, bottom: false };
       dragState.current = {
@@ -145,7 +161,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         moved: false,
       };
     },
-    [positions, bringToFront],
+    [positions, bringToFront, resetIdleTimer],
   );
 
   const handlePointerMove = useCallback(
@@ -274,6 +290,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
+                  resetIdleTimer();
                   sounds[id]();
                   bringToFront(id);
                   setTappedItem(id);
@@ -285,7 +302,8 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
               }}
             >
               <div
-                className={`p-2 transition-shadow duration-300 ${color} rounded-lg drop-shadow-lg group-hover:drop-shadow-2xl`}
+                className={`p-2 transition-shadow duration-300 ${color} rounded-lg drop-shadow-lg group-hover:drop-shadow-2xl ${nudgeItem === id ? 'animate-nudge' : ''}`}
+                onAnimationEnd={() => { if (nudgeItem === id) setNudgeItem(null); }}
               >
                 <Component className={size} />
               </div>
