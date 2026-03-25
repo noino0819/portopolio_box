@@ -39,7 +39,7 @@ export default function Landing({ onOpen }: LandingProps) {
           animate={reduced ? {} : { opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         >
-          클릭하여 열어보기
+          두드려 안을보기
         </motion.span>
       </motion.p>
     </motion.div>
