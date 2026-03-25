@@ -66,9 +66,8 @@ export const profile: Profile = {
   ],
   contacts: [
     { label: '생년월일', value: '1999.08.19', icon: '🙆‍♂️' },
-    { label: '연락처', value: '010-6510-1422', url: 'tel:010-6510-1422', icon: '📱' },
     { label: '이메일', value: 'noino0819@naver.com', url: 'mailto:noino0819@naver.com', icon: '✉️' },
-    { label: '깃허브', value: 'noino0819', url: 'https://github.com/noino0819', icon: '😺' },
+    { label: '깃허브', value: 'noino0819', url: 'https://github.com/noino0819', icon: '😺', tooltip: '귀여운 깃허브 구경하실분 !' },
     { label: '링크드인', value: 'LinkedIn', url: 'https://www.linkedin.com/in/%EC%8B%9C%EC%96%B8-%EC%B5%9C-77b9a5248/', icon: '💼' },
     {
       label: '블로그',
