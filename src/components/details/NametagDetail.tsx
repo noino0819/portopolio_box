@@ -81,24 +81,26 @@ export default function NametagDetail() {
             <li key={c.label} className="group/contact relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
               <span className="shrink-0 text-base">{c.icon}</span>
               <span className="shrink-0 w-16 text-card/50">{c.label}</span>
-              {c.url ? (
-                <a
-                  href={c.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-card/80 transition-colors hover:text-accent-blue hover:underline"
-                >
-                  {c.value}
-                </a>
-              ) : (
-                <span className="text-card/80">{c.value}</span>
-              )}
-              {c.tooltip && (
-                <div className="pointer-events-none absolute left-full top-1/2 z-10 ml-2 w-64 -translate-y-1/2 rounded-xl border border-gold/20 bg-interior px-4 py-3 text-xs leading-relaxed text-card/80 opacity-0 shadow-lg transition-opacity duration-200 group-hover/contact:opacity-100">
-                  <div className="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rotate-45 border-b border-l border-gold/20 bg-interior" />
-                  {c.tooltip}
-                </div>
-              )}
+              <span className="relative">
+                {c.url ? (
+                  <a
+                    href={c.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-card/80 transition-colors hover:text-accent-blue hover:underline"
+                  >
+                    {c.value}
+                  </a>
+                ) : (
+                  <span className="text-card/80">{c.value}</span>
+                )}
+                {c.tooltip && (
+                  <div className="pointer-events-none absolute left-full top-1/2 z-10 ml-2 w-64 -translate-y-1/2 rounded-xl border border-gold/20 bg-interior px-4 py-3 text-xs leading-relaxed text-card/80 opacity-0 shadow-lg transition-opacity duration-200 group-hover/contact:opacity-100">
+                    <div className="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rotate-45 border-b border-l border-gold/20 bg-interior" />
+                    {c.tooltip}
+                  </div>
+                )}
+              </span>
             </li>
           ))}
         </ul>
