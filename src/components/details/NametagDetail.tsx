@@ -94,8 +94,8 @@ export default function NametagDetail() {
                 <span className="text-card/80">{c.value}</span>
               )}
               {c.tooltip && (
-                <div className="pointer-events-none absolute bottom-full left-4 z-10 mb-2 w-64 rounded-xl border border-gold/20 bg-interior px-4 py-3 text-xs leading-relaxed text-card/80 opacity-0 shadow-lg transition-opacity duration-200 group-hover/contact:opacity-100">
-                  <div className="absolute -bottom-1.5 left-6 h-3 w-3 rotate-45 border-b border-r border-gold/20 bg-interior" />
+                <div className="pointer-events-none absolute left-full top-1/2 z-10 ml-2 w-64 -translate-y-1/2 rounded-xl border border-gold/20 bg-interior px-4 py-3 text-xs leading-relaxed text-card/80 opacity-0 shadow-lg transition-opacity duration-200 group-hover/contact:opacity-100">
+                  <div className="absolute -left-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rotate-45 border-b border-l border-gold/20 bg-interior" />
                   {c.tooltip}
                 </div>
               )}
