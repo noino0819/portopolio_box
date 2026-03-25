@@ -1,18 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { youtubePlaylistId, youtubeFirstVideoId } from '@/data/portfolio';
 
 interface MusicPlayerProps {
   activated: boolean;
 }
 
+function useIsDesktop() {
+  const [desktop, setDesktop] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(min-width: 640px)').matches : true,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 640px)');
+    const handler = (e: MediaQueryListEvent) => setDesktop(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  return desktop;
+}
+
 export default function MusicPlayer({ activated }: MusicPlayerProps) {
   const [expanded, setExpanded] = useState(false);
+  const isDesktop = useIsDesktop();
 
-  if (!activated) return null;
+  if (!activated || !isDesktop) return null;
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-[60] hidden overflow-hidden rounded-xl border border-white/10 bg-bg-dark shadow-2xl sm:block"
+      className="fixed bottom-4 right-4 z-[60] overflow-hidden rounded-xl border border-white/10 bg-bg-dark shadow-2xl"
       style={{
         width: expanded ? 480 : 300,
         transition: 'width 0.3s ease, height 0.3s ease',
