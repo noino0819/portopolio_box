@@ -16,8 +16,8 @@ interface DetailPanelProps {
   onClose: () => void;
 }
 
-const itemMeta: Record<ItemId, { label: string; Component: React.FC<{ className?: string }> }> = {
-  nametag: { label: '이름표', Component: ItemNametag },
+const itemMeta: Record<ItemId, { label: string; subtitle?: string; Component: React.FC<{ className?: string }> }> = {
+  nametag: { label: '이름표', subtitle: '만약 이름표를 직접 만들 수 있다면\n귀여운 얼굴이 그려져있었으면 좋겠어요.', Component: ItemNametag },
   book: { label: '책', Component: ItemBook },
   switch: { label: '닌텐도 스위치', Component: ItemSwitch },
   cd: { label: 'CD', Component: ItemCD },
@@ -112,6 +112,11 @@ export default function DetailPanel({ activeItem, onClose }: DetailPanelProps) {
                 <h2 className="font-display text-xl font-bold text-gold">
                   {itemMeta[activeItem].label}
                 </h2>
+                {itemMeta[activeItem].subtitle && (
+                  <p className="mt-1 whitespace-pre-line text-center font-accent text-xs leading-relaxed text-leather/50">
+                    {itemMeta[activeItem].subtitle}
+                  </p>
+                )}
               </div>
 
               {/* Right: Detail content */}
