@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import SuitcaseOpen from '@/assets/SuitcaseOpen';
 import ItemNametag from '@/assets/ItemNametag';
@@ -5,6 +6,7 @@ import ItemBook from '@/assets/ItemBook';
 import ItemSwitch from '@/assets/ItemSwitch';
 import ItemCD from '@/assets/ItemCD';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useOpenSound } from '@/hooks/useOpenSound';
 
 export type ItemId = 'nametag' | 'book' | 'switch' | 'cd';
 
@@ -67,6 +69,11 @@ const items: {
 
 export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInteriorProps) {
   const reduced = useReducedMotion();
+  const playOpen = useOpenSound();
+
+  useEffect(() => {
+    playOpen();
+  }, [playOpen]);
 
   return (
     <motion.div
