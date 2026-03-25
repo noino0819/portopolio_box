@@ -8,6 +8,7 @@ import ItemCD from '@/assets/ItemCD';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useOpenSound } from '@/hooks/useOpenSound';
 import { useItemSounds } from '@/hooks/useItemSounds';
+import { useBumpSound } from '@/hooks/useBumpSound';
 
 export type ItemId = 'nametag' | 'book' | 'switch' | 'cd';
 
@@ -81,6 +82,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   const reduced = useReducedMotion();
   const playOpen = useOpenSound();
   const sounds = useItemSounds();
+  const playBump = useBumpSound();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [tappedItem, setTappedItem] = useState<ItemId | null>(null);
@@ -142,18 +144,21 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       if (!ds.moved && Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD) return;
       ds.moved = true;
 
-      const pctX = ds.startX + (dx / rect.width) * 100;
-      const pctY = ds.startY + (dy / rect.height) * 100;
+      const rawX = ds.startX + (dx / rect.width) * 100;
+      const rawY = ds.startY + (dy / rect.height) * 100;
+      const clampedX = Math.max(0, Math.min(85, rawX));
+      const clampedY = Math.max(0, Math.min(85, rawY));
+
+      if (rawX !== clampedX || rawY !== clampedY) {
+        playBump();
+      }
 
       setPositions((prev) => ({
         ...prev,
-        [ds.id]: {
-          x: Math.max(0, Math.min(85, pctX)),
-          y: Math.max(0, Math.min(85, pctY)),
-        },
+        [ds.id]: { x: clampedX, y: clampedY },
       }));
     },
-    [getContainerRect],
+    [getContainerRect, playBump],
   );
 
   const handlePointerUp = useCallback(
