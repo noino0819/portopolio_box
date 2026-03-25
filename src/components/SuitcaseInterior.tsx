@@ -126,6 +126,8 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     moved: boolean;
   } | null>(null);
 
+  const clampedEdges = useRef({ left: false, right: false, top: false, bottom: false });
+
   const getContainerRect = useCallback(() => containerRef.current?.getBoundingClientRect(), []);
 
   const handlePointerDown = useCallback(
@@ -133,6 +135,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       e.preventDefault();
       e.currentTarget.setPointerCapture(e.pointerId);
       bringToFront(id);
+      clampedEdges.current = { left: false, right: false, top: false, bottom: false };
       dragState.current = {
         id,
         startPointerX: e.clientX,
@@ -166,9 +169,21 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       const clampedX = Math.max(2, Math.min(maxX, rawX));
       const clampedY = Math.max(2, Math.min(maxY, rawY));
 
-      if (rawX !== clampedX || rawY !== clampedY) {
-        playBump();
-      }
+      const hitLeft = rawX < 2;
+      const hitRight = rawX > maxX;
+      const hitTop = rawY < 2;
+      const hitBottom = rawY > maxY;
+
+      const prev = clampedEdges.current;
+      const newEdgeHit =
+        (hitLeft && !prev.left) ||
+        (hitRight && !prev.right) ||
+        (hitTop && !prev.top) ||
+        (hitBottom && !prev.bottom);
+
+      if (newEdgeHit) playBump();
+
+      clampedEdges.current = { left: hitLeft, right: hitRight, top: hitTop, bottom: hitBottom };
 
       setPositions((prev) => ({
         ...prev,

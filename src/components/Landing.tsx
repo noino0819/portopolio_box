@@ -58,7 +58,7 @@ export default function Landing({ onOpen }: LandingProps) {
     }
 
     onOpen();
-  }, [isOpening, playKnock, reduced, controls, onOpen]);
+  }, [isOpening, playKnock, reduced, controls, textControls, onOpen]);
 
   return (
     <motion.div
@@ -70,6 +70,7 @@ export default function Landing({ onOpen }: LandingProps) {
     >
       <motion.button
         onClick={handleClick}
+        initial={{ scale: 1, opacity: 1, y: 0, rotate: 0 }}
         animate={controls}
         className="group relative cursor-pointer border-none bg-transparent p-0"
         whileHover={isOpening || reduced ? {} : { scale: 1.03 }}
@@ -86,12 +87,9 @@ export default function Landing({ onOpen }: LandingProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={textControls}
       >
-        <motion.span
-          animate={reduced ? {} : { opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        >
+        <span className={reduced ? '' : 'animate-soft-pulse'}>
           {isOpening ? '안에 뭐가 있을까 ?' : '두드려 안을 보기'}
-        </motion.span>
+        </span>
       </motion.p>
     </motion.div>
   );
