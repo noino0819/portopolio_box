@@ -5,7 +5,7 @@ export default function ItemNametag({ className = '' }: { className?: string }) 
     <img
       src={nametagImg}
       alt="이름표 목걸이"
-      className={className}
+      className={`mix-blend-lighten ${className}`}
       draggable={false}
     />
   );
