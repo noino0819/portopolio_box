@@ -28,7 +28,7 @@ const items: {
     label: '이름표',
     sublabel: '프로필 & 연락처',
     Component: ItemNametag,
-    position: 'top-[16%] left-[12%] sm:top-[14%] sm:left-[14%]',
+    position: 'top-[22%] left-[18%] sm:top-[20%] sm:left-[20%]',
     rotation: '-rotate-3',
     size: 'w-[78px] sm:w-[98px] md:w-[113px]',
     color: 'hover:shadow-accent-teal/30',
