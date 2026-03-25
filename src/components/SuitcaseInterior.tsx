@@ -101,7 +101,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     return () => { if (idleTimer.current) clearTimeout(idleTimer.current); };
   }, [resetIdleTimer, reduced]);
 
-  const [zCounter, setZCounter] = useState(1);
+  const [, setZCounter] = useState(1);
   const [zOrders, setZOrders] = useState<Record<ItemId, number>>({
     nametag: 1, book: 1, switch: 1, cd: 1,
   });
