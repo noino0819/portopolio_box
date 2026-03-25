@@ -32,38 +32,33 @@ function useBookSound() {
     const ctx = getContext(ctxRef);
     const now = ctx.currentTime;
 
-    const bufLen = ctx.sampleRate * 0.15;
-    const buffer = ctx.createBuffer(1, bufLen, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufLen; i++) {
-      data[i] = (Math.random() * 2 - 1) * 0.3;
-    }
-    const noise = ctx.createBufferSource();
-    const filter = ctx.createBiquadFilter();
-    const gain = ctx.createGain();
-    noise.buffer = buffer;
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(3000, now);
-    filter.Q.setValueAtTime(1.5, now);
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-    noise.start(now);
-    noise.stop(now + 0.15);
+    const playPage = (delay: number, freq: number, vol: number) => {
+      const len = ctx.sampleRate * 0.12;
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) {
+        d[i] = (Math.random() * 2 - 1) * 0.4;
+      }
+      const src = ctx.createBufferSource();
+      const flt = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+      src.buffer = buf;
+      src.connect(flt);
+      flt.connect(g);
+      g.connect(ctx.destination);
+      flt.type = 'highpass';
+      flt.frequency.setValueAtTime(freq, now + delay);
+      flt.frequency.linearRampToValueAtTime(freq + 2000, now + delay + 0.08);
+      flt.Q.setValueAtTime(0.8, now + delay);
+      g.gain.setValueAtTime(vol, now + delay);
+      g.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.1);
+      src.start(now + delay);
+      src.stop(now + delay + 0.12);
+    };
 
-    const thud = ctx.createOscillator();
-    const thudGain = ctx.createGain();
-    thud.connect(thudGain);
-    thudGain.connect(ctx.destination);
-    thud.type = 'sine';
-    thud.frequency.setValueAtTime(120, now);
-    thud.frequency.exponentialRampToValueAtTime(60, now + 0.08);
-    thudGain.gain.setValueAtTime(0.12, now);
-    thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-    thud.start(now);
-    thud.stop(now + 0.1);
+    playPage(0, 2000, 0.15);
+    playPage(0.06, 2500, 0.12);
+    playPage(0.11, 3000, 0.08);
   }, []);
 }
 
