@@ -30,7 +30,7 @@ const items: {
     Component: ItemNametag,
     position: 'top-[16%] left-[12%] sm:top-[14%] sm:left-[14%]',
     rotation: '-rotate-3',
-    size: 'w-[104px] sm:w-[130px] md:w-[150px]',
+    size: 'w-[78px] sm:w-[98px] md:w-[113px]',
     color: 'hover:shadow-accent-teal/30',
   },
   {
