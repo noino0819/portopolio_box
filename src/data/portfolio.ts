@@ -4,7 +4,7 @@ export interface Profile {
   headline: string;
   bioPoints: { emoji: string; text: string }[];
   skills: string[];
-  contacts: { label: string; value: string; url?: string; icon: string }[];
+  contacts: { label: string; value: string; url?: string; icon: string; tooltip?: string }[];
 }
 
 export interface Education {
@@ -69,6 +69,14 @@ export const profile: Profile = {
     { label: '연락처', value: '010-6510-1422', url: 'tel:010-6510-1422', icon: '📱' },
     { label: '이메일', value: 'noino0819@naver.com', url: 'mailto:noino0819@naver.com', icon: '✉️' },
     { label: '깃허브', value: 'noino0819', url: 'https://github.com/noino0819', icon: '😺' },
+    { label: '링크드인', value: 'LinkedIn', url: 'https://www.linkedin.com/in/%EC%8B%9C%EC%96%B8-%EC%B5%9C-77b9a5248/', icon: '💼' },
+    {
+      label: '블로그',
+      value: 'NOINO의 일상리뷰',
+      url: 'https://blog.naver.com/noino0819',
+      icon: '📝',
+      tooltip: '극히 개인적인 상업블로그입니다! 하지만 2023년부터 꾸준히 7일에 5일이상 포스팅을 진행하며 키워왔기에, 꾸준함의 증거로 보아주었으면 합니다',
+    },
   ],
 };
 

@@ -78,7 +78,7 @@ export default function NametagDetail() {
         </h3>
         <ul className="space-y-1.5">
           {profile.contacts.map((c) => (
-            <li key={c.label} className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
+            <li key={c.label} className="group/contact relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
               <span className="shrink-0 text-base">{c.icon}</span>
               <span className="shrink-0 w-16 text-card/50">{c.label}</span>
               {c.url ? (
@@ -92,6 +92,12 @@ export default function NametagDetail() {
                 </a>
               ) : (
                 <span className="text-card/80">{c.value}</span>
+              )}
+              {c.tooltip && (
+                <div className="pointer-events-none absolute bottom-full left-4 z-10 mb-2 w-64 rounded-xl border border-gold/20 bg-interior px-4 py-3 text-xs leading-relaxed text-card/80 opacity-0 shadow-lg transition-opacity duration-200 group-hover/contact:opacity-100">
+                  <div className="absolute -bottom-1.5 left-6 h-3 w-3 rotate-45 border-b border-r border-gold/20 bg-interior" />
+                  {c.tooltip}
+                </div>
               )}
             </li>
           ))}
