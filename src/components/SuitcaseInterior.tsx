@@ -86,6 +86,18 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [tappedItem, setTappedItem] = useState<ItemId | null>(null);
+  const [zCounter, setZCounter] = useState(1);
+  const [zOrders, setZOrders] = useState<Record<ItemId, number>>({
+    nametag: 1, book: 1, switch: 1, cd: 1,
+  });
+
+  const bringToFront = useCallback((id: ItemId) => {
+    setZCounter((c) => {
+      const next = c + 1;
+      setZOrders((prev) => ({ ...prev, [id]: next }));
+      return next;
+    });
+  }, []);
 
   const [positions, setPositions] = useState<Record<ItemId, { x: number; y: number }>>(() => {
     const saved = sessionStorage.getItem('item-positions');
@@ -119,7 +131,8 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   const handlePointerDown = useCallback(
     (e: React.PointerEvent, id: ItemId) => {
       e.preventDefault();
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      e.currentTarget.setPointerCapture(e.pointerId);
+      bringToFront(id);
       dragState.current = {
         id,
         startPointerX: e.clientX,
@@ -129,7 +142,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         moved: false,
       };
     },
-    [positions],
+    [positions, bringToFront],
   );
 
   const handlePointerMove = useCallback(
@@ -146,8 +159,8 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
 
       const rawX = ds.startX + (dx / rect.width) * 100;
       const rawY = ds.startY + (dy / rect.height) * 100;
-      const clampedX = Math.max(0, Math.min(85, rawX));
-      const clampedY = Math.max(0, Math.min(85, rawY));
+      const clampedX = Math.max(2, Math.min(70, rawX));
+      const clampedY = Math.max(2, Math.min(75, rawY));
 
       if (rawX !== clampedX || rawY !== clampedY) {
         playBump();
@@ -170,6 +183,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
 
       if (!wasDrag) {
         sounds[id]();
+        bringToFront(id);
         setTappedItem(id);
         setTimeout(() => {
           setTappedItem(null);
@@ -177,7 +191,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         }, 200);
       }
     },
-    [sounds, onSelectItem],
+    [sounds, onSelectItem, bringToFront],
   );
 
   return (
@@ -199,7 +213,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         ← 뒤로
       </motion.button>
 
-      <div ref={containerRef} className="relative aspect-square w-full max-w-[500px]">
+      <div ref={containerRef} className="relative aspect-square w-full max-w-[500px] overflow-hidden">
         <SuitcaseOpen className="absolute inset-0 h-full w-full" />
 
         {itemDefs.map((item, i) => {
@@ -213,7 +227,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                 left: `${pos.x}%`,
                 top: `${pos.y}%`,
                 cursor: dragState.current?.id === id ? 'grabbing' : 'grab',
-                zIndex: tappedItem === id || dragState.current?.id === id ? 20 : 1,
+                zIndex: zOrders[id],
               }}
               initial={reduced ? {} : { opacity: 0, y: 20, scale: 1 }}
               animate={{
@@ -242,6 +256,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   sounds[id]();
+                  bringToFront(id);
                   setTappedItem(id);
                   setTimeout(() => {
                     setTappedItem(null);
