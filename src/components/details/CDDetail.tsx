@@ -1,4 +1,4 @@
-import { youtubePlaylistId } from '@/data/portfolio';
+import { youtubePlaylistId, youtubeFirstVideoId } from '@/data/portfolio';
 
 export default function CDDetail() {
   return (
@@ -10,7 +10,7 @@ export default function CDDetail() {
 
         <div className="overflow-hidden rounded-xl border border-white/5">
           <iframe
-            src={`https://www.youtube.com/embed/hHHQ4bNhwjU?list=${youtubePlaylistId}`}
+            src={`https://www.youtube.com/embed/${youtubeFirstVideoId}?list=${youtubePlaylistId}`}
             title="YouTube 플레이리스트"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
