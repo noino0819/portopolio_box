@@ -1,18 +1,12 @@
-import { useRef, useState, useEffect } from 'react';
-import { youtubePlaylistId, youtubeFirstVideoId } from '@/data/portfolio';
+import { useState, useEffect } from 'react';
+import { youtubePlaylistId } from '@/data/portfolio';
+
+function dispatchMusicControl(command: string) {
+  window.dispatchEvent(new CustomEvent('music-control', { detail: { command } }));
+}
 
 export default function CDDetail() {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [playing, setPlaying] = useState(true);
-
-  const postCommand = (func: string, args?: unknown[]) => {
-    const iframe = iframeRef.current;
-    if (!iframe?.contentWindow) return;
-    iframe.contentWindow.postMessage(
-      JSON.stringify({ event: 'command', func, args: args ?? [] }),
-      '*',
-    );
-  };
 
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
@@ -32,7 +26,7 @@ export default function CDDetail() {
 
   return (
     <div className="space-y-6">
-      {/* 모바일 인라인 플레이어 */}
+      {/* 모바일 컨트롤 */}
       <section aria-labelledby="player-heading" className="sm:hidden">
         <h3
           id="player-heading"
@@ -40,66 +34,58 @@ export default function CDDetail() {
         >
           Now Playing
         </h3>
-        <div className="overflow-hidden rounded-xl border border-white/5 bg-white/[0.03]">
-          <iframe
-            ref={iframeRef}
-            src={`https://www.youtube.com/embed/${youtubeFirstVideoId}?list=${youtubePlaylistId}&autoplay=1&enablejsapi=1&origin=${window.location.origin}`}
-            title="YouTube 플레이리스트"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            className="aspect-video w-full"
-            aria-label="YouTube 플레이어"
-          />
-          <div className="flex items-center justify-center gap-6 px-4 py-3">
+        <div className="rounded-xl border border-white/5 bg-white/[0.03] p-5">
+          <div className="flex items-center justify-center gap-6 py-2">
             <button
               type="button"
-              onClick={() => postCommand('previousVideo')}
+              onClick={() => dispatchMusicControl('previousVideo')}
               className="rounded-full p-2 text-card/60 transition-colors hover:bg-white/10 hover:text-card"
               aria-label="이전 곡"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" />
               </svg>
             </button>
             <button
               type="button"
               onClick={() => {
-                if (playing) {
-                  postCommand('pauseVideo');
-                } else {
-                  postCommand('playVideo');
-                }
+                dispatchMusicControl(playing ? 'pauseVideo' : 'playVideo');
                 setPlaying(!playing);
               }}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/15 text-gold transition-colors hover:bg-gold/25"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-gold/15 text-gold transition-colors hover:bg-gold/25"
               aria-label={playing ? '일시정지' : '재생'}
             >
               {playing ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                 </svg>
               ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               )}
             </button>
             <button
               type="button"
-              onClick={() => postCommand('nextVideo')}
+              onClick={() => dispatchMusicControl('nextVideo')}
               className="rounded-full p-2 text-card/60 transition-colors hover:bg-white/10 hover:text-card"
               aria-label="다음 곡"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
               </svg>
             </button>
           </div>
+          <div className="mt-2 flex items-center justify-center gap-2">
+            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-accent-red" />
+            <p className="text-xs text-card/50">
+              {playing ? '재생 중' : '일시정지'}
+            </p>
+          </div>
+          <p className="mt-3 text-center text-xs text-card/40">
+            이 창을 닫아도 음악은 계속 재생됩니다.
+          </p>
         </div>
-        <p className="mt-2 text-center text-xs text-card/40">
-          이 창을 닫아도 음악은 계속 재생됩니다.
-        </p>
       </section>
 
       {/* 데스크톱용 안내 */}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { youtubePlaylistId, youtubeFirstVideoId } from '@/data/portfolio';
 
 interface MusicPlayerProps {
@@ -23,8 +23,44 @@ function useIsDesktop() {
 export default function MusicPlayer({ activated }: MusicPlayerProps) {
   const [expanded, setExpanded] = useState(false);
   const isDesktop = useIsDesktop();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  if (!activated || !isDesktop) return null;
+  useEffect(() => {
+    if (!activated) return;
+
+    const handler = (e: Event) => {
+      const { command } = (e as CustomEvent).detail as { command: string };
+      const iframe = iframeRef.current;
+      if (!iframe?.contentWindow) return;
+      iframe.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: command, args: [] }),
+        '*',
+      );
+    };
+
+    window.addEventListener('music-control', handler);
+    return () => window.removeEventListener('music-control', handler);
+  }, [activated]);
+
+  if (!activated) return null;
+
+  const iframeSrc = `https://www.youtube.com/embed/${youtubeFirstVideoId}?list=${youtubePlaylistId}&autoplay=1&enablejsapi=1&origin=${window.location.origin}`;
+
+  if (!isDesktop) {
+    return (
+      <iframe
+        ref={iframeRef}
+        src={iframeSrc}
+        title="YouTube 플레이리스트"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin"
+        aria-hidden="true"
+        className="pointer-events-none fixed"
+        style={{ width: 1, height: 1, left: -9999, top: -9999, opacity: 0 }}
+      />
+    );
+  }
 
   return (
     <div
@@ -47,7 +83,8 @@ export default function MusicPlayer({ activated }: MusicPlayerProps) {
         <span>{expanded ? '▼' : '▲'}</span>
       </button>
       <iframe
-        src={`https://www.youtube.com/embed/${youtubeFirstVideoId}?list=${youtubePlaylistId}&autoplay=1`}
+        ref={iframeRef}
+        src={iframeSrc}
         title="YouTube 플레이리스트"
         frameBorder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
