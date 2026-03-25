@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import SuitcaseOpen from '@/assets/SuitcaseOpen';
 import ItemNametag from '@/assets/ItemNametag';
@@ -7,6 +7,7 @@ import ItemSwitch from '@/assets/ItemSwitch';
 import ItemCD from '@/assets/ItemCD';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useOpenSound } from '@/hooks/useOpenSound';
+import { useItemSounds } from '@/hooks/useItemSounds';
 
 export type ItemId = 'nametag' | 'book' | 'switch' | 'cd';
 
@@ -15,65 +16,158 @@ interface SuitcaseInteriorProps {
   onBack: () => void;
 }
 
-const items: {
+interface ItemDef {
   id: ItemId;
   label: string;
   sublabel: string;
   Component: React.FC<{ className?: string }>;
-  position: string;
   rotation: string;
   size: string;
   color: string;
-}[] = [
+  defaultX: number;
+  defaultY: number;
+}
+
+const itemDefs: ItemDef[] = [
   {
     id: 'nametag',
     label: '이름표',
     sublabel: '프로필 & 연락처',
     Component: ItemNametag,
-    position: 'top-[22%] left-[18%] sm:top-[20%] sm:left-[20%]',
     rotation: '-rotate-3',
     size: 'w-[78px] sm:w-[98px] md:w-[113px]',
     color: 'hover:shadow-accent-teal/30',
+    defaultX: 18,
+    defaultY: 22,
   },
   {
     id: 'book',
     label: '책',
     sublabel: '프로젝트 & 경험',
     Component: ItemBook,
-    position: 'top-[18%] right-[12%] sm:top-[16%] sm:right-[14%]',
     rotation: 'rotate-6',
     size: 'w-[90px] sm:w-[110px] md:w-[130px]',
     color: 'hover:shadow-accent-purple/30',
+    defaultX: 62,
+    defaultY: 16,
   },
   {
     id: 'switch',
-    label: '닌텐도 스위치',
+    label: '게임기',
     sublabel: '취미 & 관심사',
     Component: ItemSwitch,
-    position: 'bottom-[14%] left-[12%] sm:bottom-[12%] sm:left-[14%]',
     rotation: '-rotate-3',
     size: 'w-[180px] sm:w-[218px] md:w-[255px]',
     color: 'hover:shadow-accent-pink/30',
+    defaultX: 12,
+    defaultY: 62,
   },
   {
     id: 'cd',
     label: 'CD',
     sublabel: '플레이리스트',
     Component: ItemCD,
-    position: 'bottom-[20%] right-[14%] sm:bottom-[18%] sm:right-[16%]',
     rotation: 'rotate-3',
     size: 'w-[90px] sm:w-[110px] md:w-[130px]',
     color: 'hover:shadow-accent-blue/30',
+    defaultX: 65,
+    defaultY: 60,
   },
 ];
+
+const DRAG_THRESHOLD = 6;
 
 export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInteriorProps) {
   const reduced = useReducedMotion();
   const playOpen = useOpenSound();
+  const sounds = useItemSounds();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [positions, setPositions] = useState<Record<ItemId, { x: number; y: number }>>(() => {
+    const saved = sessionStorage.getItem('item-positions');
+    if (saved) {
+      try { return JSON.parse(saved); } catch { /* ignore */ }
+    }
+    return Object.fromEntries(
+      itemDefs.map((d) => [d.id, { x: d.defaultX, y: d.defaultY }]),
+    ) as Record<ItemId, { x: number; y: number }>;
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem('item-positions', JSON.stringify(positions));
+  }, [positions]);
 
   useEffect(() => {
     playOpen();
   }, [playOpen]);
+
+  const dragState = useRef<{
+    id: ItemId;
+    startPointerX: number;
+    startPointerY: number;
+    startX: number;
+    startY: number;
+    moved: boolean;
+  } | null>(null);
+
+  const getContainerRect = useCallback(() => containerRef.current?.getBoundingClientRect(), []);
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent, id: ItemId) => {
+      e.preventDefault();
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      dragState.current = {
+        id,
+        startPointerX: e.clientX,
+        startPointerY: e.clientY,
+        startX: positions[id].x,
+        startY: positions[id].y,
+        moved: false,
+      };
+    },
+    [positions],
+  );
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      const ds = dragState.current;
+      const rect = getContainerRect();
+      if (!ds || !rect) return;
+
+      const dx = e.clientX - ds.startPointerX;
+      const dy = e.clientY - ds.startPointerY;
+
+      if (!ds.moved && Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD) return;
+      ds.moved = true;
+
+      const pctX = ds.startX + (dx / rect.width) * 100;
+      const pctY = ds.startY + (dy / rect.height) * 100;
+
+      setPositions((prev) => ({
+        ...prev,
+        [ds.id]: {
+          x: Math.max(0, Math.min(85, pctX)),
+          y: Math.max(0, Math.min(85, pctY)),
+        },
+      }));
+    },
+    [getContainerRect],
+  );
+
+  const handlePointerUp = useCallback(
+    (_e: React.PointerEvent, id: ItemId) => {
+      const ds = dragState.current;
+      if (!ds) return;
+      const wasDrag = ds.moved;
+      dragState.current = null;
+
+      if (!wasDrag) {
+        sounds[id]();
+        onSelectItem(id);
+      }
+    },
+    [sounds, onSelectItem],
+  );
 
   return (
     <motion.div
@@ -83,7 +177,6 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       exit={{ opacity: 0 }}
       transition={{ duration: reduced ? 0 : 0.3 }}
     >
-      {/* Back button */}
       <motion.button
         onClick={onBack}
         className="fixed left-4 top-4 z-50 rounded-xl border border-white/10 bg-white/5 px-4 py-2 font-display text-sm text-card backdrop-blur-md transition-colors hover:bg-white/10"
@@ -95,18 +188,22 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         ← 뒤로
       </motion.button>
 
-      {/* Suitcase interior container */}
-      <div className="relative aspect-square w-full max-w-[500px]">
+      <div ref={containerRef} className="relative aspect-square w-full max-w-[500px]">
         <SuitcaseOpen className="absolute inset-0 h-full w-full" />
 
-        {/* Items */}
-        {items.map((item, i) => {
-          const { id, label, sublabel, Component, position, rotation, size, color } = item;
+        {itemDefs.map((item, i) => {
+          const { id, label, sublabel, Component, rotation, size, color } = item;
+          const pos = positions[id];
           return (
-            <motion.button
+            <motion.div
               key={id}
-              onClick={() => onSelectItem(id)}
-              className={`absolute ${position} ${rotation} group cursor-pointer border-none bg-transparent p-2`}
+              className={`absolute ${rotation} group touch-none`}
+              style={{
+                left: `${pos.x}%`,
+                top: `${pos.y}%`,
+                cursor: dragState.current?.id === id ? 'grabbing' : 'grab',
+                zIndex: dragState.current?.id === id ? 20 : 1,
+              }}
               initial={reduced ? {} : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
@@ -114,18 +211,29 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                 duration: reduced ? 0 : 0.4,
                 ease: 'easeOut',
               }}
-              whileHover={reduced ? {} : { y: -6, scale: 1.05 }}
-              whileTap={reduced ? {} : { scale: 0.97 }}
-              aria-label={`${label} 열기 - ${sublabel}`}
+              onPointerDown={(e) => handlePointerDown(e, id)}
+              onPointerMove={handlePointerMove}
+              onPointerUp={(e) => handlePointerUp(e, id)}
               role="button"
+              tabIndex={0}
+              aria-label={`${label} 열기 - ${sublabel} (드래그하여 이동 가능)`}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  sounds[id]();
+                  onSelectItem(id);
+                }
+              }}
             >
-              <div className={`transition-shadow duration-300 ${color} rounded-lg drop-shadow-lg group-hover:drop-shadow-2xl`}>
+              <div
+                className={`p-2 transition-shadow duration-300 ${color} rounded-lg drop-shadow-lg group-hover:drop-shadow-2xl`}
+              >
                 <Component className={size} />
               </div>
-              <span className="mt-1 block font-accent text-xs text-gold/80 opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="mt-1 block text-center font-accent text-xs text-gold/80 opacity-0 transition-opacity group-hover:opacity-100">
                 {label}
               </span>
-            </motion.button>
+            </motion.div>
           );
         })}
       </div>

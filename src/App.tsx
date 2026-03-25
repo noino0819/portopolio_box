@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import Landing from '@/components/Landing';
 import SuitcaseInterior from '@/components/SuitcaseInterior';
@@ -13,15 +13,46 @@ export default function App() {
   const [activeItem, setActiveItem] = useState<ItemId | null>(null);
   const [musicActivated, setMusicActivated] = useState(false);
 
-  const handleOpen = useCallback(() => setScreen('interior'), []);
-  const handleBack = useCallback(() => setScreen('landing'), []);
+  const navigateTo = useCallback((target: Screen, item: ItemId | null = null) => {
+    setScreen(target);
+    setActiveItem(item);
+  }, []);
+
+  const handleOpen = useCallback(() => {
+    history.pushState({ screen: 'interior' }, '');
+    navigateTo('interior');
+  }, [navigateTo]);
+
+  const handleBack = useCallback(() => {
+    history.back();
+  }, []);
 
   const handleSelectItem = useCallback((id: ItemId) => {
+    history.pushState({ screen: 'interior', item: id }, '');
     setActiveItem(id);
     if (id === 'cd') setMusicActivated(true);
   }, []);
 
-  const handleCloseDetail = useCallback(() => setActiveItem(null), []);
+  const handleCloseDetail = useCallback(() => {
+    if (activeItem) history.back();
+  }, [activeItem]);
+
+  useEffect(() => {
+    history.replaceState({ screen: 'landing' }, '');
+
+    const onPopState = (e: PopStateEvent) => {
+      const state = e.state as { screen?: Screen; item?: ItemId } | null;
+
+      if (!state || state.screen === 'landing') {
+        navigateTo('landing');
+      } else if (state.screen === 'interior') {
+        navigateTo('interior', state.item ?? null);
+      }
+    };
+
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [navigateTo]);
 
   return (
     <main className="min-h-dvh bg-bg-dark">
