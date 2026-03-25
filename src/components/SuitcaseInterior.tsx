@@ -203,7 +203,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
           return (
             <motion.div
               key={id}
-              className={`absolute ${rotation} group touch-none`}
+              className={`absolute w-max ${rotation} group touch-none`}
               style={{
                 left: `${pos.x}%`,
                 top: `${pos.y}%`,
