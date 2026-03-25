@@ -141,19 +141,44 @@ export const certifications: Certification[] = [
 
 export const projects: Project[] = [
   {
-    title: '건강상담 웹앱',
-    description: '현대퓨쳐넷 재직 중 개발한 건강상담 관련 웹 애플리케이션. 사용자 건강 데이터 기반 상담 서비스 제공.',
-    techs: ['Java', 'Spring Boot', 'Oracle', 'JavaScript'],
+    title: 'AI 기반 헬스케어 상담 지원 플랫폼',
+    description:
+      '헬스케어 전문가를 위한 AI 기반 상담 지원 플랫폼. GPT + 벡터 임베딩 DB 연동으로 영양·질병·식재료 정보를 의미 기반 검색. 인바디 데이터 연동 맞춤형 리포트, 식사 사진 기반 식습관 분석, 상담 이력 통계 리포트 등 구현.',
+    techs: ['React', 'PostgreSQL', 'GPT', 'Vector DB', 'Python'],
+    github: 'https://github.com/noino0819',
   },
   {
-    title: '건강상담 ERP 시스템',
-    description: '건강관리 웹앱 및 건강상담시스템 관리를 위한 ERP 시스템 개발.',
-    techs: ['Java', 'Spring Boot', 'Oracle', 'JavaScript'],
+    title: '개인 건강관리 웹앱 (그리팅케어)',
+    description:
+      'B2C 대상 AI 기반 건강관리 웹앱. 영양제 관리, 식단 기록 및 AI 분석, 헬스 챌린지 리워드 시스템, 건강 카드뉴스 콘텐츠, 개인 맞춤형 피드백 기능 구현.',
+    techs: ['React', 'AWS', 'Node.js', 'AI'],
   },
   {
-    title: 'ML Bootcamp 프로젝트',
-    description: 'Google ML Bootcamp에서 Python/TensorFlow를 활용한 머신러닝 학습 프로젝트.',
-    techs: ['Python', 'TensorFlow', 'Machine Learning'],
+    title: 'Alt for U (대체텍스트 자동삽입 솔루션)',
+    description:
+      '시각장애인 웹 접근성 향상을 위한 GPT 기반 대체 텍스트 자동 생성 시스템. 이벤트 페이지, 배너, 상품 이미지 등에 AI가 문맥 분석 후 설명 삽입. 직접 기획·주도하여 그리팅 홈페이지에 실서비스 적용.',
+    techs: ['PostgreSQL', 'JavaScript', 'GPT', 'Python', 'Web Accessibility'],
+  },
+  {
+    title: 'Hyunique (스타일링 공유 플랫폼)',
+    description:
+      '온·오프라인 통합 스타일링 공유 플랫폼. GPT 챗봇 & DALL·E 이미지 생성, Toss Payments 결제, QR 기반 상품 확인, Inception V3 + k-NN 유사 상품 검색, 소셜 로그인 등 풀스택 구현. 기획 및 AI 스타일링 흐름 설계 주도.',
+    techs: ['MySQL', 'AWS', 'React', 'GPT', 'DALL·E', 'Jenkins'],
+    github: 'https://github.com/it-e-7/hyunique',
+  },
+  {
+    title: 'TaxMate (온라인 경제 교육 플랫폼)',
+    description:
+      '학급을 가상 국가로 설정하여 세금·직업·은행·주식·법률을 시뮬레이션하는 참여형 경제 교육 플랫폼. 실제 교사 자문 기반. React + Node.js + MongoDB 환경 구성, 백엔드 전반 직접 구현.',
+    techs: ['React', 'Node.js', 'MongoDB', 'Bootstrap'],
+    github: 'https://github.com/SSU-Taxmate/taxpayer-Backend',
+  },
+  {
+    title: 'GitTalk (Git 기반 실시간 협업 채팅툴)',
+    description:
+      'Git 리포지토리를 데이터 저장소이자 협업 채널로 활용하는 CLI 기반 채팅 프로그램. 별도 서버 없이 자동 브랜치 분기/병합, 로그인 암호화, Pull/Push 기반 최적화 구현. C언어 개인 프로젝트.',
+    techs: ['C', 'Git', 'MySQL', 'CLI'],
+    github: 'https://github.com/noino0819/GitTalk',
   },
 ];
 
