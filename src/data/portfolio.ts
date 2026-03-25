@@ -22,7 +22,10 @@ export interface Certification {
 
 export interface Project {
   title: string;
+  period: string;
+  affiliation: string;
   description: string;
+  highlights: string[];
   techs: string[];
   url?: string;
   github?: string;
@@ -142,40 +145,90 @@ export const certifications: Certification[] = [
 export const projects: Project[] = [
   {
     title: 'AI 기반 헬스케어 상담 지원 플랫폼',
-    description:
-      '헬스케어 전문가를 위한 AI 기반 상담 지원 플랫폼. GPT + 벡터 임베딩 DB 연동으로 영양·질병·식재료 정보를 의미 기반 검색. 인바디 데이터 연동 맞춤형 리포트, 식사 사진 기반 식습관 분석, 상담 이력 통계 리포트 등 구현.',
+    period: '2023.11 - 현재',
+    affiliation: '현대퓨쳐넷',
+    description: '건강 데이터를 활용한 맞춤형 영양 및 라이프스타일 상담 시스템. AI 기술과 바이오 데이터 연계를 통해 상담의 질을 높이고 상담사의 업무 효율성을 극대화.',
+    highlights: [
+      '회원별 세션 기반 상담 프로세스 구축 — 고객별 상담 이력 유지 및 지속적 건강 관리 흐름',
+      'GPT + 벡터 임베딩 DB(Vector Core) 연동 — 영양소, 질병, 식재료 등 의미 기반 검색 및 응답 생성',
+      '바이오 데이터 연동 리포트 생성 — 인바디 데이터 기반 개인 맞춤형 영양/다이어트/피부관리 리포트',
+      '하루 식사 사진 기반 진단 기능 — 식습관을 정량·정성적으로 분석하고 개선 방향 제시',
+      '상담 이력 데이터 분석 및 통계 리포트 — 개인별 건강 트렌드 및 개선 방향 도출',
+    ],
     techs: ['React', 'PostgreSQL', 'GPT', 'Vector DB', 'Python'],
   },
   {
     title: '개인 건강관리 웹앱 (그리팅케어)',
-    description:
-      'B2C 대상 AI 기반 건강관리 웹앱. 영양제 관리, 식단 기록 및 AI 분석, 헬스 챌린지 리워드 시스템, 건강 카드뉴스 콘텐츠, 개인 맞춤형 피드백 기능 구현.',
+    period: '2025.03 - 2025.09',
+    affiliation: '현대퓨쳐넷',
+    description: 'B2C 대상 AI 기반 개인 건강관리 웹앱. 맞춤형 기능과 챌린지 기반 리워드 시스템을 통해 유저의 지속적인 참여를 유도하며 실질적인 건강 개선을 지원.',
+    highlights: [
+      '영양제 관리 시스템 — 복용 중인 영양제 등록, 섭취 이력 및 주의사항 관리',
+      '식단 기록 및 AI 분석 — 하루 식단 기록, 영양 균형·섭취 패턴 시각화 피드백',
+      '헬스 챌린지 및 리워드 시스템 — 걷기, 물 마시기 등 건강 습관 챌린지 + 포인트 적립',
+      '건강 콘텐츠 제공 — 카드뉴스 형태의 건강 정보 주기적 제공',
+      '개인 맞춤형 피드백 — 기록 데이터 기반 영양 및 생활 습관 개선 인사이트',
+    ],
     techs: ['React', 'AWS', 'Node.js', 'AI'],
   },
   {
     title: 'Alt for U (대체텍스트 자동삽입 솔루션)',
-    description:
-      '시각장애인 웹 접근성 향상을 위한 GPT 기반 대체 텍스트 자동 생성 시스템. 이벤트 페이지, 배너, 상품 이미지 등에 AI가 문맥 분석 후 설명 삽입. 직접 기획·주도하여 그리팅 홈페이지에 실서비스 적용.',
+    period: '2024.05 - 2024.09',
+    affiliation: '현대퓨쳐넷',
+    description: '시각장애인 웹 접근성 향상을 위한 GPT 기반 대체 텍스트 자동 생성 시스템. 직접 기획·주도하여 그리팅 홈페이지에 실서비스 적용 및 시범 운영.',
+    highlights: [
+      'GPT 기반 이미지 설명 생성 — 이미지 주변 텍스트와 문맥을 분석하여 자연어 대체 텍스트 생성',
+      '어드민 관리 페이지 구축 — 생성된 Alt 텍스트 검토·수정 및 재생성 관리',
+      '웹 접근성 향상 자동화 — 이미지 업로드 시 자동 대체 텍스트 삽입',
+      '콘텐츠 유형별 최적화 — 이벤트 페이지, 상품 상세, 메인 배너 등 설명 스타일 자동 조정',
+      '서비스 적용 완료 — 현대퓨쳐넷 HR 플랫폼 그리팅 홈페이지에 실제 적용, 웹 접근성 개선 효과 검증',
+    ],
     techs: ['PostgreSQL', 'JavaScript', 'GPT', 'Python', 'Web Accessibility'],
   },
   {
     title: 'Hyunique (스타일링 공유 플랫폼)',
-    description:
-      '온·오프라인 통합 스타일링 공유 플랫폼. GPT 챗봇 & DALL·E 이미지 생성, Toss Payments 결제, QR 기반 상품 확인, Inception V3 + k-NN 유사 상품 검색, 소셜 로그인 등 풀스택 구현. 기획 및 AI 스타일링 흐름 설계 주도.',
+    period: '2024.03 - 2024.06',
+    affiliation: '숭실대학교',
+    description: '온·오프라인 쇼핑 경험을 통합한 스타일링 공유 플랫폼. AI 기술과 결제, QR, 소셜 로그인 등을 통합하여 상용 수준의 UX를 구현.',
+    highlights: [
+      'GPT 기반 스타일링 챗봇 & DALL·E 이미지 생성 — 자연어로 스타일링 추천 + 시각적 이미지 자동 생성',
+      'Toss Payments 연동 간편 결제 — 실제 결제 흐름을 반영한 구매 설계',
+      'QR 코드 기반 상품 스타일 확인 — 오프라인 QR 스캔 시 스타일링 정보 확인 (온오프라인 연계)',
+      'Inception V3 + k-NN 유사 상품 검색 — AI 이미지 기반 유사 상품 추천',
+      'Papago API 프롬프트 번역 최적화 — DALL·E 정확도를 위한 한→영 자동 번역',
+      '소셜 로그인, 옷장, 커뮤니티 등 풀스택 구현 — 카카오/네이버 OAuth, AWS HTTPS 배포, Jenkins CI',
+    ],
     techs: ['MySQL', 'AWS', 'React', 'GPT', 'DALL·E', 'Jenkins'],
     github: 'https://github.com/it-e-7/hyunique',
   },
   {
     title: 'TaxMate (온라인 경제 교육 플랫폼)',
-    description:
-      '학급을 가상 국가로 설정하여 세금·직업·은행·주식·법률을 시뮬레이션하는 참여형 경제 교육 플랫폼. 실제 교사 자문 기반. React + Node.js + MongoDB 환경 구성, 백엔드 전반 직접 구현.',
+    period: '2022.03 - 2022.12',
+    affiliation: '숭실대학교',
+    description: '학급을 가상 국가로 설정하여 세금·직업·은행·주식·법률을 시뮬레이션하는 참여형 경제 교육 플랫폼. 실제 교사 자문 기반으로 교육적 효과 극대화.',
+    highlights: [
+      '사용자 유형별 맞춤 화면 구성 — 선생님/학생 역할에 따라 대시보드와 접근 기능 차등 설정',
+      '가상 직업 및 월급 시스템 — 직업별 자격 조건, 월급, 고용기간 설정 및 지원서 승인 프로세스',
+      '은행 모듈 — 입출금 내역, 예금 상품 가입 및 이자 처리',
+      '증권거래소 모듈 — 주식 상품 개설, 뉴스 기반 주가 변동, 매도/매수 기능',
+      '국세청 시스템 — 직접세/간접세 정의, 자동 납부, 세수 통계',
+      '법률 시스템 — 선생님 중심 법률 등록·수정, 학생 열람 기능',
+    ],
     techs: ['React', 'Node.js', 'MongoDB', 'Bootstrap'],
     github: 'https://github.com/SSU-Taxmate/taxpayer-Backend',
   },
   {
     title: 'GitTalk (Git 기반 실시간 협업 채팅툴)',
-    description:
-      'Git 리포지토리를 데이터 저장소이자 협업 채널로 활용하는 CLI 기반 채팅 프로그램. 별도 서버 없이 자동 브랜치 분기/병합, 로그인 암호화, Pull/Push 기반 최적화 구현. C언어 개인 프로젝트.',
+    period: '2019.03 - 2019.06',
+    affiliation: '개인 프로젝트',
+    description: 'Git 리포지토리를 데이터 저장소이자 협업 채널로 활용하는 CLI 기반 채팅 프로그램. 별도 서버 없이 빠르고 경량화된 협업 도구 제공.',
+    highlights: [
+      'Git 기반 데이터 저장 및 채널 운영 — 별도 서버 없이 Git 리포지토리로 채팅 메시지 기록·공유',
+      '자동 브랜치 분기 및 병합 — 실행 시 자동으로 새 브랜치 생성 및 작업 내용 병합 자동화',
+      'CLI 채팅 인터페이스 — 개발 디렉토리 내에서 바로 실행, 간단한 커맨드로 팀원 소통',
+      '로그인 및 사용자 인증 암호화 처리',
+      '성능 최적화 — Web Parsing보다 Pull/Push 방식이 빠른 응답 속도를 보여 실제 적용',
+    ],
     techs: ['C', 'Git', 'MySQL', 'CLI'],
     github: 'https://github.com/noino0819/GitTalk',
   },
