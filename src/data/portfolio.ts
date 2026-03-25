@@ -145,7 +145,6 @@ export const projects: Project[] = [
     description:
       '헬스케어 전문가를 위한 AI 기반 상담 지원 플랫폼. GPT + 벡터 임베딩 DB 연동으로 영양·질병·식재료 정보를 의미 기반 검색. 인바디 데이터 연동 맞춤형 리포트, 식사 사진 기반 식습관 분석, 상담 이력 통계 리포트 등 구현.',
     techs: ['React', 'PostgreSQL', 'GPT', 'Vector DB', 'Python'],
-    github: 'https://github.com/noino0819',
   },
   {
     title: '개인 건강관리 웹앱 (그리팅케어)',
