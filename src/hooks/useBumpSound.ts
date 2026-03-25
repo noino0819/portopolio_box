@@ -4,13 +4,18 @@ export function useBumpSound() {
   const ctxRef = useRef<AudioContext | null>(null);
   const lastBumpRef = useRef(0);
 
-  return useCallback(() => {
+  const ensureCtx = useCallback(() => {
+    if (!ctxRef.current) ctxRef.current = new AudioContext();
+    if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
+    return ctxRef.current;
+  }, []);
+
+  const play = useCallback(() => {
     const now = performance.now();
     if (now - lastBumpRef.current < 150) return;
     lastBumpRef.current = now;
 
-    if (!ctxRef.current) ctxRef.current = new AudioContext();
-    const ctx = ctxRef.current;
+    const ctx = ensureCtx();
     const t = ctx.currentTime;
 
     const osc = ctx.createOscillator();
@@ -24,5 +29,7 @@ export function useBumpSound() {
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
     osc.start(t);
     osc.stop(t + 0.08);
-  }, []);
+  }, [ensureCtx]);
+
+  return { prepare: ensureCtx, play };
 }

@@ -82,7 +82,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   const reduced = useReducedMotion();
   const playOpen = useOpenSound();
   const sounds = useItemSounds();
-  const playBump = useBumpSound();
+  const bump = useBumpSound();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [tappedItem, setTappedItem] = useState<ItemId | null>(null);
@@ -150,6 +150,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       e.preventDefault();
       e.currentTarget.setPointerCapture(e.pointerId);
       resetIdleTimer();
+      bump.prepare();
       bringToFront(id);
       clampedEdges.current = { left: false, right: false, top: false, bottom: false };
       dragState.current = {
@@ -161,7 +162,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         moved: false,
       };
     },
-    [positions, bringToFront, resetIdleTimer],
+    [positions, bringToFront, resetIdleTimer, bump],
   );
 
   const handlePointerMove = useCallback(
@@ -197,7 +198,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         (hitTop && !prev.top) ||
         (hitBottom && !prev.bottom);
 
-      if (newEdgeHit) playBump();
+      if (newEdgeHit) bump.play();
 
       clampedEdges.current = { left: hitLeft, right: hitRight, top: hitTop, bottom: hitBottom };
 
@@ -206,7 +207,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         [ds.id]: { x: clampedX, y: clampedY },
       }));
     },
-    [getContainerRect, playBump],
+    [getContainerRect, bump],
   );
 
   const handlePointerUp = useCallback(
