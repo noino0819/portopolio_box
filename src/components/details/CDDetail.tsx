@@ -11,47 +11,89 @@ interface YTPlayer {
   destroy: () => void;
 }
 
+interface YTPlayerConstructor {
+  new (
+    el: HTMLElement,
+    config: {
+      height: string;
+      width: string;
+      playerVars: Record<string, string | number>;
+      events: Record<string, (event: { target: YTPlayer; data: number }) => void>;
+    },
+  ): YTPlayer;
+}
+
 declare global {
   interface Window {
     YT: {
-      Player: new (
-        id: string,
-        config: {
-          height: string;
-          width: string;
-          playerVars: Record<string, string | number>;
-          events: Record<string, (event: { target: YTPlayer; data: number }) => void>;
-        },
-      ) => YTPlayer;
+      Player: YTPlayerConstructor;
       PlayerState: { PLAYING: number; PAUSED: number; ENDED: number };
     };
     onYouTubeIframeAPIReady: () => void;
   }
 }
 
+let ytApiLoading = false;
+const ytApiCallbacks: (() => void)[] = [];
+
+function loadYTApi(): Promise<void> {
+  return new Promise((resolve) => {
+    if (window.YT?.Player) {
+      resolve();
+      return;
+    }
+
+    ytApiCallbacks.push(resolve);
+
+    if (!ytApiLoading) {
+      ytApiLoading = true;
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+      window.onYouTubeIframeAPIReady = () => {
+        ytApiCallbacks.forEach((cb) => cb());
+        ytApiCallbacks.length = 0;
+      };
+    }
+  });
+}
+
 export default function CDDetail() {
   const playerRef = useRef<YTPlayer | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState({ title: '', author: '' });
   const [isReady, setIsReady] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   const updateTrackInfo = useCallback(() => {
-    if (playerRef.current) {
-      try {
-        const data = playerRef.current.getVideoData();
-        if (data.title) setCurrentTrack({ title: data.title, author: data.author });
-      } catch {
-        // player not ready yet
-      }
+    if (!playerRef.current) return;
+    try {
+      const data = playerRef.current.getVideoData();
+      if (data?.title) setCurrentTrack({ title: data.title, author: data.author });
+    } catch {
+      /* not ready */
     }
   }, []);
 
   useEffect(() => {
     let mounted = true;
+    let player: YTPlayer | null = null;
 
-    const initPlayer = () => {
-      if (!mounted || !window.YT) return;
-      playerRef.current = new window.YT.Player('yt-player', {
+    const init = async () => {
+      try {
+        await loadYTApi();
+      } catch {
+        if (mounted) setHasError(true);
+        return;
+      }
+
+      if (!mounted || !containerRef.current) return;
+
+      const holderEl = document.createElement('div');
+      containerRef.current.appendChild(holderEl);
+
+      player = new window.YT.Player(holderEl, {
         height: '1',
         width: '1',
         playerVars: {
@@ -63,10 +105,10 @@ export default function CDDetail() {
         },
         events: {
           onReady: () => {
-            if (mounted) {
-              setIsReady(true);
-              updateTrackInfo();
-            }
+            if (!mounted) return;
+            playerRef.current = player;
+            setIsReady(true);
+            updateTrackInfo();
           },
           onStateChange: (event: { data: number }) => {
             if (!mounted) return;
@@ -77,28 +119,22 @@ export default function CDDetail() {
       });
     };
 
-    if (window.YT && window.YT.Player) {
-      initPlayer();
-    } else {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      document.head.appendChild(tag);
-      window.onYouTubeIframeAPIReady = initPlayer;
-    }
+    init();
 
     return () => {
       mounted = false;
-      playerRef.current?.destroy();
+      playerRef.current = null;
+      try {
+        player?.destroy();
+      } catch {
+        /* already destroyed */
+      }
     };
   }, [updateTrackInfo]);
 
   const togglePlay = () => {
     if (!playerRef.current) return;
-    if (isPlaying) {
-      playerRef.current.pauseVideo();
-    } else {
-      playerRef.current.playVideo();
-    }
+    isPlaying ? playerRef.current.pauseVideo() : playerRef.current.playVideo();
   };
 
   return (
@@ -108,14 +144,12 @@ export default function CDDetail() {
           Now Playing
         </h3>
 
-        {/* YouTube player (off-screen but rendered) */}
-        <div className="absolute -left-[9999px] h-px w-px overflow-hidden">
-          <div id="yt-player" />
-        </div>
+        <div ref={containerRef} className="fixed -left-[9999px] top-0 h-px w-px overflow-hidden" />
 
-        {/* Track info */}
         <div className="rounded-xl border border-white/5 bg-white/[0.03] p-5">
-          {currentTrack.title ? (
+          {hasError ? (
+            <p className="text-sm text-accent-red/70">플레이어를 로드할 수 없습니다.</p>
+          ) : currentTrack.title ? (
             <div className="space-y-1">
               <p className="font-display text-base font-semibold text-card">{currentTrack.title}</p>
               <p className="text-xs text-card/50">{currentTrack.author}</p>
@@ -126,7 +160,6 @@ export default function CDDetail() {
             </p>
           )}
 
-          {/* Controls */}
           <div className="mt-5 flex items-center justify-center gap-4">
             <button
               onClick={() => playerRef.current?.previousVideo()}
@@ -170,14 +203,13 @@ export default function CDDetail() {
         </div>
       </section>
 
-      {/* Playlist info */}
       <section aria-labelledby="playlist-heading">
         <h3 id="playlist-heading" className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-gold">
           Playlist
         </h3>
         <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
           <p className="text-sm text-card/70">
-            YouTube 플레이리스트에서 제가 좋아하는 음악을 모아두었습니다.
+            제가 좋아하는 음악을 모아둔 플레이리스트입니다.
             재생 버튼을 눌러 들어보세요.
           </p>
           <a
