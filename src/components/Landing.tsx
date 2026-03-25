@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import SuitcaseClosed from '@/assets/SuitcaseClosed';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -12,7 +12,16 @@ export default function Landing({ onOpen }: LandingProps) {
   const reduced = useReducedMotion();
   const playKnock = useKnockSound();
   const controls = useAnimation();
+  const textControls = useAnimation();
   const [isOpening, setIsOpening] = useState(false);
+
+  useEffect(() => {
+    textControls.start({
+      opacity: 1,
+      y: 0,
+      transition: { delay: reduced ? 0 : 0.5, duration: reduced ? 0 : 0.6 },
+    });
+  }, [textControls, reduced]);
 
   const handleClick = useCallback(async () => {
     if (isOpening) return;
@@ -34,7 +43,12 @@ export default function Landing({ onOpen }: LandingProps) {
         transition: { duration: 0.2, ease: 'easeOut' },
       });
 
-      // 크게 줌인하며 내부를 들여다보는 느낌
+      // 크게 줌인하며 내부를 들여다보는 느낌 + 텍스트 동시 페이드아웃
+      textControls.start({
+        opacity: 0,
+        y: 10,
+        transition: { duration: 0.4, ease: 'easeIn' },
+      });
       await controls.start({
         scale: 1.8,
         y: 0,
@@ -70,8 +84,7 @@ export default function Landing({ onOpen }: LandingProps) {
       <motion.p
         className="mt-8 font-display text-lg font-medium tracking-wide text-gold drop-shadow-md"
         initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: reduced ? 0 : 0.5, duration: reduced ? 0 : 0.6 }}
+        animate={textControls}
       >
         <motion.span
           animate={reduced ? {} : { opacity: [0.6, 1, 0.6] }}
