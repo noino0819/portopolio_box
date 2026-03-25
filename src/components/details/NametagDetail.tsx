@@ -1,4 +1,4 @@
-import { profile } from '@/data/portfolio';
+import { profile, awards } from '@/data/portfolio';
 
 export default function NametagDetail() {
   return (
@@ -37,6 +37,36 @@ export default function NametagDetail() {
             >
               {skill}
             </span>
+          ))}
+        </div>
+      </section>
+
+      {/* Awards */}
+      <section aria-labelledby="awards-heading">
+        <h3 id="awards-heading" className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold">
+          🏆 Awards
+        </h3>
+        <div className="space-y-3">
+          {awards.map((award) => (
+            <div
+              key={award.title}
+              className="rounded-xl border border-white/5 bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.06]"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="font-display text-sm font-semibold text-card">{award.title}</h4>
+                <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-medium text-gold">
+                  {award.grade}
+                </span>
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-card/50">
+                <span>{award.issuer}</span>
+                <span>·</span>
+                <span>{award.date}</span>
+                <span>·</span>
+                <span>{award.affiliation}</span>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-card/60">{award.description}</p>
+            </div>
           ))}
         </div>
       </section>

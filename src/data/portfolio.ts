@@ -28,6 +28,15 @@ export interface Project {
   github?: string;
 }
 
+export interface Award {
+  title: string;
+  grade: string;
+  issuer: string;
+  date: string;
+  affiliation: string;
+  description: string;
+}
+
 export interface Game {
   title: string;
   platform: string;
@@ -138,6 +147,45 @@ export const projects: Project[] = [
     title: 'ML Bootcamp 프로젝트',
     description: 'Google ML Bootcamp에서 Python/TensorFlow를 활용한 머신러닝 학습 프로젝트.',
     techs: ['Python', 'TensorFlow', 'Machine Learning'],
+  },
+];
+
+export const awards: Award[] = [
+  {
+    title: '2024 스타트업데이',
+    grade: '대상',
+    issuer: '현대퓨쳐넷',
+    date: '2024.09',
+    affiliation: '현대퓨쳐넷',
+    description:
+      '시각장애인 웹 접근성 개선을 위한 AI 기반 프로젝트 \'Alf for U\'를 기획·개발. 페이지 내 비표준 요소 자동 감지 및 대체 텍스트 생성 등 접근성 강화 자동화 솔루션 구현. 기획 및 프론트엔드 개발 담당.',
+  },
+  {
+    title: '서울과학기술대학교 창의적 종합설계 경진대회',
+    grade: '동상',
+    issuer: '서울과학기술대학교 공학교육선도센터',
+    date: '2021.11',
+    affiliation: '숭실대학교',
+    description:
+      '틸트 구조 드론 제어 시스템 개발 프로젝트. 오픈소스 드론 플랫폼 PX4의 비행 제어 알고리즘 및 파라미터를 수정하여 안정적인 제어 구현. 시뮬레이션을 통한 성능 검증 및 최적화된 비행 패턴 도출.',
+  },
+  {
+    title: '숭실대학교 2021 IT대학 소프트웨어 공모전',
+    grade: '금상',
+    issuer: '숭실대학교',
+    date: '2021.11',
+    affiliation: '숭실대학교',
+    description:
+      '세금 교육 웹앱 \'TaxMate\' 기획·개발. 주식 거래·신문 뉴스·법 제정 시뮬레이션 기능으로 온라인 세금 학습 구현. 기획 및 프론트엔드 개발 담당.',
+  },
+  {
+    title: '2020 오픈소스 컨트리뷰톤',
+    grade: '특별상',
+    issuer: '가비아',
+    date: '2020.11',
+    affiliation: '현대퓨쳐넷',
+    description:
+      '강화학습 기반 게임 AI 프로젝트 \'resetta stone\'에 컨트리뷰터로 기여. 하스스톤 게임 플레이 시뮬레이션 및 에이전트 학습 알고리즘 개선. 코드 리뷰, 브랜치 전략, 이슈 관리 등 실무형 개발 문화 체득.',
   },
 ];
 
