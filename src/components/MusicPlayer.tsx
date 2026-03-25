@@ -12,9 +12,11 @@ export default function MusicPlayer({ activated }: MusicPlayerProps) {
 
   return (
     <div
-      className={`fixed bottom-4 right-4 z-[60] overflow-hidden rounded-xl border border-white/10 bg-bg-dark shadow-2xl transition-all duration-300 ${
-        expanded ? 'w-[90vw] max-w-[560px]' : 'w-[300px]'
-      }`}
+      className="fixed bottom-4 right-4 z-[60] overflow-hidden rounded-xl border border-white/10 bg-bg-dark shadow-2xl"
+      style={{
+        width: expanded ? 480 : 300,
+        transition: 'width 0.3s ease, height 0.3s ease',
+      }}
     >
       <button
         type="button"
@@ -35,7 +37,11 @@ export default function MusicPlayer({ activated }: MusicPlayerProps) {
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         referrerPolicy="strict-origin-when-cross-origin"
         allowFullScreen={expanded}
-        className={`w-full ${expanded ? 'aspect-video' : 'h-[50px]'}`}
+        style={{
+          width: '100%',
+          height: expanded ? 270 : 50,
+          transition: 'height 0.3s ease',
+        }}
         aria-label="YouTube 플레이어"
       />
     </div>
