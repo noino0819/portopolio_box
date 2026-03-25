@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { education, certifications, projects } from '@/data/portfolio';
 import type { Project } from '@/data/portfolio';
@@ -119,7 +119,6 @@ function ProjectCard({
 }
 
 export default function BookDetail() {
-  const containerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({
     education: null,
     certifications: null,
@@ -127,22 +126,47 @@ export default function BookDetail() {
   });
   const [activeBookmark, setActiveBookmark] = useState<SectionId>('education');
   const [openProject, setOpenProject] = useState<string | null>(null);
+  const isScrollingRef = useRef(false);
 
   const scrollToSection = (id: SectionId) => {
     setActiveBookmark(id);
     const el = sectionRefs.current[id];
-    const container = containerRef.current;
-    if (el && container) {
-      const top = el.offsetTop - container.offsetTop;
-      container.scrollTo({ top: top - 12, behavior: 'smooth' });
+    if (el) {
+      isScrollingRef.current = true;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 600);
     }
   };
 
+  useEffect(() => {
+    const els = Object.entries(sectionRefs.current)
+      .filter(([, el]) => el !== null)
+      .map(([id, el]) => ({ id: id as SectionId, el: el! }));
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isScrollingRef.current) return;
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('data-section') as SectionId;
+            if (id) setActiveBookmark(id);
+          }
+        }
+      },
+      { rootMargin: '-10% 0px -70% 0px' },
+    );
+
+    for (const { el } of els) observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="relative flex h-full">
-      {/* 책갈피 탭 — 오른쪽 고정 */}
+    <div className="relative">
+      {/* 책갈피 탭 — 상단 고정 */}
       <nav
-        className="sticky top-0 z-10 flex shrink-0 flex-col items-end gap-1 pt-2"
+        className="sticky top-0 z-10 -mx-1 mb-5 flex gap-1 rounded-lg border border-white/5 bg-bg-dark/90 p-1 backdrop-blur-md"
         aria-label="섹션 바로가기"
       >
         {sections.map((s) => (
@@ -150,41 +174,27 @@ export default function BookDetail() {
             key={s.id}
             type="button"
             onClick={() => scrollToSection(s.id)}
-            className={`flex items-center gap-1.5 rounded-l-lg border border-r-0 px-2.5 py-1.5 text-xs font-medium transition-all duration-200 ${
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-2 text-xs font-medium transition-all duration-200 ${
               activeBookmark === s.id
-                ? 'border-gold/40 bg-gold/10 text-gold shadow-sm shadow-gold/10'
-                : 'border-white/5 bg-white/[0.03] text-card/50 hover:bg-white/[0.06] hover:text-card/70'
+                ? 'bg-gold/15 text-gold shadow-sm'
+                : 'text-card/50 hover:bg-white/[0.06] hover:text-card/70'
             }`}
             aria-label={`${s.label} 섹션으로 이동`}
           >
             <span className="text-sm">{s.icon}</span>
-            <span className="hidden sm:inline">{s.label}</span>
+            <span>{s.label}</span>
           </button>
         ))}
       </nav>
 
-      {/* 스크롤 콘텐츠 */}
-      <div
-        ref={containerRef}
-        className="flex-1 space-y-8 overflow-y-auto pl-3"
-        onScroll={() => {
-          const container = containerRef.current;
-          if (!container) return;
-          const scrollTop = container.scrollTop + 60;
-          for (let i = sections.length - 1; i >= 0; i--) {
-            const el = sectionRefs.current[sections[i].id];
-            if (el && el.offsetTop - container.offsetTop <= scrollTop) {
-              setActiveBookmark(sections[i].id);
-              break;
-            }
-          }
-        }}
-      >
+      {/* 섹션 콘텐츠 */}
+      <div className="space-y-8">
         {/* Education & Career */}
         <section
           ref={(el) => {
             sectionRefs.current.education = el;
           }}
+          data-section="education"
           aria-labelledby="education-heading"
         >
           <h3
@@ -236,6 +246,7 @@ export default function BookDetail() {
           ref={(el) => {
             sectionRefs.current.certifications = el;
           }}
+          data-section="certifications"
           aria-labelledby="cert-heading"
         >
           <h3
@@ -284,6 +295,7 @@ export default function BookDetail() {
           ref={(el) => {
             sectionRefs.current.projects = el;
           }}
+          data-section="projects"
           aria-labelledby="projects-heading"
         >
           <h3

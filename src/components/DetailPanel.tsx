@@ -96,7 +96,7 @@ export default function DetailPanel({ activeItem, onClose }: DetailPanelProps) {
             </div>
 
             {/* Content */}
-            <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-6 pb-8 md:flex-row md:gap-8 md:px-8">
+            <div className="flex flex-1 flex-col gap-6 overflow-y-auto scrollbar-hide px-6 pb-8 md:flex-row md:gap-8 md:px-8">
               {/* Left: Item illustration */}
               <div className="flex flex-col items-center gap-3 md:w-1/3 md:sticky md:top-0">
                 <motion.div
