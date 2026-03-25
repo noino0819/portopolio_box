@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import bookSoundFile from '@/assets/book-sound.mp3';
 
 function getContext(ref: React.MutableRefObject<AudioContext | null>) {
   if (!ref.current) ref.current = new AudioContext();
@@ -27,38 +28,15 @@ function useNametagSound() {
 }
 
 function useBookSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   return useCallback(() => {
-    const ctx = getContext(ctxRef);
-    const now = ctx.currentTime;
-
-    const playPage = (delay: number, freq: number, vol: number) => {
-      const len = ctx.sampleRate * 0.12;
-      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let i = 0; i < len; i++) {
-        d[i] = (Math.random() * 2 - 1) * 0.4;
-      }
-      const src = ctx.createBufferSource();
-      const flt = ctx.createBiquadFilter();
-      const g = ctx.createGain();
-      src.buffer = buf;
-      src.connect(flt);
-      flt.connect(g);
-      g.connect(ctx.destination);
-      flt.type = 'highpass';
-      flt.frequency.setValueAtTime(freq, now + delay);
-      flt.frequency.linearRampToValueAtTime(freq + 2000, now + delay + 0.08);
-      flt.Q.setValueAtTime(0.8, now + delay);
-      g.gain.setValueAtTime(vol, now + delay);
-      g.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.1);
-      src.start(now + delay);
-      src.stop(now + delay + 0.12);
-    };
-
-    playPage(0, 2000, 0.15);
-    playPage(0.06, 2500, 0.12);
-    playPage(0.11, 3000, 0.08);
+    if (!audioRef.current) {
+      audioRef.current = new Audio(bookSoundFile);
+    }
+    const audio = audioRef.current;
+    audio.currentTime = 0;
+    audio.volume = 0.5;
+    audio.play().catch(() => {});
   }, []);
 }
 
