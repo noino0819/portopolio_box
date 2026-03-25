@@ -12,10 +12,8 @@ export default function MusicPlayer({ activated }: MusicPlayerProps) {
 
   return (
     <div
-      className={`fixed z-[60] overflow-hidden rounded-xl border border-white/10 bg-bg-dark shadow-2xl transition-all duration-300 ${
-        expanded
-          ? 'bottom-8 left-1/2 w-[90vw] max-w-[560px] -translate-x-1/2 sm:bottom-12'
-          : 'bottom-4 right-4 w-[300px]'
+      className={`fixed bottom-4 right-4 z-[60] overflow-hidden rounded-xl border border-white/10 bg-bg-dark shadow-2xl transition-all duration-300 ${
+        expanded ? 'w-[90vw] max-w-[560px]' : 'w-[300px]'
       }`}
     >
       <button
