@@ -68,7 +68,7 @@ export default function Landing({ onOpen }: LandingProps) {
       </motion.button>
 
       <motion.p
-        className="mt-8 font-display text-xl font-semibold tracking-wider text-gold drop-shadow-md sm:text-2xl"
+        className="mt-8 font-display text-lg font-medium tracking-wide text-gold drop-shadow-md"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: reduced ? 0 : 0.5, duration: reduced ? 0 : 0.6 }}
