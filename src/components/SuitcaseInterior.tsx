@@ -157,10 +157,14 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       if (!ds.moved && Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD) return;
       ds.moved = true;
 
+      const el = e.currentTarget as HTMLElement;
+      const maxX = Math.max(5, ((rect.width - el.offsetWidth) / rect.width) * 100);
+      const maxY = Math.max(5, ((rect.height - el.offsetHeight) / rect.height) * 100);
+
       const rawX = ds.startX + (dx / rect.width) * 100;
       const rawY = ds.startY + (dy / rect.height) * 100;
-      const clampedX = Math.max(2, Math.min(70, rawX));
-      const clampedY = Math.max(2, Math.min(75, rawY));
+      const clampedX = Math.max(2, Math.min(maxX, rawX));
+      const clampedY = Math.max(2, Math.min(maxY, rawY));
 
       if (rawX !== clampedX || rawY !== clampedY) {
         playBump();
@@ -213,7 +217,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         ← 뒤로
       </motion.button>
 
-      <div ref={containerRef} className="relative aspect-square w-full max-w-[500px] overflow-hidden">
+      <div ref={containerRef} className="relative aspect-square w-full max-w-[500px]">
         <SuitcaseOpen className="absolute inset-0 h-full w-full" />
 
         {itemDefs.map((item, i) => {
