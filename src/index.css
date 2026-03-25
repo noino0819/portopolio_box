@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/* ── Design Tokens ── */
+@theme {
+  --color-bg-dark: #1A1614;
+  --color-interior: #3D2B1F;
+  --color-leather: #C4956A;
+  --color-gold: #D4A853;
+  --color-card: #F5EFE6;
+  --color-accent-red: #C0392B;
+  --color-accent-teal: #2D8F7B;
+  --color-accent-blue: #378ADD;
+  --color-accent-purple: #534AB7;
+  --color-accent-pink: #D4537E;
+
+  --font-display: "Outfit", sans-serif;
+  --font-body: "Noto Sans KR", sans-serif;
+  --font-accent: "Gowun Batang", serif;
+  --font-code: "JetBrains Mono", monospace;
+}
+
+/* ── Base Styles ── */
+html {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg-dark);
+  color: var(--color-card);
+  overflow-x: hidden;
+}
+
+*:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
