@@ -92,6 +92,11 @@ const ui = {
     title: { ko: '설정', en: 'Settings', ja: '設定', zh: '设置' },
     language: { ko: '언어', en: 'Language', ja: '言語', zh: '语言' },
   },
+  note: {
+    title: { ko: '쪽지', en: 'Note', ja: 'メモ', zh: '便条' },
+    line1: { ko: '오랫동안 생각해온건데,', en: "I've been thinking about this for a while,", ja: 'ずっと考えていたんだけど、', zh: '想了很久，' },
+    line2: { ko: '전 역시 재밌는게 좋아요.', en: 'I really do love having fun.', ja: 'やっぱり楽しいことが好きです。', zh: '我果然还是喜欢有趣的事情。' },
+  },
   srOnly: {
     title: { ko: '여행가방 포트폴리오', en: 'Suitcase Portfolio', ja: 'スーツケース・ポートフォリオ', zh: '行李箱作品集' },
   },
