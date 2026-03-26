@@ -10,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: string | null }>;
   signInWithProvider: (provider: Provider) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<{ error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   signUp: async () => ({ error: null }),
   signInWithProvider: async () => ({ error: null }),
   signOut: async () => {},
+  deleteAccount: async () => ({ error: null }),
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -76,8 +78,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    const { data: { session: s } } = await supabase.auth.getSession();
+    if (!s) return { error: '로그인이 필요합니다.' };
+
+    const { data, error } = await supabase.functions.invoke('delete-account', {
+      headers: { Authorization: `Bearer ${s.access_token}` },
+    });
+
+    if (error) return { error: error.message };
+    if (data?.error) return { error: data.error as string };
+
+    await supabase.auth.signOut();
+    return { error: null };
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signInWithProvider, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signInWithProvider, signOut, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

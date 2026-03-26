@@ -9,10 +9,13 @@ import gearImg from '@/assets/gear.png';
 
 export default function Settings() {
   const { lang, setLang } = useLanguage();
-  const { user, signOut } = useAuth();
+  const { user, signOut, deleteAccount } = useAuth();
   const { availableLangs } = useAvailableLangs();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const langOptions = (availableLangs.length > 0 ? availableLangs : ['ko']) as Language[];
 
   return (
@@ -87,7 +90,14 @@ export default function Settings() {
                       onClick={async () => { await signOut(); setOpen(false); }}
                       className="w-full rounded-lg bg-white/5 px-3 py-2 text-xs text-card/70 transition-colors hover:bg-white/10 hover:text-card"
                     >
-                      Logout
+                      로그아웃
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteConfirm(true)}
+                      className="w-full rounded-lg px-3 py-1.5 text-[10px] text-red-400/50 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                    >
+                      회원탈퇴
                     </button>
                   </div>
                 ) : (
@@ -99,6 +109,80 @@ export default function Settings() {
                     Login
                   </button>
                 )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {deleteConfirm && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => { if (!deleting) setDeleteConfirm(false); }}
+            />
+            <motion.div
+              className="fixed left-1/2 top-1/2 z-[110] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-red-500/20 bg-bg-dark p-6 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            >
+              <div className="mb-4 flex items-center gap-2">
+                <span className="text-2xl">⚠️</span>
+                <h3 className="font-display text-base font-bold text-red-400">회원탈퇴</h3>
+              </div>
+
+              <div className="mb-5 space-y-2 rounded-lg bg-red-500/5 p-3">
+                <p className="text-xs leading-relaxed text-card/80">
+                  탈퇴 시 아래 데이터가 <span className="font-semibold text-red-400">즉시 영구 삭제</span>되며,
+                  복구할 수 없습니다.
+                </p>
+                <ul className="space-y-1 pl-1 text-[11px] text-card/60">
+                  <li>• 포트폴리오 데이터 (모든 언어)</li>
+                  <li>• 물건 배치 및 설정</li>
+                  <li>• 결제 내역</li>
+                  <li>• 계정 및 모든 개인정보</li>
+                </ul>
+              </div>
+
+              {deleteError && (
+                <p className="mb-3 rounded bg-red-500/10 px-3 py-2 text-xs text-red-400">{deleteError}</p>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={deleting}
+                  onClick={() => { setDeleteConfirm(false); setDeleteError(null); }}
+                  className="flex-1 rounded-lg bg-white/5 py-2.5 text-xs text-card/70 transition-colors hover:bg-white/10 disabled:opacity-50"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  disabled={deleting}
+                  onClick={async () => {
+                    setDeleting(true);
+                    setDeleteError(null);
+                    const { error } = await deleteAccount();
+                    if (error) {
+                      setDeleteError(error);
+                      setDeleting(false);
+                    } else {
+                      setDeleteConfirm(false);
+                      setOpen(false);
+                      setDeleting(false);
+                      navigate('/');
+                    }
+                  }}
+                  className="flex-1 rounded-lg bg-red-500/20 py-2.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/30 disabled:opacity-50"
+                >
+                  {deleting ? '처리 중...' : '탈퇴하기'}
+                </button>
               </div>
             </motion.div>
           </>
