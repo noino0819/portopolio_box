@@ -53,11 +53,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithProvider = useCallback(async (provider: Provider) => {
+    const options: Record<string, unknown> = {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    };
+
+    if (provider === ('kakao' as Provider)) {
+      options.scopes = 'account_email';
+    }
+
+    if (provider === 'google') {
+      options.scopes = 'email';
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
+      options,
     });
     return { error: error?.message ?? null };
   }, []);
