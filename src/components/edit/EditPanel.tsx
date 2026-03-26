@@ -15,10 +15,15 @@ interface EditPanelProps {
   onClose: () => void;
 }
 
-type Section = 'itemLabels' | 'profile' | 'education' | 'certifications' | 'projects' | 'awards' | 'games' | 'albums' | 'books' | 'hobbies' | 'cdStory' | 'youtube';
+type Section = 'itemConfig' | 'item_nametag' | 'item_book' | 'item_switch' | 'item_cd' | 'item_note' | 'profile' | 'education' | 'certifications' | 'projects' | 'awards' | 'games' | 'albums' | 'books' | 'hobbies' | 'cdStory' | 'youtube';
 
 const SECTION_LABELS: Record<Section, Record<Language, string>> = {
-  itemLabels: { ko: '물건', en: 'Items', ja: 'アイテム', zh: '物品' },
+  itemConfig: { ko: '물건구성', en: 'Item Config', ja: 'アイテム構成', zh: '物品构成' },
+  item_nametag: { ko: '🏷️ 이름표', en: '🏷️ Nametag', ja: '🏷️ 名札', zh: '🏷️ 名牌' },
+  item_book: { ko: '📖 책', en: '📖 Book', ja: '📖 本', zh: '📖 书' },
+  item_switch: { ko: '🎮 게임기', en: '🎮 Switch', ja: '🎮 ゲーム機', zh: '🎮 游戏机' },
+  item_cd: { ko: '💿 CD', en: '💿 CD', ja: '💿 CD', zh: '💿 CD' },
+  item_note: { ko: '📝 쪽지', en: '📝 Note', ja: '📝 メモ', zh: '📝 便签' },
   profile: { ko: '프로필', en: 'Profile', ja: 'プロフィール', zh: '简介' },
   education: { ko: '학력', en: 'Education', ja: '学歴', zh: '教育' },
   certifications: { ko: '자격증', en: 'Certs', ja: '資格', zh: '证书' },
@@ -326,30 +331,17 @@ function CdStoryEditor({ items, onChange }: { items: string[]; onChange: (v: str
 }
 
 const ITEM_IDS = ['nametag', 'book', 'switch', 'cd'] as const;
-const ITEM_EMOJI: Record<string, string> = { nametag: '🏷️', book: '📖', switch: '🎮', cd: '💿', note: '📝', layout: '📐' };
-const ITEM_SUBTAB_LABELS: Record<string, string> = { nametag: '이름표', book: '책', switch: '게임기', cd: 'CD', note: '쪽지', layout: '배치' };
+const ITEM_EMOJI: Record<string, string> = { nametag: '🏷️', book: '📖', switch: '🎮', cd: '💿', note: '📝' };
+const ITEM_NAMES: Record<string, string> = { nametag: '이름표', book: '책', switch: '게임기', cd: 'CD' };
 
-type ItemSubTab = typeof ITEM_IDS[number] | 'note' | 'layout';
-const ITEM_SUBTABS: ItemSubTab[] = [...ITEM_IDS, 'note', 'layout'];
-
-function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleItem, itemPositions, onPositionsChange, slug, noteContent, onNoteContentChange }: {
-  labels: Record<string, ItemLabel>;
-  onChange: (v: Record<string, ItemLabel>) => void;
-  editLang: Language;
+function ItemConfigEditor({ hiddenItems, onToggleItem, itemPositions, onPositionsChange, slug }: {
   hiddenItems: string[];
   onToggleItem: (id: string) => void;
   itemPositions: Record<string, { x: number; y: number }>;
   onPositionsChange: (v: Record<string, { x: number; y: number }>) => void;
   slug: string;
-  noteContent: NoteContent;
-  onNoteContentChange: (v: NoteContent) => void;
 }) {
-  const [activeSubTab, setActiveSubTab] = useState<ItemSubTab>('nametag');
-
-  const updateItem = (id: string, field: keyof ItemLabel, value: string) => {
-    const current = labels[id] ?? {};
-    onChange({ ...labels, [id]: { ...current, [field]: value || undefined } });
-  };
+  const allItemIds = [...ITEM_IDS, 'note'] as const;
 
   const handleCaptureCurrentPositions = () => {
     const storageKey = `item-positions-${slug}`;
@@ -370,200 +362,205 @@ function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleIte
 
   const handleResetPositions = () => {
     onPositionsChange({});
-    const storageKey = `item-positions-${slug}`;
-    sessionStorage.removeItem(storageKey);
+    sessionStorage.removeItem(`item-positions-${slug}`);
   };
 
   const hasCustomPositions = Object.keys(itemPositions).length > 0;
 
   return (
-    <div className="space-y-3">
-      {/* Sub-tabs */}
-      <div className="flex gap-1 overflow-x-auto rounded-lg bg-white/[0.02] p-1 scrollbar-hide">
-        {ITEM_SUBTABS.map((id) => {
-          const isHidden = id !== 'layout' && hiddenItems.includes(id);
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setActiveSubTab(id)}
-              className={`flex shrink-0 items-center gap-1 rounded-md px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                activeSubTab === id
-                  ? 'bg-gold/15 text-gold shadow-sm'
-                  : isHidden
-                    ? 'text-card/20 hover:bg-white/5 hover:text-card/40'
-                    : 'text-card/50 hover:bg-white/5 hover:text-card/70'
-              }`}
-            >
-              <span className="text-xs">{ITEM_EMOJI[id]}</span>
-              <span>{ITEM_SUBTAB_LABELS[id]}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Sub-tab content */}
-      {ITEM_IDS.includes(activeSubTab as typeof ITEM_IDS[number]) && (() => {
-        const id = activeSubTab as typeof ITEM_IDS[number];
-        const item = labels[id] ?? {};
-        const isHidden = hiddenItems.includes(id);
-        return (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-card/70">
-                {ITEM_EMOJI[id]} {item.label || t(`items.${id}.label`, editLang)}
-              </h4>
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <p className="text-[11px] font-medium text-card/50">표시 / 숨기기</p>
+        <div className="grid grid-cols-2 gap-1.5">
+          {allItemIds.map((id) => {
+            const isHidden = hiddenItems.includes(id);
+            const name = id === 'note' ? '쪽지' : ITEM_NAMES[id];
+            return (
               <button
+                key={id}
                 type="button"
                 onClick={() => onToggleItem(id)}
-                className={`rounded-md px-2.5 py-1 text-[11px] transition-colors ${isHidden ? 'bg-white/5 text-card/30 hover:text-card/60' : 'bg-accent-teal/10 text-accent-teal/70 hover:text-accent-teal'}`}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] transition-colors ${
+                  isHidden
+                    ? 'bg-white/[0.02] text-card/25 hover:bg-white/5'
+                    : 'bg-accent-teal/[0.06] text-accent-teal/80 hover:bg-accent-teal/10'
+                }`}
               >
-                {isHidden ? '👁️‍🗨️ 숨김' : '👁️ 표시'}
+                <span>{ITEM_EMOJI[id]}</span>
+                <span className="flex-1 text-left">{name}</span>
+                <span className="text-[10px]">{isHidden ? '숨김' : '표시'}</span>
               </button>
-            </div>
-            {isHidden ? (
-              <p className="rounded-lg bg-white/[0.02] py-6 text-center text-xs text-card/30">
-                이 물건은 현재 숨김 상태입니다
-              </p>
-            ) : (
-              <div className="space-y-2.5">
-                <TextInput
-                  label="이름"
-                  value={item.label || t(`items.${id}.label`, editLang)}
-                  onChange={(v) => updateItem(id, 'label', v)}
-                />
-                <TextInput
-                  label="설명"
-                  value={item.sublabel || t(`items.${id}.sublabel`, editLang)}
-                  onChange={(v) => updateItem(id, 'sublabel', v)}
-                />
-                <TextInput
-                  label="소개 문구"
-                  value={item.subtitle || t(`items.${id}.subtitle`, editLang)}
-                  onChange={(v) => updateItem(id, 'subtitle', v)}
-                  multiline
-                />
-              </div>
-            )}
-          </div>
-        );
-      })()}
+            );
+          })}
+        </div>
+      </div>
 
-      {activeSubTab === 'note' && (() => {
-        const isNoteHidden = hiddenItems.includes('note');
-        return (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-card/70">📝 쪽지</h4>
-              <button
-                type="button"
-                onClick={() => onToggleItem('note')}
-                className={`rounded-md px-2.5 py-1 text-[11px] transition-colors ${isNoteHidden ? 'bg-white/5 text-card/30 hover:text-card/60' : 'bg-accent-teal/10 text-accent-teal/70 hover:text-accent-teal'}`}
-              >
-                {isNoteHidden ? '👁️‍🗨️ 숨김' : '👁️ 표시'}
-              </button>
-            </div>
-            {isNoteHidden ? (
-              <p className="rounded-lg bg-white/[0.02] py-6 text-center text-xs text-card/30">
-                쪽지는 현재 숨김 상태입니다
-              </p>
-            ) : (
-              <div className="space-y-2.5">
-                <p className="text-[10px] text-card/30">
-                  책을 위아래로 흔들면 떨어지는 쪽지입니다.
-                </p>
-                <TextInput
-                  label="제목"
-                  value={noteContent.title || t('note.title', editLang)}
-                  onChange={(v) => onNoteContentChange({ ...noteContent, title: v || undefined })}
-                />
-                <div className="space-y-1.5">
-                  <label className="text-[11px] text-card/50">내용</label>
-                  {(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)]).map((line, i) => (
-                    <div key={i} className="flex gap-1">
-                      <textarea
-                        value={line}
-                        onChange={(e) => {
-                          const lines = [...(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)])];
-                          lines[i] = e.target.value;
-                          onNoteContentChange({ ...noteContent, lines });
-                        }}
-                        rows={2}
-                        className="flex-1 resize-y rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const lines = [...(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)])];
-                          lines.splice(i, 1);
-                          onNoteContentChange({ ...noteContent, lines });
-                        }}
-                        className="self-start rounded px-2 py-1 text-xs text-accent-red/60 hover:bg-accent-red/10"
-                      >
-                        &#10005;
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const lines = [...(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)]), ''];
-                      onNoteContentChange({ ...noteContent, lines });
-                    }}
-                    className="text-[11px] text-gold/70 hover:text-gold"
-                  >
-                    + 줄 추가
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
-      {activeSubTab === 'layout' && (
-        <div className="space-y-3">
-          <p className="text-[10px] text-card/30">
-            가방을 닫고 물건을 드래그해서 원하는 위치에 놓은 후, 아래 버튼으로 저장하세요.
-          </p>
-          <div className="flex gap-2">
+      <div className="space-y-2">
+        <p className="text-[11px] font-medium text-card/50">배치</p>
+        <p className="text-[10px] text-card/30">
+          가방을 닫고 물건을 드래그한 뒤 저장하세요.
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleCaptureCurrentPositions}
+            className="flex-1 rounded-lg bg-accent-teal/15 py-2 text-[11px] font-medium text-accent-teal transition-colors hover:bg-accent-teal/25"
+          >
+            현재 배치 저장
+          </button>
+          {hasCustomPositions && (
             <button
               type="button"
-              onClick={handleCaptureCurrentPositions}
-              className="flex-1 rounded-lg bg-accent-teal/15 py-2.5 text-[11px] font-medium text-accent-teal transition-colors hover:bg-accent-teal/25"
+              onClick={handleResetPositions}
+              className="rounded-lg bg-white/5 px-3 py-2 text-[11px] text-card/40 transition-colors hover:bg-white/10 hover:text-card/60"
             >
-              현재 배치를 기본 위치로 저장
+              초기화
             </button>
-            {hasCustomPositions && (
-              <button
-                type="button"
-                onClick={handleResetPositions}
-                className="rounded-lg bg-white/5 px-3 py-2.5 text-[11px] text-card/40 transition-colors hover:bg-white/10 hover:text-card/60"
-              >
-                초기화
-              </button>
-            )}
-          </div>
-          {hasCustomPositions ? (
-            <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-              <p className="mb-2 text-[10px] font-medium text-card/50">저장된 위치</p>
-              <div className="flex flex-wrap gap-2">
-                {ITEM_IDS.map((id) => {
-                  const pos = itemPositions[id];
-                  if (!pos) return null;
-                  return (
-                    <span key={id} className="rounded-md bg-white/5 px-2.5 py-1 text-[10px] text-card/40">
-                      {ITEM_EMOJI[id]} {ITEM_SUBTAB_LABELS[id]} ({pos.x}, {pos.y})
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            <p className="rounded-lg bg-white/[0.02] py-6 text-center text-xs text-card/30">
-              아직 저장된 커스텀 배치가 없습니다
-            </p>
           )}
+        </div>
+        {hasCustomPositions && (
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {ITEM_IDS.map((id) => {
+              const pos = itemPositions[id];
+              if (!pos) return null;
+              return (
+                <span key={id} className="rounded bg-white/5 px-2 py-0.5 text-[9px] text-card/30">
+                  {ITEM_EMOJI[id]} ({pos.x}, {pos.y})
+                </span>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SingleItemEditor({ itemId, labels, onChange, editLang, isHidden, onToggleItem }: {
+  itemId: string;
+  labels: Record<string, ItemLabel>;
+  onChange: (v: Record<string, ItemLabel>) => void;
+  editLang: Language;
+  isHidden: boolean;
+  onToggleItem: (id: string) => void;
+}) {
+  const item = labels[itemId] ?? {};
+  const updateField = (field: keyof ItemLabel, value: string) => {
+    const current = labels[itemId] ?? {};
+    onChange({ ...labels, [itemId]: { ...current, [field]: value || undefined } });
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] text-card/40">표시 상태</span>
+        <button
+          type="button"
+          onClick={() => onToggleItem(itemId)}
+          className={`rounded-md px-2.5 py-1 text-[11px] transition-colors ${isHidden ? 'bg-white/5 text-card/30 hover:text-card/60' : 'bg-accent-teal/10 text-accent-teal/70 hover:text-accent-teal'}`}
+        >
+          {isHidden ? '👁️‍🗨️ 숨김' : '👁️ 표시'}
+        </button>
+      </div>
+      {isHidden ? (
+        <p className="rounded-lg bg-white/[0.02] py-6 text-center text-xs text-card/30">
+          이 물건은 현재 숨김 상태입니다
+        </p>
+      ) : (
+        <div className="space-y-2.5">
+          <TextInput
+            label="이름"
+            value={item.label || t(`items.${itemId}.label`, editLang)}
+            onChange={(v) => updateField('label', v)}
+          />
+          <TextInput
+            label="설명"
+            value={item.sublabel || t(`items.${itemId}.sublabel`, editLang)}
+            onChange={(v) => updateField('sublabel', v)}
+          />
+          <TextInput
+            label="소개 문구"
+            value={item.subtitle || t(`items.${itemId}.subtitle`, editLang)}
+            onChange={(v) => updateField('subtitle', v)}
+            multiline
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NoteEditor({ noteContent, onNoteContentChange, editLang, isHidden, onToggleItem }: {
+  noteContent: NoteContent;
+  onNoteContentChange: (v: NoteContent) => void;
+  editLang: Language;
+  isHidden: boolean;
+  onToggleItem: (id: string) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] text-card/40">표시 상태</span>
+        <button
+          type="button"
+          onClick={() => onToggleItem('note')}
+          className={`rounded-md px-2.5 py-1 text-[11px] transition-colors ${isHidden ? 'bg-white/5 text-card/30 hover:text-card/60' : 'bg-accent-teal/10 text-accent-teal/70 hover:text-accent-teal'}`}
+        >
+          {isHidden ? '👁️‍🗨️ 숨김' : '👁️ 표시'}
+        </button>
+      </div>
+      {isHidden ? (
+        <p className="rounded-lg bg-white/[0.02] py-6 text-center text-xs text-card/30">
+          쪽지는 현재 숨김 상태입니다
+        </p>
+      ) : (
+        <div className="space-y-2.5">
+          <p className="text-[10px] text-card/30">
+            책을 위아래로 흔들면 떨어지는 쪽지입니다.
+          </p>
+          <TextInput
+            label="제목"
+            value={noteContent.title || t('note.title', editLang)}
+            onChange={(v) => onNoteContentChange({ ...noteContent, title: v || undefined })}
+          />
+          <div className="space-y-1.5">
+            <label className="text-[11px] text-card/50">내용</label>
+            {(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)]).map((line, i) => (
+              <div key={i} className="flex gap-1">
+                <textarea
+                  value={line}
+                  onChange={(e) => {
+                    const lines = [...(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)])];
+                    lines[i] = e.target.value;
+                    onNoteContentChange({ ...noteContent, lines });
+                  }}
+                  rows={2}
+                  className="flex-1 resize-y rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const lines = [...(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)])];
+                    lines.splice(i, 1);
+                    onNoteContentChange({ ...noteContent, lines });
+                  }}
+                  className="self-start rounded px-2 py-1 text-xs text-accent-red/60 hover:bg-accent-red/10"
+                >
+                  &#10005;
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                const lines = [...(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)]), ''];
+                onNoteContentChange({ ...noteContent, lines });
+              }}
+              className="text-[11px] text-gold/70 hover:text-gold"
+            >
+              + 줄 추가
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -850,6 +847,9 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                 <div className="divide-y divide-white/5">
                   {SECTION_IDS.map((id) => {
                     const isOpen = activeSection === id;
+                    const itemIdMap: Record<string, string> = { item_nametag: 'nametag', item_book: 'book', item_switch: 'switch', item_cd: 'cd', item_note: 'note' };
+                    const mappedItemId = itemIdMap[id];
+                    const isItemHidden = mappedItemId ? hiddenItems.includes(mappedItemId) : false;
                     return (
                       <div key={id}>
                         <button
@@ -858,7 +858,9 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                           className={`flex w-full items-center justify-between px-4 py-3 text-left transition-colors ${
                             isOpen
                               ? 'bg-accent-purple/[0.06] text-accent-purple'
-                              : 'text-card/50 hover:bg-white/[0.03] hover:text-card/70'
+                              : isItemHidden
+                                ? 'text-card/25 hover:bg-white/[0.02] hover:text-card/40'
+                                : 'text-card/50 hover:bg-white/[0.03] hover:text-card/70'
                           }`}
                         >
                           <span className="text-xs font-semibold">{SECTION_LABELS[id][lang]}</span>
@@ -871,7 +873,12 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                         </button>
                         {isOpen && (
                           <div className="border-t border-white/5 bg-white/[0.01] px-4 py-4">
-                            {id === 'itemLabels' && <ItemLabelsEditor labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} noteContent={draft.noteContent ?? {}} onNoteContentChange={(v) => updateDraft('noteContent', v)} />}
+                            {id === 'itemConfig' && <ItemConfigEditor hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} />}
+                            {id === 'item_nametag' && <SingleItemEditor itemId="nametag" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('nametag')} onToggleItem={handleToggleItem} />}
+                            {id === 'item_book' && <SingleItemEditor itemId="book" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('book')} onToggleItem={handleToggleItem} />}
+                            {id === 'item_switch' && <SingleItemEditor itemId="switch" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('switch')} onToggleItem={handleToggleItem} />}
+                            {id === 'item_cd' && <SingleItemEditor itemId="cd" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('cd')} onToggleItem={handleToggleItem} />}
+                            {id === 'item_note' && <NoteEditor noteContent={draft.noteContent ?? {}} onNoteContentChange={(v) => updateDraft('noteContent', v)} editLang={editLang} isHidden={hiddenItems.includes('note')} onToggleItem={handleToggleItem} />}
                             {id === 'profile' && <ProfileEditor profile={draft.profile} onChange={(v) => updateDraft('profile', v)} />}
                             {id === 'education' && <EducationEditor items={draft.education} onChange={(v) => updateDraft('education', v)} />}
                             {id === 'certifications' && <CertificationsEditor items={draft.certifications} onChange={(v) => updateDraft('certifications', v)} />}
