@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { youtubePlaylistId } from '@/data/portfolio';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
-import { getPortfolio } from '@/i18n/portfolioData';
+import { usePortfolioData } from '@/contexts/PortfolioContext';
+import { usePortfolioMeta } from '@/contexts/PortfolioContext';
 
 function dispatchMusicControl(command: string) {
   window.dispatchEvent(new CustomEvent('music-control', { detail: { command } }));
@@ -11,7 +11,8 @@ function dispatchMusicControl(command: string) {
 export default function CDDetail() {
   const [playing, setPlaying] = useState(true);
   const { lang } = useLanguage();
-  const { cdStory } = getPortfolio(lang);
+  const { cdStory } = usePortfolioData();
+  const { youtubePlaylistId } = usePortfolioMeta();
 
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
@@ -78,7 +79,7 @@ export default function CDDetail() {
               <p key={i} className="whitespace-pre-line">{paragraph}</p>
             ))}
           </div>
-          <a href={`https://music.youtube.com/playlist?list=${youtubePlaylistId}`} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-xs text-accent-blue hover:underline">
+          <a href={youtubePlaylistId ? `https://music.youtube.com/playlist?list=${youtubePlaylistId}` : '#'} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-xs text-accent-blue hover:underline">
             {t('cd.viewOnYoutube', lang)}
           </a>
         </div>

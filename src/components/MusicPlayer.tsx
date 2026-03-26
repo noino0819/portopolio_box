@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { youtubePlaylistId, youtubeFirstVideoId } from '@/data/portfolio';
+import { usePortfolioMeta } from '@/contexts/PortfolioContext';
 
 interface MusicPlayerProps {
   activated: boolean;
@@ -24,6 +24,7 @@ export default function MusicPlayer({ activated }: MusicPlayerProps) {
   const [expanded, setExpanded] = useState(false);
   const isDesktop = useIsDesktop();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const { youtubePlaylistId, youtubeFirstVideoId } = usePortfolioMeta();
 
   useEffect(() => {
     if (!activated) return;
@@ -42,7 +43,7 @@ export default function MusicPlayer({ activated }: MusicPlayerProps) {
     return () => window.removeEventListener('music-control', handler);
   }, [activated]);
 
-  if (!activated) return null;
+  if (!activated || !youtubeFirstVideoId || !youtubePlaylistId) return null;
 
   const iframeSrc = `https://www.youtube.com/embed/${youtubeFirstVideoId}?list=${youtubePlaylistId}&index=1&autoplay=1&enablejsapi=1&origin=${window.location.origin}`;
 

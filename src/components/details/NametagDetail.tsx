@@ -1,10 +1,10 @@
 import { useLanguage } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
-import { getPortfolio } from '@/i18n/portfolioData';
+import { usePortfolioData } from '@/contexts/PortfolioContext';
 
 export default function NametagDetail() {
   const { lang } = useLanguage();
-  const { profile, awards } = getPortfolio(lang);
+  const { profile, awards } = usePortfolioData();
 
   return (
     <div className="space-y-6">

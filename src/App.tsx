@@ -5,6 +5,8 @@ import SuitcaseInterior from '@/components/SuitcaseInterior';
 import DetailPanel from '@/components/DetailPanel';
 import MusicPlayer from '@/components/MusicPlayer';
 import Settings from '@/components/Settings';
+import EditButton from '@/components/edit/EditButton';
+import EditPanel from '@/components/edit/EditPanel';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
 import type { ItemId } from '@/components/SuitcaseInterior';
@@ -14,6 +16,7 @@ type Screen = 'landing' | 'interior';
 export default function App() {
   const { lang } = useLanguage();
   const [screen, setScreen] = useState<Screen>('landing');
+  const [editOpen, setEditOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<ItemId | null>(null);
   const [musicActivated, setMusicActivated] = useState(false);
 
@@ -90,6 +93,9 @@ export default function App() {
         <DetailPanel activeItem={activeItem} onClose={handleCloseDetail} />
 
         <MusicPlayer activated={musicActivated} />
+
+        <EditButton onClick={() => setEditOpen(true)} />
+        <EditPanel open={editOpen} onClose={() => setEditOpen(false)} />
       </main>
     </>
   );

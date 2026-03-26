@@ -1,10 +1,10 @@
 import { useLanguage } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
-import { getPortfolio } from '@/i18n/portfolioData';
+import { usePortfolioData } from '@/contexts/PortfolioContext';
 
 export default function SwitchDetail() {
   const { lang } = useLanguage();
-  const { games, hobbies, albums, books } = getPortfolio(lang);
+  const { games, hobbies, albums, books } = usePortfolioData();
 
   return (
     <div className="space-y-8">

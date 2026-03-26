@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, type Language } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
-import { getPortfolio } from '@/i18n/portfolioData';
+import { usePortfolioData } from '@/contexts/PortfolioContext';
 import type { Project } from '@/data/portfolio';
 
 type SectionId = 'education' | 'certifications' | 'projects';
@@ -52,7 +52,7 @@ function ProjectCard({ project, isOpen, onToggle, lang }: { project: Project; is
 
 export default function BookDetail() {
   const { lang } = useLanguage();
-  const { education, certifications, projects } = getPortfolio(lang);
+  const { education, certifications, projects } = usePortfolioData();
 
   const sections: { id: SectionId; label: string; icon: string }[] = [
     { id: 'education', label: t('book.sections.education', lang), icon: '🎓' },

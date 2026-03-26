@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
+import { useAuth } from '@/contexts/AuthContext';
 import gearImg from '@/assets/gear.png';
 
 const LANGUAGES: Language[] = ['ko', 'en', 'ja', 'zh'];
 
 export default function Settings() {
   const { lang, setLang } = useLanguage();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   return (
@@ -71,6 +75,29 @@ export default function Settings() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="border-t border-white/5 px-4 py-3">
+                {user ? (
+                  <div className="space-y-2">
+                    <p className="truncate text-[10px] text-card/40">{user.email}</p>
+                    <button
+                      type="button"
+                      onClick={async () => { await signOut(); setOpen(false); }}
+                      className="w-full rounded-lg bg-white/5 px-3 py-2 text-xs text-card/70 transition-colors hover:bg-white/10 hover:text-card"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => { navigate('/login'); setOpen(false); }}
+                    className="w-full rounded-lg bg-gold/15 px-3 py-2 text-xs text-gold transition-colors hover:bg-gold/25"
+                  >
+                    Login
+                  </button>
+                )}
               </div>
             </motion.div>
           </>
