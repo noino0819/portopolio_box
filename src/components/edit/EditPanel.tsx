@@ -328,7 +328,11 @@ function CdStoryEditor({ items, onChange }: { items: string[]; onChange: (v: str
 }
 
 const ITEM_IDS = ['nametag', 'book', 'switch', 'cd'] as const;
-const ITEM_EMOJI: Record<string, string> = { nametag: '🏷️', book: '📖', switch: '🎮', cd: '💿' };
+const ITEM_EMOJI: Record<string, string> = { nametag: '🏷️', book: '📖', switch: '🎮', cd: '💿', note: '📝', layout: '📐' };
+const ITEM_SUBTAB_LABELS: Record<string, string> = { nametag: '이름표', book: '책', switch: '게임기', cd: 'CD', note: '쪽지', layout: '배치' };
+
+type ItemSubTab = typeof ITEM_IDS[number] | 'note' | 'layout';
+const ITEM_SUBTABS: ItemSubTab[] = [...ITEM_IDS, 'note', 'layout'];
 
 function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleItem, itemPositions, onPositionsChange, slug, noteContent, onNoteContentChange }: {
   labels: Record<string, ItemLabel>;
@@ -342,6 +346,8 @@ function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleIte
   noteContent: NoteContent;
   onNoteContentChange: (v: NoteContent) => void;
 }) {
+  const [activeSubTab, setActiveSubTab] = useState<ItemSubTab>('nametag');
+
   const updateItem = (id: string, field: keyof ItemLabel, value: string) => {
     const current = labels[id] ?? {};
     onChange({ ...labels, [id]: { ...current, [field]: value || undefined } });
@@ -373,54 +379,38 @@ function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleIte
   const hasCustomPositions = Object.keys(itemPositions).length > 0;
 
   return (
-    <div className="space-y-4">
-      <p className="text-[11px] text-card/40">
-        가방 안 물건의 이름, 설명, 소개 문구를 자유롭게 수정하세요. 눈 아이콘으로 표시/숨기기를 전환할 수 있어요.
-      </p>
-
-      <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 space-y-2">
-        <h4 className="text-xs font-semibold text-card/70">📐 물건 배치</h4>
-        <p className="text-[10px] text-card/30">
-          가방을 닫고 물건을 드래그해서 원하는 위치에 놓은 후, 아래 버튼으로 저장하세요.
-        </p>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={handleCaptureCurrentPositions}
-            className="flex-1 rounded-lg bg-accent-teal/15 py-2 text-[11px] font-medium text-accent-teal transition-colors hover:bg-accent-teal/25"
-          >
-            현재 배치를 기본 위치로 저장
-          </button>
-          {hasCustomPositions && (
+    <div className="space-y-3">
+      {/* Sub-tabs */}
+      <div className="flex gap-1 overflow-x-auto rounded-lg bg-white/[0.02] p-1 scrollbar-hide">
+        {ITEM_SUBTABS.map((id) => {
+          const isHidden = id !== 'layout' && hiddenItems.includes(id);
+          return (
             <button
+              key={id}
               type="button"
-              onClick={handleResetPositions}
-              className="rounded-lg bg-white/5 px-3 py-2 text-[11px] text-card/40 transition-colors hover:bg-white/10 hover:text-card/60"
+              onClick={() => setActiveSubTab(id)}
+              className={`flex shrink-0 items-center gap-1 rounded-md px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                activeSubTab === id
+                  ? 'bg-gold/15 text-gold shadow-sm'
+                  : isHidden
+                    ? 'text-card/20 hover:bg-white/5 hover:text-card/40'
+                    : 'text-card/50 hover:bg-white/5 hover:text-card/70'
+              }`}
             >
-              초기화
+              <span className="text-xs">{ITEM_EMOJI[id]}</span>
+              <span>{ITEM_SUBTAB_LABELS[id]}</span>
             </button>
-          )}
-        </div>
-        {hasCustomPositions && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            {ITEM_IDS.map((id) => {
-              const pos = itemPositions[id];
-              if (!pos) return null;
-              return (
-                <span key={id} className="rounded bg-white/5 px-2 py-0.5 text-[9px] text-card/30">
-                  {ITEM_EMOJI[id]} ({pos.x}, {pos.y})
-                </span>
-              );
-            })}
-          </div>
-        )}
+          );
+        })}
       </div>
 
-      {ITEM_IDS.map((id) => {
+      {/* Sub-tab content */}
+      {ITEM_IDS.includes(activeSubTab as typeof ITEM_IDS[number]) && (() => {
+        const id = activeSubTab as typeof ITEM_IDS[number];
         const item = labels[id] ?? {};
         const isHidden = hiddenItems.includes(id);
         return (
-          <div key={id} className={`rounded-lg border p-3 space-y-2 transition-opacity ${isHidden ? 'border-white/5 bg-white/[0.01] opacity-50' : 'border-white/10 bg-white/[0.02]'}`}>
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-semibold text-card/70">
                 {ITEM_EMOJI[id]} {item.label || t(`items.${id}.label`, editLang)}
@@ -428,14 +418,17 @@ function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleIte
               <button
                 type="button"
                 onClick={() => onToggleItem(id)}
-                className={`rounded-md px-2 py-1 text-xs transition-colors ${isHidden ? 'text-card/30 hover:text-card/60' : 'text-accent-teal/70 hover:text-accent-teal'}`}
-                title={isHidden ? '표시하기' : '숨기기'}
+                className={`rounded-md px-2.5 py-1 text-[11px] transition-colors ${isHidden ? 'bg-white/5 text-card/30 hover:text-card/60' : 'bg-accent-teal/10 text-accent-teal/70 hover:text-accent-teal'}`}
               >
                 {isHidden ? '👁️‍🗨️ 숨김' : '👁️ 표시'}
               </button>
             </div>
-            {!isHidden && (
-              <>
+            {isHidden ? (
+              <p className="rounded-lg bg-white/[0.02] py-6 text-center text-xs text-card/30">
+                이 물건은 현재 숨김 상태입니다
+              </p>
+            ) : (
+              <div className="space-y-2.5">
                 <TextInput
                   label="이름"
                   value={item.label || t(`items.${id}.label`, editLang)}
@@ -452,30 +445,32 @@ function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleIte
                   onChange={(v) => updateItem(id, 'subtitle', v)}
                   multiline
                 />
-              </>
+              </div>
             )}
           </div>
         );
-      })}
+      })()}
 
-      {/* 쪽지 */}
-      {(() => {
+      {activeSubTab === 'note' && (() => {
         const isNoteHidden = hiddenItems.includes('note');
         return (
-          <div className={`rounded-lg border p-3 space-y-2 transition-opacity ${isNoteHidden ? 'border-white/5 bg-white/[0.01] opacity-50' : 'border-amber-500/20 bg-amber-500/[0.03]'}`}>
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-semibold text-card/70">📝 쪽지</h4>
               <button
                 type="button"
                 onClick={() => onToggleItem('note')}
-                className={`rounded-md px-2 py-1 text-xs transition-colors ${isNoteHidden ? 'text-card/30 hover:text-card/60' : 'text-accent-teal/70 hover:text-accent-teal'}`}
-                title={isNoteHidden ? '표시하기' : '숨기기'}
+                className={`rounded-md px-2.5 py-1 text-[11px] transition-colors ${isNoteHidden ? 'bg-white/5 text-card/30 hover:text-card/60' : 'bg-accent-teal/10 text-accent-teal/70 hover:text-accent-teal'}`}
               >
                 {isNoteHidden ? '👁️‍🗨️ 숨김' : '👁️ 표시'}
               </button>
             </div>
-            {!isNoteHidden && (
-              <>
+            {isNoteHidden ? (
+              <p className="rounded-lg bg-white/[0.02] py-6 text-center text-xs text-card/30">
+                쪽지는 현재 숨김 상태입니다
+              </p>
+            ) : (
+              <div className="space-y-2.5">
                 <p className="text-[10px] text-card/30">
                   책을 위아래로 흔들면 떨어지는 쪽지입니다.
                 </p>
@@ -522,11 +517,57 @@ function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleIte
                     + 줄 추가
                   </button>
                 </div>
-              </>
+              </div>
             )}
           </div>
         );
       })()}
+
+      {activeSubTab === 'layout' && (
+        <div className="space-y-3">
+          <p className="text-[10px] text-card/30">
+            가방을 닫고 물건을 드래그해서 원하는 위치에 놓은 후, 아래 버튼으로 저장하세요.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleCaptureCurrentPositions}
+              className="flex-1 rounded-lg bg-accent-teal/15 py-2.5 text-[11px] font-medium text-accent-teal transition-colors hover:bg-accent-teal/25"
+            >
+              현재 배치를 기본 위치로 저장
+            </button>
+            {hasCustomPositions && (
+              <button
+                type="button"
+                onClick={handleResetPositions}
+                className="rounded-lg bg-white/5 px-3 py-2.5 text-[11px] text-card/40 transition-colors hover:bg-white/10 hover:text-card/60"
+              >
+                초기화
+              </button>
+            )}
+          </div>
+          {hasCustomPositions ? (
+            <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+              <p className="mb-2 text-[10px] font-medium text-card/50">저장된 위치</p>
+              <div className="flex flex-wrap gap-2">
+                {ITEM_IDS.map((id) => {
+                  const pos = itemPositions[id];
+                  if (!pos) return null;
+                  return (
+                    <span key={id} className="rounded-md bg-white/5 px-2.5 py-1 text-[10px] text-card/40">
+                      {ITEM_EMOJI[id]} {ITEM_SUBTAB_LABELS[id]} ({pos.x}, {pos.y})
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p className="rounded-lg bg-white/[0.02] py-6 text-center text-xs text-card/30">
+              아직 저장된 커스텀 배치가 없습니다
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
