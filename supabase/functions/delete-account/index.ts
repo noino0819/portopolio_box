@@ -3,9 +3,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') ?? 'https://portopolio.com';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -23,12 +26,10 @@ serve(async (req) => {
       });
     }
 
-    const anonClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await createClient(
       SUPABASE_URL,
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      SUPABASE_ANON_KEY,
     ).auth.getUser(token);
 
     if (userError || !user) {
@@ -39,8 +40,9 @@ serve(async (req) => {
     }
 
     const userId = user.id;
+    const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { data: portfolios } = await anonClient
+    const { data: portfolios } = await adminClient
       .from('portfolios')
       .select('id')
       .eq('user_id', userId);
@@ -48,23 +50,23 @@ serve(async (req) => {
     if (portfolios && portfolios.length > 0) {
       const portfolioIds = portfolios.map((p: { id: string }) => p.id);
 
-      await anonClient
+      await adminClient
         .from('portfolio_data')
         .delete()
         .in('portfolio_id', portfolioIds);
 
-      await anonClient
+      await adminClient
         .from('portfolios')
         .delete()
         .eq('user_id', userId);
     }
 
-    await anonClient
+    await adminClient
       .from('payments')
       .delete()
       .eq('user_id', userId);
 
-    const { error: deleteError } = await anonClient.auth.admin.deleteUser(userId);
+    const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
 
     if (deleteError) {
       return new Response(JSON.stringify({ error: `계정 삭제 실패: ${deleteError.message}` }), {
