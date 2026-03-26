@@ -44,6 +44,6 @@ export default function PortfolioPage() {
   );
 }
 
-export function RedirectToExample() {
-  return <Navigate to="/example" replace />;
+export function RedirectToDefault() {
+  return <Navigate to="/noino0819" replace />;
 }

@@ -3,7 +3,7 @@ insert into public.portfolios (id, user_id, slug, is_active, youtube_playlist_id
 values (
   '00000000-0000-0000-0000-000000000001',
   null,
-  'example',
+  'noino0819',
   true,
   'OLAK5uy_nFQRM2uZ2n_LRJKXX22AZiqgt-G_50Q2U',
   'NewORF3VFeA'
