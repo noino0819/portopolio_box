@@ -81,7 +81,7 @@ const itemDefs: ItemDef[] = [
 ];
 
 const DRAG_THRESHOLD_MOUSE = 6;
-const DRAG_THRESHOLD_TOUCH = 12;
+const DRAG_THRESHOLD_TOUCH = 20;
 const EDGE_HYST = 4;
 
 const TAP_TRANSITION = { scale: { duration: 0.15, ease: 'easeOut' } } as const;
@@ -110,6 +110,7 @@ interface DraggableItemProps {
   onPointerDown: (e: React.PointerEvent, id: ItemId) => void;
   onPointerMove: (e: React.PointerEvent) => void;
   onPointerUp: (e: React.PointerEvent, id: ItemId) => void;
+  onPointerCancel: (e: React.PointerEvent, id: ItemId) => void;
   onSelect: (id: ItemId) => void;
   onResetIdle: () => void;
   onBringToFront: (id: ItemId | 'note') => void;
@@ -120,7 +121,7 @@ interface DraggableItemProps {
 const DraggableItem = memo(function DraggableItem({
   item, posX, posY, zIndex, isTapped, isNudging,
   canHover, reduced, index, label, sublabel, dragHint,
-  onPointerDown, onPointerMove, onPointerUp,
+  onPointerDown, onPointerMove, onPointerUp, onPointerCancel,
   onSelect, onResetIdle, onBringToFront, playSound, onNudgeEnd,
 }: DraggableItemProps) {
   const { id, Component, rotation, size, color } = item;
@@ -132,6 +133,10 @@ const DraggableItem = memo(function DraggableItem({
   const handleUp = useCallback(
     (e: React.PointerEvent) => onPointerUp(e, id),
     [onPointerUp, id],
+  );
+  const handleCancel = useCallback(
+    (e: React.PointerEvent) => onPointerCancel(e, id),
+    [onPointerCancel, id],
   );
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -161,7 +166,7 @@ const DraggableItem = memo(function DraggableItem({
 
   return (
     <motion.div
-      className={`absolute w-max ${rotation} group touch-none`}
+      className={`absolute w-max ${rotation} group touch-none select-none`}
       style={{ left: `${posX}%`, top: `${posY}%`, cursor: 'grab', zIndex }}
       initial={reduced ? EMPTY_INITIAL : { opacity: 0, y: 20, scale: 1 }}
       animate={{ opacity: 1, y: 0, scale: isTapped ? 1.15 : 1 }}
@@ -170,6 +175,7 @@ const DraggableItem = memo(function DraggableItem({
       onPointerDown={handleDown}
       onPointerMove={onPointerMove}
       onPointerUp={handleUp}
+      onPointerCancel={handleCancel}
       role="button"
       tabIndex={0}
       aria-label={`${label} - ${sublabel} (${dragHint})`}
@@ -338,7 +344,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent, id: ItemId) => {
-      e.preventDefault();
+      if (e.pointerType !== 'touch') e.preventDefault();
       e.currentTarget.setPointerCapture(e.pointerId);
       resetIdleTimer();
       bump.prepare();
@@ -441,9 +447,13 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   } | null>(null);
   const noteEdges = useRef({ left: false, right: false, top: false, bottom: false });
 
+  const handlePointerCancel = useCallback(() => {
+    dragState.current = null;
+  }, []);
+
   const handleNotePointerDown = useCallback(
     (e: React.PointerEvent) => {
-      e.preventDefault();
+      if (e.pointerType !== 'touch') e.preventDefault();
       e.currentTarget.setPointerCapture(e.pointerId);
       resetIdleTimer();
       bump.prepare();
@@ -509,6 +519,10 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     }
   }, [resetIdleTimer]);
 
+  const handleNotePointerCancel = useCallback(() => {
+    noteDragRef.current = null;
+  }, []);
+
   const handlePointerUp = useCallback(
     (e: React.PointerEvent, id: ItemId) => {
       const ds = dragState.current;
@@ -556,12 +570,12 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         {t('interior.back', lang)}
       </motion.button>
 
-      <div ref={containerRef} className="relative aspect-square w-full max-w-[500px]">
-        <SuitcaseOpen className="absolute inset-0 h-full w-full" />
+      <div ref={containerRef} className="relative aspect-square w-full max-w-[500px] touch-none">
+        <SuitcaseOpen className="absolute inset-0 h-full w-full pointer-events-none" />
 
         {noteEnabled && noteReleased && (
           <motion.div
-            className="group absolute w-max touch-none"
+            className="group absolute w-max touch-none select-none"
             style={{
               left: `${notePos.x}%`,
               top: `${notePos.y}%`,
@@ -580,6 +594,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
             onPointerDown={handleNotePointerDown}
             onPointerMove={handleNotePointerMove}
             onPointerUp={handleNotePointerUp}
+            onPointerCancel={handleNotePointerCancel}
             role="button"
             tabIndex={0}
             aria-label={t('note.title', lang)}
@@ -623,6 +638,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerCancel}
               onSelect={onSelectItem}
               onResetIdle={resetIdleTimer}
               onBringToFront={bringToFront}
