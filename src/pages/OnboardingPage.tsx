@@ -159,6 +159,7 @@ export default function OnboardingPage() {
         '여기에\n나만의 이야기를 적어보세요.',
         '여러 문단으로\n나눌 수 있어요.',
       ],
+      item_labels: {},
     };
 
     await supabase.from('portfolio_data').insert(defaultData);

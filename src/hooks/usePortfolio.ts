@@ -22,6 +22,7 @@ interface PortfolioDataRow {
   books: unknown;
   hobbies: unknown;
   cd_story: unknown;
+  item_labels: unknown;
 }
 
 function mapDataRow(row: PortfolioDataRow): PortfolioBundle {
@@ -36,6 +37,7 @@ function mapDataRow(row: PortfolioDataRow): PortfolioBundle {
     books: row.books as PortfolioBundle['books'],
     hobbies: row.hobbies as PortfolioBundle['hobbies'],
     cdStory: row.cd_story as string[],
+    itemLabels: (row.item_labels as Record<string, PortfolioBundle['itemLabels']> | null) as PortfolioBundle['itemLabels'] ?? {},
   };
 }
 

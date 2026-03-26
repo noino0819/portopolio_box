@@ -11,6 +11,7 @@ import { useItemSounds } from '@/hooks/useItemSounds';
 import { useBumpSound } from '@/hooks/useBumpSound';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
+import { usePortfolioData } from '@/contexts/PortfolioContext';
 import noteImg from '@/assets/note.png';
 
 export type ItemId = 'nametag' | 'book' | 'switch' | 'cd';
@@ -94,6 +95,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   const sounds = useItemSounds();
   const bump = useBumpSound();
   const { lang } = useLanguage();
+  const portfolioData = usePortfolioData();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [tappedItem, setTappedItem] = useState<ItemId | null>(null);
@@ -452,8 +454,9 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
 
         {itemDefs.map((item, i) => {
           const { id, Component, rotation, size, color } = item;
-          const label = t(`items.${id}.label`, lang);
-          const sublabel = t(`items.${id}.sublabel`, lang);
+          const custom = portfolioData.itemLabels?.[id];
+          const label = custom?.label || t(`items.${id}.label`, lang);
+          const sublabel = custom?.sublabel || t(`items.${id}.sublabel`, lang);
           const pos = positions[id];
           return (
             <motion.div

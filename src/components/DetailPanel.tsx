@@ -12,6 +12,7 @@ import ItemCD from '@/assets/ItemCD';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
+import { usePortfolioData } from '@/contexts/PortfolioContext';
 
 interface DetailPanelProps {
   activeItem: ItemId | null;
@@ -35,6 +36,7 @@ const detailComponents: Record<ItemId, React.FC> = {
 export default function DetailPanel({ activeItem, onClose }: DetailPanelProps) {
   const reduced = useReducedMotion();
   const { lang } = useLanguage();
+  const portfolioData = usePortfolioData();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -72,7 +74,7 @@ export default function DetailPanel({ activeItem, onClose }: DetailPanelProps) {
           {/* Panel */}
           <motion.div
             role="dialog"
-            aria-label={`${t(`items.${activeItem}.label`, lang)}`}
+            aria-label={portfolioData.itemLabels?.[activeItem]?.label || t(`items.${activeItem}.label`, lang)}
             aria-modal="true"
             className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[90dvh] w-full max-w-[900px] flex-col overflow-hidden rounded-t-3xl bg-bg-dark shadow-2xl md:inset-y-4 md:inset-x-4 md:rounded-3xl lg:inset-y-8 lg:inset-x-auto"
             initial={reduced ? {} : { y: '100%', opacity: 0.5 }}
@@ -113,10 +115,10 @@ export default function DetailPanel({ activeItem, onClose }: DetailPanelProps) {
                   })()}
                 </motion.div>
                 <h2 className="font-display text-xl font-bold text-gold">
-                  {t(`items.${activeItem}.label`, lang)}
+                  {portfolioData.itemLabels?.[activeItem]?.label || t(`items.${activeItem}.label`, lang)}
                 </h2>
                 <p className="mt-1 whitespace-pre-line text-center font-accent text-xs leading-relaxed text-leather/50">
-                  {t(`items.${activeItem}.subtitle`, lang)}
+                  {portfolioData.itemLabels?.[activeItem]?.subtitle || t(`items.${activeItem}.subtitle`, lang)}
                 </p>
               </div>
 

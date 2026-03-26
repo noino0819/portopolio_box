@@ -11,6 +11,12 @@ import type {
   Hobby,
 } from '@/data/portfolio';
 
+export interface ItemLabel {
+  label?: string;
+  sublabel?: string;
+  subtitle?: string;
+}
+
 export interface PortfolioBundle {
   profile: Profile;
   education: Education[];
@@ -22,6 +28,7 @@ export interface PortfolioBundle {
   books: Book[];
   hobbies: Hobby[];
   cdStory: string[];
+  itemLabels?: Record<string, ItemLabel>;
 }
 
 export interface PortfolioMeta {

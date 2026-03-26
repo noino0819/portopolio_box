@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
 import { usePortfolioMeta, usePortfolioData, useUpdatePortfolio } from '@/contexts/PortfolioContext';
 import { supabase } from '@/lib/supabase';
-import type { PortfolioBundle } from '@/contexts/PortfolioContext';
+import type { PortfolioBundle, ItemLabel } from '@/contexts/PortfolioContext';
 import type { Profile, Education, Certification, Project, Award, Game, Album, Book, Hobby } from '@/data/portfolio';
+import { t } from '@/i18n/ui';
 import EmojiInput from './EmojiInput';
 
 const ALL_LANGUAGES: Language[] = ['ko', 'en', 'ja', 'zh'];
@@ -14,9 +15,10 @@ interface EditPanelProps {
   onClose: () => void;
 }
 
-type Section = 'profile' | 'education' | 'certifications' | 'projects' | 'awards' | 'games' | 'albums' | 'books' | 'hobbies' | 'cdStory' | 'youtube';
+type Section = 'itemLabels' | 'profile' | 'education' | 'certifications' | 'projects' | 'awards' | 'games' | 'albums' | 'books' | 'hobbies' | 'cdStory' | 'youtube';
 
 const SECTIONS: { id: Section; label: string }[] = [
+  { id: 'itemLabels', label: '개체 이름' },
   { id: 'profile', label: 'Profile' },
   { id: 'education', label: 'Education' },
   { id: 'certifications', label: 'Certifications' },
@@ -324,6 +326,57 @@ function CdStoryEditor({ items, onChange }: { items: string[]; onChange: (v: str
   );
 }
 
+const ITEM_IDS = ['nametag', 'book', 'switch', 'cd'] as const;
+const ITEM_DISPLAY: Record<string, string> = {
+  nametag: '🏷️ 이름표 (Nametag)',
+  book: '📖 책 (Book)',
+  switch: '🎮 게임기 (Console)',
+  cd: '💿 CD',
+};
+
+function ItemLabelsEditor({ labels, onChange, editLang }: {
+  labels: Record<string, ItemLabel>;
+  onChange: (v: Record<string, ItemLabel>) => void;
+  editLang: Language;
+}) {
+  const updateItem = (id: string, field: keyof ItemLabel, value: string) => {
+    const current = labels[id] ?? {};
+    onChange({ ...labels, [id]: { ...current, [field]: value || undefined } });
+  };
+
+  return (
+    <div className="space-y-5">
+      <p className="text-[11px] text-card/40">
+        가방 안 개체들의 이름, 설명, 소개 문구를 변경할 수 있어요. 비워두면 기본값이 사용됩니다.
+      </p>
+      {ITEM_IDS.map((id) => {
+        const item = labels[id] ?? {};
+        return (
+          <div key={id} className="rounded-lg border border-white/5 bg-white/[0.02] p-3 space-y-2">
+            <h4 className="text-xs font-semibold text-card/70">{ITEM_DISPLAY[id]}</h4>
+            <TextInput
+              label={`이름 (기본: ${t(`items.${id}.label`, editLang)})`}
+              value={item.label ?? ''}
+              onChange={(v) => updateItem(id, 'label', v)}
+            />
+            <TextInput
+              label={`설명 (기본: ${t(`items.${id}.sublabel`, editLang)})`}
+              value={item.sublabel ?? ''}
+              onChange={(v) => updateItem(id, 'sublabel', v)}
+            />
+            <TextInput
+              label={`소개 문구 (기본: ${t(`items.${id}.subtitle`, editLang)})`}
+              value={item.subtitle ?? ''}
+              onChange={(v) => updateItem(id, 'subtitle', v)}
+              multiline
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const EMPTY_BUNDLE: PortfolioBundle = {
   profile: { name: '', title: '', headline: '', bioPoints: [], skills: [], contacts: [] },
   education: [], certifications: [], projects: [], awards: [],
@@ -383,6 +436,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
         books: data.books as PortfolioBundle['books'],
         hobbies: data.hobbies as PortfolioBundle['hobbies'],
         cdStory: data.cd_story as string[],
+        itemLabels: (data.item_labels as PortfolioBundle['itemLabels']) ?? {},
       };
       setDraft(loaded);
     } else {
@@ -404,6 +458,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
       profile: EMPTY_BUNDLE.profile as unknown as Record<string, unknown>,
       education: [], certifications: [], projects: [], awards: [],
       games: [], albums: [], books: [], hobbies: [], cd_story: [],
+      item_labels: {},
     }, { onConflict: 'portfolio_id,lang' });
 
     setAvailableLangs((prev) => [...prev, targetLang]);
@@ -450,6 +505,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
         books: draft.books as unknown as Record<string, unknown>[],
         hobbies: draft.hobbies as unknown as Record<string, unknown>[],
         cd_story: draft.cdStory as unknown as Record<string, unknown>[],
+        item_labels: (draft.itemLabels ?? {}) as unknown as Record<string, unknown>,
       }, { onConflict: 'portfolio_id,lang' });
 
     if (activeSection === 'youtube') {
@@ -593,6 +649,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                 </div>
               ) : (
                 <>
+                  {activeSection === 'itemLabels' && <ItemLabelsEditor labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} />}
                   {activeSection === 'profile' && <ProfileEditor profile={draft.profile} onChange={(v) => updateDraft('profile', v)} />}
                   {activeSection === 'education' && <EducationEditor items={draft.education} onChange={(v) => updateDraft('education', v)} />}
                   {activeSection === 'certifications' && <CertificationsEditor items={draft.certifications} onChange={(v) => updateDraft('certifications', v)} />}
