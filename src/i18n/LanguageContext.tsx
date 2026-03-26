@@ -1,13 +1,28 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 
-export type Language = 'ko' | 'en' | 'ja' | 'zh';
+export type Language = 'ko' | 'en' | 'ja' | 'de' | 'zh' | 'es' | 'fr';
 
 export const LANGUAGE_LABELS: Record<Language, string> = {
   ko: '한국어',
   en: 'English',
   ja: '日本語',
+  de: 'Deutsch',
   zh: '中文',
+  es: 'Español',
+  fr: 'Français',
 };
+
+export const LANGUAGE_FLAGS: Record<Language, string> = {
+  ko: '🇰🇷',
+  en: '🇺🇸',
+  ja: '🇯🇵',
+  de: '🇩🇪',
+  zh: '🇨🇳',
+  es: '🇪🇸',
+  fr: '🇫🇷',
+};
+
+export const LANGUAGE_ORDER: Language[] = ['ko', 'en', 'ja', 'de', 'es', 'fr', 'zh'];
 
 interface LanguageContextType {
   lang: Language;
@@ -19,7 +34,7 @@ const LanguageContext = createContext<LanguageContextType>({
   setLang: () => {},
 });
 
-const SUPPORTED_LANGUAGES: Language[] = ['ko', 'en', 'ja', 'zh'];
+const SUPPORTED_LANGUAGES: Language[] = LANGUAGE_ORDER;
 
 function detectBrowserLanguage(): Language {
   const languages = navigator.languages ?? [navigator.language];
@@ -54,4 +69,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
 export function useLanguage() {
   return useContext(LanguageContext);
+}
+
+export function sortLanguages(langs: string[]): Language[] {
+  const order = LANGUAGE_ORDER;
+  return [...langs].sort((a, b) => {
+    const ia = order.indexOf(a as Language);
+    const ib = order.indexOf(b as Language);
+    const oa = ia === -1 ? 999 : ia;
+    const ob = ib === -1 ? 999 : ib;
+    if (oa !== ob) return oa - ob;
+    return a.localeCompare(b);
+  }) as Language[];
 }

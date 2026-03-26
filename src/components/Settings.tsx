@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
+import { useLanguage, LANGUAGE_LABELS, LANGUAGE_FLAGS, sortLanguages, type Language } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAvailableLangs, usePortfolioMeta } from '@/contexts/PortfolioContext';
@@ -30,7 +30,7 @@ export default function Settings() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [qrOpen, setQrOpen] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const langOptions = (availableLangs.length > 0 ? availableLangs : ['ko']) as Language[];
+  const langOptions = sortLanguages(availableLangs.length > 0 ? availableLangs : ['ko']);
 
   const portfolioUrl = `${window.location.origin}/${meta.slug}`;
 
@@ -108,7 +108,7 @@ export default function Settings() {
                       }`}
                     >
                       <span className="text-base">
-                        {l === 'ko' ? '🇰🇷' : l === 'en' ? '🇺🇸' : l === 'ja' ? '🇯🇵' : '🇨🇳'}
+                        {LANGUAGE_FLAGS[l] ?? '🌐'}
                       </span>
                       <span>{LANGUAGE_LABELS[l]}</span>
                       {lang === l && <span className="ml-auto text-xs">✓</span>}

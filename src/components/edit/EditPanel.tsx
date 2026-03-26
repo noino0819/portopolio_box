@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
+import { useLanguage, LANGUAGE_LABELS, LANGUAGE_ORDER, type Language } from '@/i18n/LanguageContext';
 import { usePortfolioMeta, usePortfolioData, useUpdatePortfolio, useAvailableLangs } from '@/contexts/PortfolioContext';
 import { supabase } from '@/lib/supabase';
 import { getCached, updateCacheLangData, updateCacheMeta, addCacheLang, removeCacheLang } from '@/lib/portfolioCache';
@@ -9,7 +9,7 @@ import type { Profile, Education, Certification, Project, Award, Game, Album, Bo
 import { t } from '@/i18n/ui';
 import EmojiInput from './EmojiInput';
 
-const ALL_LANGUAGES: Language[] = ['ko', 'en', 'ja', 'zh'];
+const ALL_LANGUAGES: Language[] = [...LANGUAGE_ORDER];
 
 interface EditPanelProps {
   open: boolean;
@@ -22,43 +22,43 @@ interface EditPanelProps {
 type TopTab = 'config' | 'nametag' | 'book' | 'switch' | 'cd' | 'note';
 
 const TOP_TAB_LABELS: Record<TopTab, Record<Language, string>> = {
-  config: { ko: '구성', en: 'Config', ja: '構成', zh: '构成' },
-  nametag: { ko: '🏷️ 이름표', en: '🏷️ Nametag', ja: '🏷️ 名札', zh: '🏷️ 名牌' },
-  book: { ko: '📖 책', en: '📖 Book', ja: '📖 本', zh: '📖 书' },
-  switch: { ko: '🎮 게임기', en: '🎮 Switch', ja: '🎮 ゲーム機', zh: '🎮 游戏机' },
-  cd: { ko: '💿 CD', en: '💿 CD', ja: '💿 CD', zh: '💿 CD' },
-  note: { ko: '📝 쪽지', en: '📝 Note', ja: '📝 メモ', zh: '📝 便签' },
+  config: { ko: '구성', en: 'Config', ja: '構成', zh: '构成', de: 'Konfig.', es: 'Config.', fr: 'Config.' },
+  nametag: { ko: '🏷️ 이름표', en: '🏷️ Nametag', ja: '🏷️ 名札', zh: '🏷️ 名牌', de: '🏷️ Schild', es: '🏷️ Etiqueta', fr: '🏷️ Badge' },
+  book: { ko: '📖 책', en: '📖 Book', ja: '📖 本', zh: '📖 书', de: '📖 Buch', es: '📖 Libro', fr: '📖 Livre' },
+  switch: { ko: '🎮 게임기', en: '🎮 Switch', ja: '🎮 ゲーム機', zh: '🎮 游戏机', de: '🎮 Konsole', es: '🎮 Consola', fr: '🎮 Console' },
+  cd: { ko: '💿 CD', en: '💿 CD', ja: '💿 CD', zh: '💿 CD', de: '💿 CD', es: '💿 CD', fr: '💿 CD' },
+  note: { ko: '📝 쪽지', en: '📝 Note', ja: '📝 メモ', zh: '📝 便签', de: '📝 Notiz', es: '📝 Nota', fr: '📝 Note' },
 };
 const TOP_TAB_IDS = Object.keys(TOP_TAB_LABELS) as TopTab[];
 
 type SubTab = string;
 const SUB_TAB_MAP: Record<TopTab, { id: SubTab; label: Record<Language, string> }[]> = {
   config: [
-    { id: 'pageMeta', label: { ko: '페이지 설정', en: 'Page', ja: 'ページ', zh: '页面' } },
-    { id: 'items', label: { ko: '물건 구성', en: 'Items', ja: 'アイテム', zh: '物品' } },
+    { id: 'pageMeta', label: { ko: '페이지 설정', en: 'Page', ja: 'ページ', zh: '页面', de: 'Seite', es: 'Página', fr: 'Page' } },
+    { id: 'items', label: { ko: '물건 구성', en: 'Items', ja: 'アイテム', zh: '物品', de: 'Objekte', es: 'Objetos', fr: 'Objets' } },
   ],
   nametag: [
-    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品' } },
-    { id: 'profile', label: { ko: '프로필', en: 'Profile', ja: 'プロフィール', zh: '简介' } },
-    { id: 'awards', label: { ko: '수상', en: 'Awards', ja: '受賞', zh: '获奖' } },
+    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品', de: 'Objekt', es: 'Objeto', fr: 'Objet' } },
+    { id: 'profile', label: { ko: '프로필', en: 'Profile', ja: 'プロフィール', zh: '简介', de: 'Profil', es: 'Perfil', fr: 'Profil' } },
+    { id: 'awards', label: { ko: '수상', en: 'Awards', ja: '受賞', zh: '获奖', de: 'Preise', es: 'Premios', fr: 'Prix' } },
   ],
   book: [
-    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品' } },
-    { id: 'education', label: { ko: '학력', en: 'Education', ja: '学歴', zh: '教育' } },
-    { id: 'certifications', label: { ko: '자격증', en: 'Certs', ja: '資格', zh: '证书' } },
-    { id: 'projects', label: { ko: '프로젝트', en: 'Projects', ja: 'PJ', zh: '项目' } },
+    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品', de: 'Objekt', es: 'Objeto', fr: 'Objet' } },
+    { id: 'education', label: { ko: '학력', en: 'Education', ja: '学歴', zh: '教育', de: 'Bildung', es: 'Educación', fr: 'Formation' } },
+    { id: 'certifications', label: { ko: '자격증', en: 'Certs', ja: '資格', zh: '证书', de: 'Zert.', es: 'Cert.', fr: 'Cert.' } },
+    { id: 'projects', label: { ko: '프로젝트', en: 'Projects', ja: 'PJ', zh: '项目', de: 'Projekte', es: 'Proyectos', fr: 'Projets' } },
   ],
   switch: [
-    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品' } },
-    { id: 'games', label: { ko: '게임', en: 'Games', ja: 'ゲーム', zh: '游戏' } },
-    { id: 'hobbies', label: { ko: '취미', en: 'Hobbies', ja: '趣味', zh: '爱好' } },
-    { id: 'albums', label: { ko: '앨범', en: 'Albums', ja: 'アルバム', zh: '专辑' } },
-    { id: 'books', label: { ko: '도서', en: 'Books', ja: '本', zh: '书' } },
+    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品', de: 'Objekt', es: 'Objeto', fr: 'Objet' } },
+    { id: 'games', label: { ko: '게임', en: 'Games', ja: 'ゲーム', zh: '游戏', de: 'Spiele', es: 'Juegos', fr: 'Jeux' } },
+    { id: 'hobbies', label: { ko: '취미', en: 'Hobbies', ja: '趣味', zh: '爱好', de: 'Hobbys', es: 'Hobbies', fr: 'Loisirs' } },
+    { id: 'albums', label: { ko: '앨범', en: 'Albums', ja: 'アルバム', zh: '专辑', de: 'Alben', es: 'Álbumes', fr: 'Albums' } },
+    { id: 'books', label: { ko: '도서', en: 'Books', ja: '本', zh: '书', de: 'Bücher', es: 'Libros', fr: 'Livres' } },
   ],
   cd: [
-    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品' } },
-    { id: 'cdStory', label: { ko: 'CD 스토리', en: 'CD Story', ja: 'CDストーリー', zh: 'CD故事' } },
-    { id: 'youtube', label: { ko: 'YouTube', en: 'YouTube', ja: 'YouTube', zh: 'YouTube' } },
+    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品', de: 'Objekt', es: 'Objeto', fr: 'Objet' } },
+    { id: 'cdStory', label: { ko: 'CD 스토리', en: 'CD Story', ja: 'CDストーリー', zh: 'CD故事', de: 'CD-Story', es: 'Historia CD', fr: 'Histoire CD' } },
+    { id: 'youtube', label: { ko: 'YouTube', en: 'YouTube', ja: 'YouTube', zh: 'YouTube', de: 'YouTube', es: 'YouTube', fr: 'YouTube' } },
   ],
   note: [],
 };

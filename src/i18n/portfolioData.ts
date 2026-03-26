@@ -286,8 +286,76 @@ const zh: PortfolioBundle = {
   ],
 };
 
-const bundles: Record<Language, PortfolioBundle> = { ko, en, ja, zh };
+const de: PortfolioBundle = {
+  profile: {
+    name: 'Sieon Choi',
+    title: 'IT Developer',
+    headline: 'Hallo, ich bin Sieon Choi — ich schaffe Technologie für eine gleichberechtigte Gesellschaft.',
+    bioPoints: [
+      { emoji: '❤️', text: 'Immer fröhlich und voller positiver Energie.' },
+      { emoji: '🧡', text: 'Legt Wert auf Verantwortungsbewusstsein und Verbundenheit mit Menschen.' },
+      { emoji: '💛', text: 'Strebt danach, ein Entwickler zu sein, der effiziente Logik aufbaut.' },
+      { emoji: '💚', text: 'Erfahrung in schneller, reibungsloser Kommunikation und Zusammenarbeit in Teamprojekten.' },
+    ],
+    skills: ko.profile.skills,
+    contacts: [
+      { label: 'Geboren', value: '19. Aug. 1999', icon: '🙆‍♂️' },
+      { label: 'E-Mail', value: 'noino0819@naver.com', url: 'mailto:noino0819@naver.com', icon: '✉️' },
+      { label: 'GitHub', value: 'noino0819', url: 'https://github.com/noino0819', icon: '😺', tooltip: 'Schau dir mein süßes GitHub an!' },
+      { label: 'LinkedIn', value: 'LinkedIn', url: 'https://www.linkedin.com/in/%EC%8B%9C%EC%96%B8-%EC%B5%9C-77b9a5248/', icon: '💼' },
+      { label: 'Blog', value: 'NOINOs Alltags-Review', url: 'https://blog.naver.com/noino0819', icon: '📝', tooltip: 'Ein sehr persönlicher Blog! Seit 2023 poste ich konsequent 5+ Tage pro Woche.' },
+    ],
+  },
+  education: [
+    { institution: 'Yedang-Oberschule', period: '2015.03 - 2018.01', details: [], status: 'Abschluss' },
+    { institution: 'Soongsil-Universität', period: '2018.03 - 2023.02', details: ['Informatik (GPA 3.27/4.5 · Hauptfach 3.12/4.5)', 'ICT-Logistik Konvergenz'], status: 'Abschluss' },
+    { institution: 'Google Developers ML Bootcamp / Google Korea', period: '2022.06 - 2022.09', details: ['Machine Learning mit Python / TensorFlow'], status: 'Abgeschlossen' },
+    { institution: 'Hyundai Kaufhausgruppe — Hyundai Futurenet', period: '2023.11 - Gegenwart', details: ['IT-Abteilung, Einzelhandel | Senior | Greenfood Team 2', 'Gesundheitsberatungs-Web-App-Entwicklung', 'Berater-Unterstützungssystem-Entwicklung', 'Healthcare Web & ERP-System-Verwaltung'], status: 'Angestellt' },
+  ],
+  certifications: [
+    { category: 'IT', categoryIcon: '💻', items: [{ name: 'TensorFlow Developer Certificate', date: '2022.09.12' }, { name: 'SQLD', date: '2025.06.27', detail: 'SQLD-057014249 · KDATA' }] },
+    { category: 'Sprachen', categoryIcon: '🗣️', items: [{ name: 'TOEIC SPEAKING', date: '2025.12.08', detail: 'Intermediate High (140) · YBM' }] },
+    { category: 'Sonstiges', categoryIcon: '📖', items: [{ name: 'MOS Master', date: '2018.06.18', detail: 'YBM' }] },
+  ],
+  projects: [
+    { title: 'KI-Gesundheitsberatungsplattform', period: '2023.11 - Gegenwart', affiliation: 'Hyundai Futurenet', description: 'Ein personalisiertes Ernährungs- und Lebensstil-Beratungssystem mit Gesundheitsdaten.', highlights: ['Sitzungsbasierte Beratung pro Mitglied', 'GPT + Vektor-Embedding-DB — semantische Suche', 'Biodaten-verknüpfte Berichtserstellung', 'Tägliche Mahlzeitfoto-Diagnose', 'Beratungsverlaufsanalyse'], techs: ['React', 'PostgreSQL', 'GPT', 'Vector DB', 'Python'] },
+    { title: 'Persönliche Gesundheits-App (GreetingCare)', period: '2025.03 - 2025.09', affiliation: 'Hyundai Futurenet', description: 'B2C KI-basierte persönliche Gesundheitsmanagement-Web-App.', highlights: ['Nahrungsergänzungsmittel-Verwaltung', 'Ernährungsaufzeichnung & KI-Analyse', 'Gesundheits-Challenges & Belohnungen', 'Gesundheitsinhalte', 'Personalisiertes Feedback'], techs: ['React', 'AWS', 'Node.js', 'AI'] },
+    { title: 'Alt for U (Auto-Alternativtext-Lösung)', period: '2024.05 - 2024.09', affiliation: 'Hyundai Futurenet', description: 'GPT-basiertes automatisches Alternativtext-Generierungssystem für Web-Zugänglichkeit.', highlights: ['GPT-basierte Bildbeschreibung', 'Admin-Verwaltungsseite', 'Automatisierte Zugänglichkeit', 'Inhaltstyp-Optimierung', 'Live-Bereitstellung'], techs: ['PostgreSQL', 'JavaScript', 'GPT', 'Python', 'Web Accessibility'] },
+    { title: 'Hyunique (Styling-Plattform)', period: '2024.03 - 2024.06', affiliation: 'Soongsil-Universität', description: 'Online-Offline integrierte Styling-Sharing-Plattform.', highlights: ['GPT Styling-Chatbot & DALL·E', 'Toss Payments Integration', 'QR-basierte Produktstilprüfung', 'Inception V3 + k-NN ähnliche Produktsuche', 'Papago API Übersetzungsoptimierung', 'Full-Stack: OAuth, AWS, Jenkins CI'], techs: ['MySQL', 'AWS', 'React', 'GPT', 'DALL·E', 'Jenkins'], github: 'https://github.com/it-e-7/hyunique' },
+    { title: 'TaxMate (Wirtschaftsbildungsplattform)', period: '2022.03 - 2022.12', affiliation: 'Soongsil-Universität', description: 'Partizipative Wirtschaftsbildungsplattform mit Steuer-, Berufs- und Bankensimulation.', highlights: ['Rollenbasierte UI', 'Virtuelles Berufs- und Gehaltssystem', 'Bankmodul', 'Börsenmodul', 'Steuersystem', 'Rechtssystem'], techs: ['React', 'Node.js', 'MongoDB', 'Bootstrap'], github: 'https://github.com/SSU-Taxmate/taxpayer-Backend' },
+    { title: 'GitTalk (Git-basiertes Chat-Tool)', period: '2019.03 - 2019.06', affiliation: 'Persönliches Projekt', description: 'CLI-basiertes Chat-Programm mit Git-Repositories als Datenspeicher.', highlights: ['Git-basierte Datenspeicherung', 'Automatisches Branch-Management', 'CLI-Chat-Oberfläche', 'Verschlüsselte Benutzerauthentifizierung', 'Leistungsoptimierung'], techs: ['C', 'Git', 'MySQL', 'CLI'], github: 'https://github.com/noino0819/GitTalk' },
+  ],
+  awards: [
+    { title: '2024 Startup Day', grade: 'Hauptpreis', issuer: 'Hyundai Futurenet', date: '2024.09', affiliation: 'Hyundai Futurenet', description: 'KI-Projekt „Alt for U" für Web-Zugänglichkeit geplant und entwickelt.' },
+    { title: 'SeoulTech Creative Capstone Wettbewerb', grade: 'Bronze', issuer: 'SeoulTech', date: '2021.11', affiliation: 'Soongsil-Universität', description: 'Tilt-Struktur Drohnensteuerungssystem.' },
+    { title: 'Soongsil Univ. 2021 IT Software Wettbewerb', grade: 'Gold', issuer: 'Soongsil-Universität', date: '2021.11', affiliation: 'Soongsil-Universität', description: 'Steuerbildungs-Web-App „TaxMate" geplant und entwickelt.' },
+    { title: '2020 Open Source Contributhon', grade: 'Sonderpreis', issuer: 'Gabia', date: '2020.11', affiliation: 'Hyundai Futurenet', description: 'Beitrag zum Verstärkungslernen-Spiel-KI-Projekt „rosetta stone".' },
+  ],
+  games: [
+    { title: 'The Legend of Zelda: Tears of the Kingdom', platform: 'Nintendo Switch', comment: 'Eine Welt, in der Spieler durch nahtloses Kartendesign ihre eigene Reise gestalten' },
+    { title: 'Hollow Knight', platform: 'PC / Switch', comment: 'Der Gipfel des Metroidvania mit immersiver Erkundung' },
+    { title: 'Super Mario Odyssey', platform: 'Nintendo Switch', comment: 'Eine Konzentration purer Freude' },
+    { title: 'Celeste', platform: 'PC / Switch', comment: 'Die Erdbeere, die jenseits von Scheitern und Herausforderung wartet' },
+  ],
+  albums: [
+    { artist: 'AKMU', title: '항해 (Sailing)', comment: 'Ein Album, das ich jedem auf seiner eigenen Reise widmen möchte' },
+    { artist: 'TAEYEON', title: 'Letter To Myself', comment: 'Worte, die ich mir selbst sagen möchte' },
+  ],
+  books: [{ author: 'Bernard Werber', titles: ['Die Ameisen', 'Papillon', 'Gott', 'Thanatonauten'], comment: 'Wenn ich von der Zukunft träumen will, dann so' }],
+  hobbies: [{ label: 'Gaming', emoji: '🎮' }, { label: 'Musik', emoji: '🎵' }, { label: 'Lesen', emoji: '📚' }, { label: 'Fotografie', emoji: '📷' }],
+  cdStory: [
+    'Als Kind\nträumte ich vage davon, jemand zu werden, der die Welt verändert.',
+    'Während ich darüber nachdachte, wie man die Welt verändern kann,\nwar die Antwort, die mich fand, „Software".',
+    'Etwas, das jeden gleichermaßen erreichen kann,\nunabhängig von Umgebung oder Bedingungen.',
+    'Etwas, das jederzeit und überall kostenlos bereitgestellt werden kann,\ndas sich in unzählige Formen neben dem Benutzer verwandelt\num sein Leben zu unterstützen.',
+    'Ich war fasziniert von dieser unendlichen Möglichkeit.',
+    'Und so begann ich in der Oberschule\nmeine Reise zum Traum, ein „weltverändernder Entwickler" zu werden.',
+    'An dich, der heute meinen Reisekoffer geöffnet hat,\nmöchte ich mein liebstes Lied spielen.',
+  ],
+};
+
+const bundles: Record<string, PortfolioBundle> = { ko, en, ja, zh, de };
 
 export function getPortfolio(lang: Language): PortfolioBundle {
-  return bundles[lang];
+  return bundles[lang] ?? bundles['en'] ?? bundles['ko'];
 }
