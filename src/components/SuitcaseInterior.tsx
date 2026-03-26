@@ -104,6 +104,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     return { x: 62, y: 28 };
   });
   const noteReleasedRef = useRef(noteReleased);
+  const [noteZ, setNoteZ] = useState(0);
 
   const resetIdleTimer = useCallback(() => {
     setNudgeItem(null);
@@ -122,10 +123,14 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     nametag: 1, book: 1, switch: 1, cd: 1,
   });
 
-  const bringToFront = useCallback((id: ItemId) => {
+  const bringToFront = useCallback((id: ItemId | 'note') => {
     setZCounter((c) => {
       const next = c + 1;
-      setZOrders((prev) => ({ ...prev, [id]: next }));
+      if (id === 'note') {
+        setNoteZ(next);
+      } else {
+        setZOrders((prev) => ({ ...prev, [id]: next }));
+      }
       return next;
     });
   }, []);
@@ -218,7 +223,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
           const newDir = deltaY > 0 ? 'down' : 'up';
           if (shake.dir && newDir !== shake.dir) {
             shake.reversals++;
-            if (shake.reversals >= 4) {
+            if (shake.reversals >= 3) {
               const pos = { x: Math.min(78, ds.startX + 3), y: Math.min(78, ds.startY + 12) };
               noteReleasedRef.current = true;
               setNoteReleased(true);
@@ -267,6 +272,76 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     [getContainerRect, bump],
   );
 
+  const noteDragRef = useRef<{
+    startPointerX: number;
+    startPointerY: number;
+    startX: number;
+    startY: number;
+    moved: boolean;
+  } | null>(null);
+  const noteEdges = useRef({ left: false, right: false, top: false, bottom: false });
+
+  const handleNotePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      e.preventDefault();
+      e.currentTarget.setPointerCapture(e.pointerId);
+      resetIdleTimer();
+      bump.prepare();
+      bringToFront('note');
+      noteEdges.current = { left: false, right: false, top: false, bottom: false };
+      noteDragRef.current = {
+        startPointerX: e.clientX,
+        startPointerY: e.clientY,
+        startX: notePos.x,
+        startY: notePos.y,
+        moved: false,
+      };
+    },
+    [notePos, bringToFront, resetIdleTimer, bump],
+  );
+
+  const handleNotePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      const ds = noteDragRef.current;
+      const rect = getContainerRect();
+      if (!ds || !rect) return;
+
+      const dx = e.clientX - ds.startPointerX;
+      const dy = e.clientY - ds.startPointerY;
+      if (!ds.moved && Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD) return;
+      ds.moved = true;
+
+      const el = e.currentTarget as HTMLElement;
+      const maxX = Math.max(5, ((rect.width - el.offsetWidth) / rect.width) * 100);
+      const maxY = Math.max(5, ((rect.height - el.offsetHeight) / rect.height) * 100);
+      const rawX = ds.startX + (dx / rect.width) * 100;
+      const rawY = ds.startY + (dy / rect.height) * 100;
+      const cx = Math.max(2, Math.min(maxX, rawX));
+      const cy = Math.max(2, Math.min(maxY, rawY));
+
+      const hitL = rawX < 2, hitR = rawX > maxX, hitT = rawY < 2, hitB = rawY > maxY;
+      const prev = noteEdges.current;
+      if ((hitL && !prev.left) || (hitR && !prev.right) || (hitT && !prev.top) || (hitB && !prev.bottom)) bump.play();
+      noteEdges.current = { left: hitL, right: hitR, top: hitT, bottom: hitB };
+
+      const newPos = { x: cx, y: cy };
+      setNotePos(newPos);
+      sessionStorage.setItem('note-pos', JSON.stringify(newPos));
+    },
+    [getContainerRect, bump],
+  );
+
+  const handleNotePointerUp = useCallback(() => {
+    const ds = noteDragRef.current;
+    if (!ds) return;
+    const wasDrag = ds.moved;
+    noteDragRef.current = null;
+    if (!wasDrag) {
+      setNoteOpen(true);
+      resetIdleTimer();
+    }
+  }, [resetIdleTimer]);
+
   const handlePointerUp = useCallback(
     (_e: React.PointerEvent, id: ItemId) => {
       const ds = dragState.current;
@@ -311,8 +386,13 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
 
         {noteReleased && (
           <motion.div
-            className="group absolute cursor-pointer"
-            style={{ left: `${notePos.x}%`, top: `${notePos.y}%`, zIndex: 0 }}
+            className="group absolute w-max touch-none"
+            style={{
+              left: `${notePos.x}%`,
+              top: `${notePos.y}%`,
+              zIndex: noteZ,
+              cursor: noteDragRef.current ? 'grabbing' : 'grab',
+            }}
             initial={noteDropping ? { y: -30, opacity: 0, rotate: -20 } : false}
             animate={{ y: 0, opacity: 1, rotate: 8 }}
             transition={
@@ -321,9 +401,10 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                 : { duration: 0 }
             }
             onAnimationComplete={() => setNoteDropping(false)}
-            onClick={() => { setNoteOpen(true); resetIdleTimer(); }}
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.12 }}
+            onPointerDown={handleNotePointerDown}
+            onPointerMove={handleNotePointerMove}
+            onPointerUp={handleNotePointerUp}
             role="button"
             tabIndex={0}
             aria-label={t('note.title', lang)}
