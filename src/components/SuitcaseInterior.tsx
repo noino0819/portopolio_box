@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SuitcaseOpen from '@/assets/SuitcaseOpen';
 import ItemNametag from '@/assets/ItemNametag';
@@ -79,11 +79,17 @@ const itemDefs: ItemDef[] = [
   },
 ];
 
-const DRAG_THRESHOLD = 6;
+const DRAG_THRESHOLD_MOUSE = 6;
+const DRAG_THRESHOLD_TOUCH = 12;
 const EDGE_HYST = 4;
+
+function useCanHover() {
+  return useMemo(() => window.matchMedia('(hover: hover) and (pointer: fine)').matches, []);
+}
 
 export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInteriorProps) {
   const reduced = useReducedMotion();
+  const canHover = useCanHover();
   const playOpen = useOpenSound();
   const sounds = useItemSounds();
   const bump = useBumpSound();
@@ -171,6 +177,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     startX: number;
     startY: number;
     moved: boolean;
+    pointerType: string;
   } | null>(null);
 
   const clampedEdges = useRef({ left: false, right: false, top: false, bottom: false });
@@ -201,6 +208,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         startX: positions[id].x,
         startY: positions[id].y,
         moved: false,
+        pointerType: e.pointerType,
       };
     },
     [positions, bringToFront, resetIdleTimer, bump],
@@ -215,7 +223,8 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       const dx = e.clientX - ds.startPointerX;
       const dy = e.clientY - ds.startPointerY;
 
-      if (!ds.moved && Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD) return;
+      const threshold = ds.pointerType === 'touch' ? DRAG_THRESHOLD_TOUCH : DRAG_THRESHOLD_MOUSE;
+      if (!ds.moved && Math.abs(dx) + Math.abs(dy) < threshold) return;
       ds.moved = true;
 
       if (ds.id === 'book' && !noteReleasedRef.current) {
@@ -281,6 +290,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     startX: number;
     startY: number;
     moved: boolean;
+    pointerType: string;
   } | null>(null);
   const noteEdges = useRef({ left: false, right: false, top: false, bottom: false });
 
@@ -298,6 +308,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         startX: notePos.x,
         startY: notePos.y,
         moved: false,
+        pointerType: e.pointerType,
       };
     },
     [notePos, bringToFront, resetIdleTimer, bump],
@@ -311,7 +322,8 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
 
       const dx = e.clientX - ds.startPointerX;
       const dy = e.clientY - ds.startPointerY;
-      if (!ds.moved && Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD) return;
+      const noteThreshold = ds.pointerType === 'touch' ? DRAG_THRESHOLD_TOUCH : DRAG_THRESHOLD_MOUSE;
+      if (!ds.moved && Math.abs(dx) + Math.abs(dy) < noteThreshold) return;
       ds.moved = true;
 
       const el = e.currentTarget as HTMLElement;
@@ -350,7 +362,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   }, [resetIdleTimer]);
 
   const handlePointerUp = useCallback(
-    (_e: React.PointerEvent, id: ItemId) => {
+    (e: React.PointerEvent, id: ItemId) => {
       const ds = dragState.current;
       if (!ds) return;
       const wasDrag = ds.moved;
@@ -359,11 +371,16 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       if (!wasDrag) {
         sounds[id]();
         bringToFront(id);
-        setTappedItem(id);
-        setTimeout(() => {
-          setTappedItem(null);
+        const isTouch = e.pointerType === 'touch';
+        if (isTouch) {
           onSelectItem(id);
-        }, 200);
+        } else {
+          setTappedItem(id);
+          setTimeout(() => {
+            setTappedItem(null);
+            onSelectItem(id);
+          }, 120);
+        }
       }
     },
     [sounds, onSelectItem, bringToFront],
@@ -408,7 +425,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                 : { duration: 0 }
             }
             onAnimationComplete={() => setNoteDropping(false)}
-            whileHover={{ scale: 1.12 }}
+            whileHover={canHover ? { scale: 1.12 } : undefined}
             onPointerDown={handleNotePointerDown}
             onPointerMove={handleNotePointerMove}
             onPointerUp={handleNotePointerUp}
@@ -419,7 +436,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
               if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setNoteOpen(true); }
             }}
           >
-            <div className="p-1 drop-shadow-lg group-hover:drop-shadow-2xl">
+            <div className="p-1 drop-shadow-lg hover-hover:group-hover:drop-shadow-2xl">
               <img
                 src={noteImg}
                 alt={t('note.title', lang)}
@@ -427,7 +444,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                 draggable={false}
               />
             </div>
-            <span className="mt-1 block text-center font-accent text-xs text-gold/80 opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="mt-1 block text-center font-accent text-xs text-gold/80 opacity-0 transition-opacity hover-hover:group-hover:opacity-100">
               {t('note.title', lang)}
             </span>
           </motion.div>
@@ -464,7 +481,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                       scale: { duration: 0.1, ease: 'easeOut', delay: 0 },
                     }
               }
-              whileHover={reduced ? {} : { scale: 1.12 }}
+              whileHover={reduced || !canHover ? undefined : { scale: 1.12 }}
               onPointerDown={(e) => handlePointerDown(e, id)}
               onPointerMove={handlePointerMove}
               onPointerUp={(e) => handlePointerUp(e, id)}
@@ -477,21 +494,17 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                   resetIdleTimer();
                   sounds[id]();
                   bringToFront(id);
-                  setTappedItem(id);
-                  setTimeout(() => {
-                    setTappedItem(null);
-                    onSelectItem(id);
-                  }, 200);
+                  onSelectItem(id);
                 }
               }}
             >
               <div
-                className={`p-2 transition-shadow duration-300 ${color} rounded-lg drop-shadow-lg group-hover:drop-shadow-2xl ${nudgeItem === id ? 'animate-nudge' : ''}`}
+                className={`p-2 transition-shadow duration-300 ${canHover ? color : ''} rounded-lg drop-shadow-lg hover-hover:group-hover:drop-shadow-2xl ${nudgeItem === id ? 'animate-nudge' : ''}`}
                 onAnimationEnd={() => { if (nudgeItem === id) setNudgeItem(null); }}
               >
                 <Component className={size} />
               </div>
-              <span className="mt-1 block text-center font-accent text-xs text-gold/80 opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="mt-1 block text-center font-accent text-xs text-gold/80 opacity-0 transition-opacity hover-hover:group-hover:opacity-100">
                 {label}
               </span>
             </motion.div>

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant hover-hover (@media (hover: hover));
+
 /* ── Design Tokens ── */
 @theme {
   --color-bg-dark: #1A1614;
