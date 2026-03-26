@@ -71,24 +71,26 @@ export default function App() {
   }, [navigateTo]);
 
   return (
-    <main className="min-h-dvh bg-bg-dark">
-      <h1 className="sr-only">{t('srOnly.title', lang)}</h1>
+    <>
       <Settings />
+      <main className="min-h-dvh bg-bg-dark">
+        <h1 className="sr-only">{t('srOnly.title', lang)}</h1>
 
-      <AnimatePresence mode="wait">
-        {screen === 'landing' && <Landing key="landing" onOpen={handleOpen} />}
-        {screen === 'interior' && (
-          <SuitcaseInterior
-            key="interior"
-            onSelectItem={handleSelectItem}
-            onBack={handleBack}
-          />
-        )}
-      </AnimatePresence>
+        <AnimatePresence mode="wait">
+          {screen === 'landing' && <Landing key="landing" onOpen={handleOpen} />}
+          {screen === 'interior' && (
+            <SuitcaseInterior
+              key="interior"
+              onSelectItem={handleSelectItem}
+              onBack={handleBack}
+            />
+          )}
+        </AnimatePresence>
 
-      <DetailPanel activeItem={activeItem} onClose={handleCloseDetail} />
+        <DetailPanel activeItem={activeItem} onClose={handleCloseDetail} />
 
-      <MusicPlayer activated={musicActivated} />
-    </main>
+        <MusicPlayer activated={musicActivated} />
+      </main>
+    </>
   );
 }
