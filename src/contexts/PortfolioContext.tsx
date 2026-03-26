@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import type {
   Profile,
   Education,
@@ -36,18 +36,31 @@ interface PortfolioContextType {
   meta: PortfolioMeta;
   data: PortfolioBundle;
   isOwner: boolean;
+  updateData: (data: PortfolioBundle) => void;
+  updateMeta: (meta: Partial<PortfolioMeta>) => void;
 }
 
 const PortfolioContext = createContext<PortfolioContextType | null>(null);
 
 export function PortfolioProvider({
-  meta,
-  data,
+  meta: initialMeta,
+  data: initialData,
   isOwner,
   children,
-}: PortfolioContextType & { children: ReactNode }) {
+}: { meta: PortfolioMeta; data: PortfolioBundle; isOwner: boolean; children: ReactNode }) {
+  const [data, setData] = useState(initialData);
+  const [meta, setMeta] = useState(initialMeta);
+
+  const updateData = useCallback((newData: PortfolioBundle) => {
+    setData(newData);
+  }, []);
+
+  const updateMeta = useCallback((partial: Partial<PortfolioMeta>) => {
+    setMeta((prev) => ({ ...prev, ...partial }));
+  }, []);
+
   return (
-    <PortfolioContext.Provider value={{ meta, data, isOwner }}>
+    <PortfolioContext.Provider value={{ meta, data, isOwner, updateData, updateMeta }}>
       {children}
     </PortfolioContext.Provider>
   );
@@ -68,4 +81,10 @@ export function usePortfolioMeta(): PortfolioMeta {
 export function useIsOwner(): boolean {
   const ctx = useContext(PortfolioContext);
   return ctx?.isOwner ?? false;
+}
+
+export function useUpdatePortfolio() {
+  const ctx = useContext(PortfolioContext);
+  if (!ctx) throw new Error('useUpdatePortfolio must be used within PortfolioProvider');
+  return { updateData: ctx.updateData, updateMeta: ctx.updateMeta };
 }

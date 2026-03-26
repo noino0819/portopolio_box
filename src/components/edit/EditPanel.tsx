@@ -1,12 +1,13 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
-import { usePortfolioMeta, usePortfolioData } from '@/contexts/PortfolioContext';
+import { usePortfolioMeta, usePortfolioData, useUpdatePortfolio } from '@/contexts/PortfolioContext';
 import { supabase } from '@/lib/supabase';
 import type { PortfolioBundle } from '@/contexts/PortfolioContext';
 import type { Profile, Education, Certification, Project, Award, Game, Album, Book, Hobby } from '@/data/portfolio';
+import EmojiInput from './EmojiInput';
 
-const LANGUAGES: Language[] = ['ko', 'en', 'ja', 'zh'];
+const ALL_LANGUAGES: Language[] = ['ko', 'en', 'ja', 'zh'];
 
 interface EditPanelProps {
   open: boolean;
@@ -107,6 +108,7 @@ function ProfileEditor({ profile, onChange }: { profile: Profile; onChange: (p: 
     <div className="space-y-4">
       <TextInput label="Name" value={profile.name} onChange={(v) => update('name', v)} />
       <TextInput label="Title" value={profile.title} onChange={(v) => update('title', v)} />
+      <TextInput label="Greeting (인사말)" value={profile.greeting ?? ''} onChange={(v) => update('greeting', v || undefined)} />
       <TextInput label="Headline" value={profile.headline} onChange={(v) => update('headline', v)} multiline />
 
       <div>
@@ -115,10 +117,10 @@ function ProfileEditor({ profile, onChange }: { profile: Profile; onChange: (p: 
           items={profile.bioPoints}
           onUpdate={(v) => update('bioPoints', v)}
           itemLabel="Bio"
-          createItem={() => ({ emoji: '', text: '' })}
+          createItem={() => ({ emoji: '💡', text: '' })}
           renderItem={(item, _, upd) => (
             <div className="flex gap-2">
-              <input type="text" value={item.emoji} onChange={(e) => upd({ ...item, emoji: e.target.value })} placeholder="Emoji" className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-center text-sm outline-none focus:border-gold/50" />
+              <EmojiInput value={item.emoji} onChange={(v) => upd({ ...item, emoji: v })} className="h-9 w-12" />
               <input type="text" value={item.text} onChange={(e) => upd({ ...item, text: e.target.value })} placeholder="Text" className="flex-1 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
             </div>
           )}
@@ -133,11 +135,11 @@ function ProfileEditor({ profile, onChange }: { profile: Profile; onChange: (p: 
           items={profile.contacts}
           onUpdate={(v) => update('contacts', v)}
           itemLabel="Contact"
-          createItem={() => ({ label: '', value: '', icon: '', url: '', tooltip: '' })}
+          createItem={() => ({ label: '', value: '', icon: '📌', url: '', tooltip: '' })}
           renderItem={(item, _, upd) => (
             <div className="space-y-2">
               <div className="flex gap-2">
-                <input type="text" value={item.icon} onChange={(e) => upd({ ...item, icon: e.target.value })} placeholder="Icon" className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-center text-sm outline-none focus:border-gold/50" />
+                <EmojiInput value={item.icon} onChange={(v) => upd({ ...item, icon: v })} className="h-9 w-12" />
                 <input type="text" value={item.label} onChange={(e) => upd({ ...item, label: e.target.value })} placeholder="Label" className="w-20 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
                 <input type="text" value={item.value} onChange={(e) => upd({ ...item, value: e.target.value })} placeholder="Value" className="flex-1 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
               </div>
@@ -153,10 +155,7 @@ function ProfileEditor({ profile, onChange }: { profile: Profile; onChange: (p: 
 
 function EducationEditor({ items, onChange }: { items: Education[]; onChange: (v: Education[]) => void }) {
   return (
-    <ArrayManager
-      items={items}
-      onUpdate={onChange}
-      itemLabel="Entry"
+    <ArrayManager items={items} onUpdate={onChange} itemLabel="Entry"
       createItem={() => ({ institution: '', period: '', details: [], status: '' })}
       renderItem={(item, _, upd) => (
         <div className="space-y-2">
@@ -174,21 +173,15 @@ function EducationEditor({ items, onChange }: { items: Education[]; onChange: (v
 
 function CertificationsEditor({ items, onChange }: { items: Certification[]; onChange: (v: Certification[]) => void }) {
   return (
-    <ArrayManager
-      items={items}
-      onUpdate={onChange}
-      itemLabel="Category"
-      createItem={() => ({ category: '', categoryIcon: '', items: [] })}
+    <ArrayManager items={items} onUpdate={onChange} itemLabel="Category"
+      createItem={() => ({ category: '', categoryIcon: '📜', items: [] })}
       renderItem={(cat, _, updCat) => (
         <div className="space-y-2">
           <div className="flex gap-2">
-            <input type="text" value={cat.categoryIcon} onChange={(e) => updCat({ ...cat, categoryIcon: e.target.value })} placeholder="Icon" className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-center text-sm outline-none focus:border-gold/50" />
+            <EmojiInput value={cat.categoryIcon} onChange={(v) => updCat({ ...cat, categoryIcon: v })} className="h-9 w-12" />
             <input type="text" value={cat.category} onChange={(e) => updCat({ ...cat, category: e.target.value })} placeholder="Category" className="flex-1 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
           </div>
-          <ArrayManager
-            items={cat.items}
-            onUpdate={(v) => updCat({ ...cat, items: v })}
-            itemLabel="Cert"
+          <ArrayManager items={cat.items} onUpdate={(v) => updCat({ ...cat, items: v })} itemLabel="Cert"
             createItem={() => ({ name: '', date: '', detail: undefined } as { name: string; date: string; detail?: string })}
             renderItem={(item, __, updItem) => (
               <div className="space-y-1.5">
@@ -208,10 +201,7 @@ function CertificationsEditor({ items, onChange }: { items: Certification[]; onC
 
 function ProjectsEditor({ items, onChange }: { items: Project[]; onChange: (v: Project[]) => void }) {
   return (
-    <ArrayManager
-      items={items}
-      onUpdate={onChange}
-      itemLabel="Project"
+    <ArrayManager items={items} onUpdate={onChange} itemLabel="Project"
       createItem={() => ({ title: '', period: '', affiliation: '', description: '', highlights: [], techs: [] })}
       renderItem={(item, _, upd) => (
         <div className="space-y-2">
@@ -233,10 +223,7 @@ function ProjectsEditor({ items, onChange }: { items: Project[]; onChange: (v: P
 
 function AwardsEditor({ items, onChange }: { items: Award[]; onChange: (v: Award[]) => void }) {
   return (
-    <ArrayManager
-      items={items}
-      onUpdate={onChange}
-      itemLabel="Award"
+    <ArrayManager items={items} onUpdate={onChange} itemLabel="Award"
       createItem={() => ({ title: '', grade: '', issuer: '', date: '', affiliation: '', description: '' })}
       renderItem={(item, _, upd) => (
         <div className="space-y-2">
@@ -258,10 +245,7 @@ function AwardsEditor({ items, onChange }: { items: Award[]; onChange: (v: Award
 
 function GamesEditor({ items, onChange }: { items: Game[]; onChange: (v: Game[]) => void }) {
   return (
-    <ArrayManager
-      items={items}
-      onUpdate={onChange}
-      itemLabel="Game"
+    <ArrayManager items={items} onUpdate={onChange} itemLabel="Game"
       createItem={() => ({ title: '', platform: '', comment: '' })}
       renderItem={(item, _, upd) => (
         <div className="space-y-2">
@@ -276,10 +260,7 @@ function GamesEditor({ items, onChange }: { items: Game[]; onChange: (v: Game[])
 
 function AlbumsEditor({ items, onChange }: { items: Album[]; onChange: (v: Album[]) => void }) {
   return (
-    <ArrayManager
-      items={items}
-      onUpdate={onChange}
-      itemLabel="Album"
+    <ArrayManager items={items} onUpdate={onChange} itemLabel="Album"
       createItem={() => ({ artist: '', title: '', comment: '' })}
       renderItem={(item, _, upd) => (
         <div className="space-y-2">
@@ -294,10 +275,7 @@ function AlbumsEditor({ items, onChange }: { items: Album[]; onChange: (v: Album
 
 function BooksEditor({ items, onChange }: { items: Book[]; onChange: (v: Book[]) => void }) {
   return (
-    <ArrayManager
-      items={items}
-      onUpdate={onChange}
-      itemLabel="Book"
+    <ArrayManager items={items} onUpdate={onChange} itemLabel="Book"
       createItem={() => ({ author: '', titles: [], comment: '' })}
       renderItem={(item, _, upd) => (
         <div className="space-y-2">
@@ -312,14 +290,11 @@ function BooksEditor({ items, onChange }: { items: Book[]; onChange: (v: Book[])
 
 function HobbiesEditor({ items, onChange }: { items: Hobby[]; onChange: (v: Hobby[]) => void }) {
   return (
-    <ArrayManager
-      items={items}
-      onUpdate={onChange}
-      itemLabel="Hobby"
-      createItem={() => ({ label: '', emoji: '' })}
+    <ArrayManager items={items} onUpdate={onChange} itemLabel="Hobby"
+      createItem={() => ({ label: '', emoji: '🎯' })}
       renderItem={(item, _, upd) => (
         <div className="flex gap-2">
-          <input type="text" value={item.emoji} onChange={(e) => upd({ ...item, emoji: e.target.value })} placeholder="Emoji" className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-center text-sm outline-none focus:border-gold/50" />
+          <EmojiInput value={item.emoji} onChange={(v) => upd({ ...item, emoji: v })} className="h-9 w-12" />
           <input type="text" value={item.label} onChange={(e) => upd({ ...item, label: e.target.value })} placeholder="Label" className="flex-1 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
         </div>
       )}
@@ -330,7 +305,7 @@ function HobbiesEditor({ items, onChange }: { items: Hobby[]; onChange: (v: Hobb
 function CdStoryEditor({ items, onChange }: { items: string[]; onChange: (v: string[]) => void }) {
   return (
     <div className="space-y-3">
-      <p className="text-[11px] text-card/40">Each paragraph can contain line breaks (Enter key).</p>
+      <p className="text-[11px] text-card/40">각 문단에서 Enter로 줄바꿈할 수 있어요.</p>
       {items.map((para, i) => (
         <div key={i} className="flex gap-2">
           <textarea
@@ -343,16 +318,23 @@ function CdStoryEditor({ items, onChange }: { items: string[]; onChange: (v: str
         </div>
       ))}
       <button type="button" onClick={() => onChange([...items, ''])} className="w-full rounded-lg border border-dashed border-white/10 py-2 text-xs text-card/50 hover:border-gold/30 hover:text-gold">
-        + Add Paragraph
+        + 문단 추가
       </button>
     </div>
   );
 }
 
+const EMPTY_BUNDLE: PortfolioBundle = {
+  profile: { name: '', title: '', headline: '', bioPoints: [], skills: [], contacts: [] },
+  education: [], certifications: [], projects: [], awards: [],
+  games: [], albums: [], books: [], hobbies: [], cdStory: [],
+};
+
 export default function EditPanel({ open, onClose }: EditPanelProps) {
   const { lang } = useLanguage();
   const meta = usePortfolioMeta();
   const currentData = usePortfolioData();
+  const { updateData, updateMeta } = useUpdatePortfolio();
 
   const [editLang, setEditLang] = useState<Language>(lang);
   const [activeSection, setActiveSection] = useState<Section>('profile');
@@ -362,6 +344,23 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [loadingLang, setLoadingLang] = useState(false);
+
+  const [availableLangs, setAvailableLangs] = useState<Language[]>(['ko']);
+  const [addingLang, setAddingLang] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    supabase
+      .from('portfolio_data')
+      .select('lang')
+      .eq('portfolio_id', meta.id)
+      .then(({ data }) => {
+        if (data) {
+          const langs = (data as { lang: string }[]).map((r) => r.lang as Language);
+          setAvailableLangs(langs.length > 0 ? langs : ['ko']);
+        }
+      });
+  }, [open, meta.id]);
 
   const loadLangData = useCallback(async (targetLang: Language) => {
     setLoadingLang(true);
@@ -373,7 +372,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
       .single();
 
     if (data) {
-      setDraft({
+      const loaded: PortfolioBundle = {
         profile: data.profile as PortfolioBundle['profile'],
         education: data.education as PortfolioBundle['education'],
         certifications: data.certifications as PortfolioBundle['certifications'],
@@ -384,7 +383,10 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
         books: data.books as PortfolioBundle['books'],
         hobbies: data.hobbies as PortfolioBundle['hobbies'],
         cdStory: data.cd_story as string[],
-      });
+      };
+      setDraft(loaded);
+    } else {
+      setDraft({ ...EMPTY_BUNDLE });
     }
     setLoadingLang(false);
   }, [meta.id]);
@@ -393,6 +395,41 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
     setEditLang(targetLang);
     await loadLangData(targetLang);
   }, [loadLangData]);
+
+  const handleAddLang = useCallback(async (targetLang: Language) => {
+    setAddingLang(true);
+    await supabase.from('portfolio_data').upsert({
+      portfolio_id: meta.id,
+      lang: targetLang,
+      profile: EMPTY_BUNDLE.profile as unknown as Record<string, unknown>,
+      education: [], certifications: [], projects: [], awards: [],
+      games: [], albums: [], books: [], hobbies: [], cd_story: [],
+    }, { onConflict: 'portfolio_id,lang' });
+
+    setAvailableLangs((prev) => [...prev, targetLang]);
+    setEditLang(targetLang);
+    setDraft({ ...EMPTY_BUNDLE });
+    setAddingLang(false);
+  }, [meta.id]);
+
+  const handleDeleteLang = useCallback(async (targetLang: Language) => {
+    if (targetLang === 'ko') return;
+    if (!confirm(`${LANGUAGE_LABELS[targetLang]} 데이터를 삭제하시겠습니까?`)) return;
+    await supabase
+      .from('portfolio_data')
+      .delete()
+      .eq('portfolio_id', meta.id)
+      .eq('lang', targetLang);
+    setAvailableLangs((prev) => prev.filter((l) => l !== targetLang));
+    setEditLang('ko');
+    await loadLangData('ko');
+  }, [meta.id, loadLangData]);
+
+  useEffect(() => {
+    if (editLang === lang) {
+      updateData(draft);
+    }
+  }, [draft, editLang, lang, updateData]);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
@@ -423,16 +460,19 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
           youtube_first_video_id: ytFirstVideoId || null,
         })
         .eq('id', meta.id);
+      updateMeta({ youtubePlaylistId: ytPlaylistId || null, youtubeFirstVideoId: ytFirstVideoId || null });
     }
 
     setSaving(false);
     setSaveMsg(dataErr ? `Error: ${dataErr.message}` : 'Saved!');
     setTimeout(() => setSaveMsg(null), 3000);
-  }, [meta.id, editLang, draft, ytPlaylistId, ytFirstVideoId, activeSection]);
+  }, [meta.id, editLang, draft, ytPlaylistId, ytFirstVideoId, activeSection, updateMeta]);
 
   const updateDraft = <K extends keyof PortfolioBundle>(key: K, value: PortfolioBundle[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
   };
+
+  const missingLangs = ALL_LANGUAGES.filter((l) => !availableLangs.includes(l));
 
   return (
     <AnimatePresence>
@@ -476,17 +516,59 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
             </div>
 
             {/* Language tabs */}
-            <div className="flex gap-1 border-b border-white/5 px-4 py-2">
-              {LANGUAGES.map((l) => (
-                <button
-                  key={l}
-                  type="button"
-                  onClick={() => handleLangSwitch(l)}
-                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${editLang === l ? 'bg-gold/15 text-gold' : 'text-card/50 hover:bg-white/5 hover:text-card/70'}`}
-                >
-                  {LANGUAGE_LABELS[l]}
-                </button>
+            <div className="flex items-center gap-1 border-b border-white/5 px-4 py-2">
+              {availableLangs.map((l) => (
+                <div key={l} className="group/lang relative">
+                  <button
+                    type="button"
+                    onClick={() => handleLangSwitch(l)}
+                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${editLang === l ? 'bg-gold/15 text-gold' : 'text-card/50 hover:bg-white/5 hover:text-card/70'}`}
+                  >
+                    {LANGUAGE_LABELS[l]}
+                  </button>
+                  {l !== 'ko' && editLang === l && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteLang(l)}
+                      className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent-red/80 text-[8px] text-white opacity-0 transition-opacity group-hover/lang:opacity-100"
+                      title="삭제"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
               ))}
+
+              {missingLangs.length > 0 && (
+                <div className="relative ml-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (missingLangs.length === 1) {
+                        handleAddLang(missingLangs[0]);
+                      }
+                    }}
+                    className="group rounded-md border border-dashed border-white/10 px-2 py-1.5 text-xs text-card/30 transition-colors hover:border-gold/30 hover:text-gold/70"
+                    disabled={addingLang}
+                  >
+                    {addingLang ? '...' : '+ 언어'}
+                  </button>
+                  {missingLangs.length > 1 && (
+                    <div className="absolute left-0 top-full z-50 mt-1 hidden rounded-lg border border-white/10 bg-bg-dark p-1 shadow-lg group-focus-within:block hover:block">
+                      {missingLangs.map((l) => (
+                        <button
+                          key={l}
+                          type="button"
+                          onClick={() => handleAddLang(l)}
+                          className="block w-full rounded-md px-3 py-1.5 text-left text-xs text-card/60 transition-colors hover:bg-white/5 hover:text-card"
+                        >
+                          {LANGUAGE_LABELS[l]}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Section tabs */}

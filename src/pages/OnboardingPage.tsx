@@ -106,31 +106,62 @@ export default function OnboardingPage() {
 
     const portfolioId = (portfolio as { id: string }).id;
 
-    const defaultProfile = {
-      name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New User',
-      title: 'Developer',
-      headline: 'Welcome to my portfolio!',
-      bioPoints: [{ emoji: '👋', text: 'Hello! This is my portfolio.' }],
-      skills: [],
-      contacts: [
-        ...(user.email ? [{ label: 'Email', value: user.email, url: `mailto:${user.email}`, icon: '✉️' }] : []),
+    const defaultData = {
+      portfolio_id: portfolioId,
+      lang: 'ko',
+      profile: {
+        name: '이름',
+        title: '직함을 입력하세요',
+        greeting: '안녕하세요,',
+        headline: '나를 소개하는 한 줄을 작성해보세요.',
+        bioPoints: [
+          { emoji: '🎨', text: '나를 표현하는 첫 번째 문장을 적어보세요.' },
+          { emoji: '🚀', text: '두 번째 자기소개 문장을 적어보세요.' },
+          { emoji: '🤝', text: '세 번째 자기소개 문장을 적어보세요.' },
+        ],
+        skills: ['Skill 1', 'Skill 2', 'Skill 3'],
+        contacts: [
+          ...(user.email ? [{ label: '이메일', value: user.email, url: `mailto:${user.email}`, icon: '✉️' }] : []),
+          { label: '깃허브', value: 'GitHub ID', url: 'https://github.com', icon: '😺' },
+        ],
+      },
+      education: [
+        { institution: '학교/회사명', period: '2020.03 - 2024.02', details: ['학과 또는 부서명'], status: '상태' },
+      ],
+      certifications: [
+        { category: 'IT', categoryIcon: '💻', items: [{ name: '자격증 이름', date: '2024.01' }] },
+      ],
+      projects: [
+        {
+          title: '프로젝트 이름',
+          period: '2024.01 - 2024.06',
+          affiliation: '소속',
+          description: '프로젝트에 대한 설명을 작성해보세요.',
+          highlights: ['주요 성과 1', '주요 성과 2'],
+          techs: ['React', 'TypeScript'],
+        },
+      ],
+      awards: [],
+      games: [
+        { title: '좋아하는 게임', platform: 'PC / Switch', comment: '한줄 코멘트' },
+      ],
+      albums: [
+        { artist: '아티스트', title: '앨범 제목', comment: '한줄 코멘트' },
+      ],
+      books: [
+        { author: '저자', titles: ['책 제목'], comment: '한줄 코멘트' },
+      ],
+      hobbies: [
+        { label: '취미 1', emoji: '💻' },
+        { label: '취미 2', emoji: '🎮' },
+      ],
+      cd_story: [
+        '여기에\n나만의 이야기를 적어보세요.',
+        '여러 문단으로\n나눌 수 있어요.',
       ],
     };
 
-    await supabase.from('portfolio_data').insert({
-      portfolio_id: portfolioId,
-      lang: 'ko',
-      profile: defaultProfile,
-      education: [],
-      certifications: [],
-      projects: [],
-      awards: [],
-      games: [],
-      albums: [],
-      books: [],
-      hobbies: [],
-      cd_story: [],
-    });
+    await supabase.from('portfolio_data').insert(defaultData);
 
     navigate(`/${slug}`, { replace: true });
   };

@@ -1,6 +1,7 @@
 export interface Profile {
   name: string;
   title: string;
+  greeting?: string;
   headline: string;
   bioPoints: { emoji: string; text: string }[];
   skills: string[];

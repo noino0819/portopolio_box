@@ -9,7 +9,7 @@ export default function NametagDetail() {
   return (
     <div className="space-y-6">
       <section aria-labelledby="profile-heading">
-        <p className="mb-1 text-sm text-card/50">{t('nametag.greeting', lang)}</p>
+        <p className="mb-1 text-sm text-card/50">{profile.greeting || t('nametag.greeting', lang)}</p>
         <h3 id="profile-heading" className="font-display text-xl font-extrabold leading-snug text-card sm:text-2xl">
           {profile.headline}
         </h3>
