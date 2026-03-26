@@ -15,10 +15,10 @@ export default function Settings() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed right-4 top-4 z-[70] rounded-xl border border-white/10 bg-white/5 p-2 backdrop-blur-md transition-colors hover:bg-white/10"
+        className="fixed right-4 top-4 z-[70] p-1 transition-opacity hover:opacity-80"
         aria-label={t('settings.title', lang)}
       >
-        <img src={gearImg} alt="" className="h-6 w-6" draggable={false} />
+        <img src={gearImg} alt="" className="h-9 w-9 drop-shadow-lg" draggable={false} />
       </button>
 
       <AnimatePresence>
