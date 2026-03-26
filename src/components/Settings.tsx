@@ -1,12 +1,22 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAvailableLangs, usePortfolioMeta } from '@/contexts/PortfolioContext';
-import QRCode from 'qrcode';
 import gearImg from '@/assets/gear.png';
+
+async function generateQrDataUrl(text: string, width: number): Promise<string> {
+  const QRCode = await import('qrcode');
+  const toDataURL = QRCode.toDataURL ?? QRCode.default?.toDataURL;
+  return toDataURL(text, {
+    width,
+    margin: 2,
+    color: { dark: '#1a1a2e', light: '#ffffff' },
+    errorCorrectionLevel: 'H',
+  });
+}
 
 export default function Settings() {
   const { lang, setLang } = useLanguage();
@@ -20,7 +30,6 @@ export default function Settings() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [qrOpen, setQrOpen] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const langOptions = (availableLangs.length > 0 ? availableLangs : ['ko']) as Language[];
 
   const portfolioUrl = `${window.location.origin}/${meta.slug}`;
@@ -28,12 +37,7 @@ export default function Settings() {
   const generateQr = useCallback(async () => {
     setQrOpen(true);
     try {
-      const url = await QRCode.toDataURL(portfolioUrl, {
-        width: 512,
-        margin: 2,
-        color: { dark: '#1a1a2e', light: '#ffffff' },
-        errorCorrectionLevel: 'H',
-      });
+      const url = await generateQrDataUrl(portfolioUrl, 512);
       setQrDataUrl(url);
     } catch {
       setQrDataUrl(null);
@@ -42,12 +46,7 @@ export default function Settings() {
 
   const downloadQr = useCallback(async () => {
     try {
-      const url = await QRCode.toDataURL(portfolioUrl, {
-        width: 1024,
-        margin: 2,
-        color: { dark: '#1a1a2e', light: '#ffffff' },
-        errorCorrectionLevel: 'H',
-      });
+      const url = await generateQrDataUrl(portfolioUrl, 1024);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${meta.slug}-qr.png`;
@@ -317,7 +316,6 @@ export default function Settings() {
                   </button>
                 </div>
               </div>
-              <canvas ref={qrCanvasRef} className="hidden" />
             </motion.div>
           </>
         )}
