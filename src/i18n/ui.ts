@@ -5,6 +5,12 @@ const ui = {
     hint: { ko: '두드려 안을 보기', en: 'Knock to look inside', ja: 'ノックして中を見る', zh: '敲一敲看看里面' },
     hintOpening: { ko: '안에 뭐가 있을까 ?', en: 'What could be inside?', ja: '中には何があるかな？', zh: '里面有什么呢？' },
     ariaLabel: { ko: '여행가방 두드려 열기', en: 'Knock the suitcase to open', ja: 'スーツケースをノックして開ける', zh: '敲击行李箱打开' },
+    credit: {
+      ko: '* 이 페이지는 기획부터 개발, 배포까지 Claude Opus 4.6을 활용하여 2시간동안 제작되었습니다.',
+      en: '* This page was planned, developed, and deployed in 2 hours using Claude Opus 4.6.',
+      ja: '* このページは企画から開発、デプロイまでClaude Opus 4.6を活用し、2時間で制作されました。',
+      zh: '* 本页面从策划到开发、部署，全程使用Claude Opus 4.6，在2小时内完成。',
+    },
   },
   interior: {
     back: { ko: '← 뒤로', en: '← Back', ja: '← 戻る', zh: '← 返回' },

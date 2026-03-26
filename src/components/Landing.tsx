@@ -96,7 +96,7 @@ export default function Landing({ onOpen }: LandingProps) {
       </motion.p>
 
       <p className="fixed bottom-4 right-4 text-[10px] leading-relaxed text-card/20">
-        * 이 페이지는 기획부터 개발, 배포까지 Claude Opus 4.6을 활용하여 2시간동안 제작되었습니다.
+        {t('landing.credit', lang)}
       </p>
     </motion.div>
   );
