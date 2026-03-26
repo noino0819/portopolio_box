@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import type {
   Profile,
   Education,
@@ -76,6 +76,10 @@ export function PortfolioProvider({
   const [data, setData] = useState(initialData);
   const [meta, setMeta] = useState(initialMeta);
   const [availableLangs, setAvailableLangs] = useState(initialLangs);
+
+  useEffect(() => { setData(initialData); }, [initialData]);
+  useEffect(() => { setMeta(initialMeta); }, [initialMeta]);
+  useEffect(() => { setAvailableLangs(initialLangs); }, [initialLangs]);
 
   const updateData = useCallback((newData: PortfolioBundle) => {
     setData(newData);
