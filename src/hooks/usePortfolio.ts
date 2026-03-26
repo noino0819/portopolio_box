@@ -110,8 +110,10 @@ export function usePortfolio(slug: string | undefined, lang: Language): UsePortf
           userId: p.user_id,
           youtubePlaylistId: p.youtube_playlist_id,
           youtubeFirstVideoId: p.youtube_first_video_id,
-          hiddenItems: (p.hidden_items as string[]) ?? [],
-          itemPositions: (p.item_positions as Record<string, { x: number; y: number }>) ?? {},
+          hiddenItems: Array.isArray(p.hidden_items) ? p.hidden_items as string[] : [],
+          itemPositions: (p.item_positions && typeof p.item_positions === 'object' && !Array.isArray(p.item_positions))
+            ? p.item_positions as Record<string, { x: number; y: number }>
+            : {},
         };
 
         if (dataError || !portfolioData) {

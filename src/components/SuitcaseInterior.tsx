@@ -97,9 +97,10 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   const { lang } = useLanguage();
   const portfolioData = usePortfolioData();
   const portfolioMeta = usePortfolioMeta();
+  const hiddenItems = portfolioMeta.hiddenItems ?? [];
   const visibleItems = useMemo(
-    () => itemDefs.filter((d) => !portfolioMeta.hiddenItems.includes(d.id)),
-    [portfolioMeta.hiddenItems],
+    () => itemDefs.filter((d) => !hiddenItems.includes(d.id)),
+    [hiddenItems],
   );
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -150,7 +151,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   }, []);
 
   const storageKey = `item-positions-${portfolioMeta.slug}`;
-  const customPos = portfolioMeta.itemPositions;
+  const customPos = portfolioMeta.itemPositions ?? {};
 
   const [positions, setPositions] = useState<Record<ItemId, { x: number; y: number }>>(() => {
     const saved = sessionStorage.getItem(storageKey);
