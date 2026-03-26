@@ -15,26 +15,9 @@ interface EditPanelProps {
   onClose: () => void;
 }
 
-type TopTab = 'items' | 'profile' | 'education' | 'certifications' | 'projects' | 'awards' | 'games' | 'albums' | 'books' | 'hobbies' | 'cdStory' | 'youtube';
-type ItemSubTab = 'config' | 'nametag' | 'book' | 'switch' | 'cd' | 'note';
+type TopTab = 'config' | 'nametag' | 'book' | 'switch' | 'cd' | 'note';
 
 const TOP_TAB_LABELS: Record<TopTab, Record<Language, string>> = {
-  items: { ko: '물건', en: 'Items', ja: 'アイテム', zh: '物品' },
-  profile: { ko: '프로필', en: 'Profile', ja: 'プロフィール', zh: '简介' },
-  education: { ko: '학력', en: 'Education', ja: '学歴', zh: '教育' },
-  certifications: { ko: '자격증', en: 'Certs', ja: '資格', zh: '证书' },
-  projects: { ko: '프로젝트', en: 'Projects', ja: 'PJ', zh: '项目' },
-  awards: { ko: '수상', en: 'Awards', ja: '受賞', zh: '获奖' },
-  games: { ko: '게임', en: 'Games', ja: 'ゲーム', zh: '游戏' },
-  albums: { ko: '앨범', en: 'Albums', ja: 'アルバム', zh: '专辑' },
-  books: { ko: '도서', en: 'Books', ja: '本', zh: '书' },
-  hobbies: { ko: '취미', en: 'Hobbies', ja: '趣味', zh: '爱好' },
-  cdStory: { ko: 'CD 스토리', en: 'CD Story', ja: 'CDストーリー', zh: 'CD故事' },
-  youtube: { ko: 'YouTube', en: 'YouTube', ja: 'YouTube', zh: 'YouTube' },
-};
-const TOP_TAB_IDS = Object.keys(TOP_TAB_LABELS) as TopTab[];
-
-const ITEM_SUB_TAB_LABELS: Record<ItemSubTab, Record<Language, string>> = {
   config: { ko: '구성', en: 'Config', ja: '構成', zh: '构成' },
   nametag: { ko: '🏷️ 이름표', en: '🏷️ Nametag', ja: '🏷️ 名札', zh: '🏷️ 名牌' },
   book: { ko: '📖 책', en: '📖 Book', ja: '📖 本', zh: '📖 书' },
@@ -42,7 +25,36 @@ const ITEM_SUB_TAB_LABELS: Record<ItemSubTab, Record<Language, string>> = {
   cd: { ko: '💿 CD', en: '💿 CD', ja: '💿 CD', zh: '💿 CD' },
   note: { ko: '📝 쪽지', en: '📝 Note', ja: '📝 メモ', zh: '📝 便签' },
 };
-const ITEM_SUB_TAB_IDS = Object.keys(ITEM_SUB_TAB_LABELS) as ItemSubTab[];
+const TOP_TAB_IDS = Object.keys(TOP_TAB_LABELS) as TopTab[];
+
+type SubTab = string;
+const SUB_TAB_MAP: Record<TopTab, { id: SubTab; label: Record<Language, string> }[]> = {
+  config: [],
+  nametag: [
+    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品' } },
+    { id: 'profile', label: { ko: '프로필', en: 'Profile', ja: 'プロフィール', zh: '简介' } },
+    { id: 'awards', label: { ko: '수상', en: 'Awards', ja: '受賞', zh: '获奖' } },
+  ],
+  book: [
+    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品' } },
+    { id: 'education', label: { ko: '학력', en: 'Education', ja: '学歴', zh: '教育' } },
+    { id: 'certifications', label: { ko: '자격증', en: 'Certs', ja: '資格', zh: '证书' } },
+    { id: 'projects', label: { ko: '프로젝트', en: 'Projects', ja: 'PJ', zh: '项目' } },
+  ],
+  switch: [
+    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品' } },
+    { id: 'games', label: { ko: '게임', en: 'Games', ja: 'ゲーム', zh: '游戏' } },
+    { id: 'hobbies', label: { ko: '취미', en: 'Hobbies', ja: '趣味', zh: '爱好' } },
+    { id: 'albums', label: { ko: '앨범', en: 'Albums', ja: 'アルバム', zh: '专辑' } },
+    { id: 'books', label: { ko: '도서', en: 'Books', ja: '本', zh: '书' } },
+  ],
+  cd: [
+    { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品' } },
+    { id: 'cdStory', label: { ko: 'CD 스토리', en: 'CD Story', ja: 'CDストーリー', zh: 'CD故事' } },
+    { id: 'youtube', label: { ko: 'YouTube', en: 'YouTube', ja: 'YouTube', zh: 'YouTube' } },
+  ],
+  note: [],
+};
 
 function TextInput({ label, value, onChange, multiline = false }: { label: string; value: string; onChange: (v: string) => void; multiline?: boolean }) {
   const cls = "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-card outline-none transition-colors focus:border-gold/50";
@@ -587,8 +599,8 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
   const { availableLangs, setAvailableLangs } = useAvailableLangs();
 
   const [editLang, setEditLang] = useState<Language>(lang);
-  const [activeTopTab, setActiveTopTab] = useState<TopTab>('profile');
-  const [activeItemSub, setActiveItemSub] = useState<ItemSubTab>('config');
+  const [activeTopTab, setActiveTopTab] = useState<TopTab>('nametag');
+  const [activeSubTab, setActiveSubTab] = useState<SubTab>('label');
   const [draft, setDraft] = useState<PortfolioBundle>({ ...currentData });
   const [ytPlaylistId, setYtPlaylistId] = useState(meta.youtubePlaylistId ?? '');
   const [ytFirstVideoId, setYtFirstVideoId] = useState(meta.youtubeFirstVideoId ?? '');
@@ -845,46 +857,51 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
             </div>
 
             {/* Section tabs */}
-            {/* Top tabs */}
+            {/* Top tabs (물건 선택) */}
             <div className="flex gap-1 overflow-x-auto border-b border-white/5 px-4 py-2 scrollbar-hide">
-              {TOP_TAB_IDS.map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setActiveTopTab(id)}
-                  className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                    activeTopTab === id
-                      ? 'bg-accent-purple/15 text-accent-purple'
-                      : 'text-card/40 hover:bg-white/5 hover:text-card/60'
-                  }`}
-                >
-                  {TOP_TAB_LABELS[id][lang]}
-                </button>
-              ))}
+              {TOP_TAB_IDS.map((id) => {
+                const isItemHidden = id !== 'config' && id !== 'note' && hiddenItems.includes(id);
+                const isNoteHidden = id === 'note' && hiddenItems.includes('note');
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTopTab(id);
+                      const subs = SUB_TAB_MAP[id];
+                      if (subs.length > 0) setActiveSubTab(subs[0].id);
+                    }}
+                    className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                      activeTopTab === id
+                        ? 'bg-accent-purple/15 text-accent-purple'
+                        : (isItemHidden || isNoteHidden)
+                          ? 'text-card/20 hover:bg-white/5 hover:text-card/40'
+                          : 'text-card/40 hover:bg-white/5 hover:text-card/60'
+                    }`}
+                  >
+                    {TOP_TAB_LABELS[id][lang]}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Item sub-tabs (only when "물건" selected) */}
-            {activeTopTab === 'items' && (
+            {/* Sub-tabs (하위 콘텐츠 선택) */}
+            {SUB_TAB_MAP[activeTopTab].length > 0 && (
               <div className="flex gap-1 overflow-x-auto border-b border-white/5 bg-white/[0.01] px-4 py-1.5 scrollbar-hide">
-                {ITEM_SUB_TAB_IDS.map((id) => {
-                  const isItemHidden = id !== 'config' && hiddenItems.includes(id);
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setActiveItemSub(id)}
-                      className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                        activeItemSub === id
-                          ? 'bg-gold/15 text-gold'
-                          : isItemHidden
-                            ? 'text-card/20 hover:bg-white/5 hover:text-card/40'
-                            : 'text-card/40 hover:bg-white/5 hover:text-card/60'
-                      }`}
-                    >
-                      {ITEM_SUB_TAB_LABELS[id][lang]}
-                    </button>
-                  );
-                })}
+                {SUB_TAB_MAP[activeTopTab].map((sub) => (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => setActiveSubTab(sub.id)}
+                    className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                      activeSubTab === sub.id
+                        ? 'bg-gold/15 text-gold'
+                        : 'text-card/40 hover:bg-white/5 hover:text-card/60'
+                    }`}
+                  >
+                    {sub.label[lang]}
+                  </button>
+                ))}
               </div>
             )}
 
@@ -896,28 +913,39 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                 </div>
               ) : (
                 <>
-                  {activeTopTab === 'items' && activeItemSub === 'config' && <ItemConfigEditor hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} />}
-                  {activeTopTab === 'items' && activeItemSub === 'nametag' && <SingleItemEditor itemId="nametag" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('nametag')} onToggleItem={handleToggleItem} />}
-                  {activeTopTab === 'items' && activeItemSub === 'book' && <SingleItemEditor itemId="book" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('book')} onToggleItem={handleToggleItem} />}
-                  {activeTopTab === 'items' && activeItemSub === 'switch' && <SingleItemEditor itemId="switch" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('switch')} onToggleItem={handleToggleItem} />}
-                  {activeTopTab === 'items' && activeItemSub === 'cd' && <SingleItemEditor itemId="cd" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('cd')} onToggleItem={handleToggleItem} />}
-                  {activeTopTab === 'items' && activeItemSub === 'note' && <NoteEditor noteContent={draft.noteContent ?? {}} onNoteContentChange={(v) => updateDraft('noteContent', v)} editLang={editLang} isHidden={hiddenItems.includes('note')} onToggleItem={handleToggleItem} />}
-                  {activeTopTab === 'profile' && <ProfileEditor profile={draft.profile} onChange={(v) => updateDraft('profile', v)} />}
-                  {activeTopTab === 'education' && <EducationEditor items={draft.education} onChange={(v) => updateDraft('education', v)} />}
-                  {activeTopTab === 'certifications' && <CertificationsEditor items={draft.certifications} onChange={(v) => updateDraft('certifications', v)} />}
-                  {activeTopTab === 'projects' && <ProjectsEditor items={draft.projects} onChange={(v) => updateDraft('projects', v)} />}
-                  {activeTopTab === 'awards' && <AwardsEditor items={draft.awards} onChange={(v) => updateDraft('awards', v)} />}
-                  {activeTopTab === 'games' && <GamesEditor items={draft.games} onChange={(v) => updateDraft('games', v)} />}
-                  {activeTopTab === 'albums' && <AlbumsEditor items={draft.albums} onChange={(v) => updateDraft('albums', v)} />}
-                  {activeTopTab === 'books' && <BooksEditor items={draft.books} onChange={(v) => updateDraft('books', v)} />}
-                  {activeTopTab === 'hobbies' && <HobbiesEditor items={draft.hobbies} onChange={(v) => updateDraft('hobbies', v)} />}
-                  {activeTopTab === 'cdStory' && <CdStoryEditor items={draft.cdStory} onChange={(v) => updateDraft('cdStory', v)} />}
-                  {activeTopTab === 'youtube' && (
+                  {/* 구성 */}
+                  {activeTopTab === 'config' && <ItemConfigEditor hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} />}
+
+                  {/* 이름표 */}
+                  {activeTopTab === 'nametag' && activeSubTab === 'label' && <SingleItemEditor itemId="nametag" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('nametag')} onToggleItem={handleToggleItem} />}
+                  {activeTopTab === 'nametag' && activeSubTab === 'profile' && <ProfileEditor profile={draft.profile} onChange={(v) => updateDraft('profile', v)} />}
+                  {activeTopTab === 'nametag' && activeSubTab === 'awards' && <AwardsEditor items={draft.awards} onChange={(v) => updateDraft('awards', v)} />}
+
+                  {/* 책 */}
+                  {activeTopTab === 'book' && activeSubTab === 'label' && <SingleItemEditor itemId="book" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('book')} onToggleItem={handleToggleItem} />}
+                  {activeTopTab === 'book' && activeSubTab === 'education' && <EducationEditor items={draft.education} onChange={(v) => updateDraft('education', v)} />}
+                  {activeTopTab === 'book' && activeSubTab === 'certifications' && <CertificationsEditor items={draft.certifications} onChange={(v) => updateDraft('certifications', v)} />}
+                  {activeTopTab === 'book' && activeSubTab === 'projects' && <ProjectsEditor items={draft.projects} onChange={(v) => updateDraft('projects', v)} />}
+
+                  {/* 게임기 */}
+                  {activeTopTab === 'switch' && activeSubTab === 'label' && <SingleItemEditor itemId="switch" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('switch')} onToggleItem={handleToggleItem} />}
+                  {activeTopTab === 'switch' && activeSubTab === 'games' && <GamesEditor items={draft.games} onChange={(v) => updateDraft('games', v)} />}
+                  {activeTopTab === 'switch' && activeSubTab === 'hobbies' && <HobbiesEditor items={draft.hobbies} onChange={(v) => updateDraft('hobbies', v)} />}
+                  {activeTopTab === 'switch' && activeSubTab === 'albums' && <AlbumsEditor items={draft.albums} onChange={(v) => updateDraft('albums', v)} />}
+                  {activeTopTab === 'switch' && activeSubTab === 'books' && <BooksEditor items={draft.books} onChange={(v) => updateDraft('books', v)} />}
+
+                  {/* CD */}
+                  {activeTopTab === 'cd' && activeSubTab === 'label' && <SingleItemEditor itemId="cd" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('cd')} onToggleItem={handleToggleItem} />}
+                  {activeTopTab === 'cd' && activeSubTab === 'cdStory' && <CdStoryEditor items={draft.cdStory} onChange={(v) => updateDraft('cdStory', v)} />}
+                  {activeTopTab === 'cd' && activeSubTab === 'youtube' && (
                     <div className="space-y-4">
                       <TextInput label="YouTube Playlist ID" value={ytPlaylistId} onChange={setYtPlaylistId} />
                       <TextInput label="YouTube First Video ID" value={ytFirstVideoId} onChange={setYtFirstVideoId} />
                     </div>
                   )}
+
+                  {/* 쪽지 */}
+                  {activeTopTab === 'note' && <NoteEditor noteContent={draft.noteContent ?? {}} onNoteContentChange={(v) => updateDraft('noteContent', v)} editLang={editLang} isHidden={hiddenItems.includes('note')} onToggleItem={handleToggleItem} />}
                 </>
               )}
             </div>
