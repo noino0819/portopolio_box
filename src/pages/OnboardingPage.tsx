@@ -160,6 +160,7 @@ export default function OnboardingPage() {
         '여러 문단으로\n나눌 수 있어요.',
       ],
       item_labels: {},
+      note_content: {},
     };
 
     await supabase.from('portfolio_data').insert(defaultData);

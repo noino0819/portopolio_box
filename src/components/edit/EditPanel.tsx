@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
 import { usePortfolioMeta, usePortfolioData, useUpdatePortfolio, useAvailableLangs } from '@/contexts/PortfolioContext';
 import { supabase } from '@/lib/supabase';
-import type { PortfolioBundle, ItemLabel } from '@/contexts/PortfolioContext';
+import type { PortfolioBundle, ItemLabel, NoteContent } from '@/contexts/PortfolioContext';
 import type { Profile, Education, Certification, Project, Award, Game, Album, Book, Hobby } from '@/data/portfolio';
 import { t } from '@/i18n/ui';
 import EmojiInput from './EmojiInput';
@@ -330,7 +330,7 @@ function CdStoryEditor({ items, onChange }: { items: string[]; onChange: (v: str
 const ITEM_IDS = ['nametag', 'book', 'switch', 'cd'] as const;
 const ITEM_EMOJI: Record<string, string> = { nametag: '🏷️', book: '📖', switch: '🎮', cd: '💿' };
 
-function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleItem, itemPositions, onPositionsChange, slug }: {
+function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleItem, itemPositions, onPositionsChange, slug, noteContent, onNoteContentChange }: {
   labels: Record<string, ItemLabel>;
   onChange: (v: Record<string, ItemLabel>) => void;
   editLang: Language;
@@ -339,6 +339,8 @@ function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleIte
   itemPositions: Record<string, { x: number; y: number }>;
   onPositionsChange: (v: Record<string, { x: number; y: number }>) => void;
   slug: string;
+  noteContent: NoteContent;
+  onNoteContentChange: (v: NoteContent) => void;
 }) {
   const updateItem = (id: string, field: keyof ItemLabel, value: string) => {
     const current = labels[id] ?? {};
@@ -455,6 +457,76 @@ function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleIte
           </div>
         );
       })}
+
+      {/* 쪽지 */}
+      {(() => {
+        const isNoteHidden = hiddenItems.includes('note');
+        return (
+          <div className={`rounded-lg border p-3 space-y-2 transition-opacity ${isNoteHidden ? 'border-white/5 bg-white/[0.01] opacity-50' : 'border-amber-500/20 bg-amber-500/[0.03]'}`}>
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-semibold text-card/70">📝 쪽지</h4>
+              <button
+                type="button"
+                onClick={() => onToggleItem('note')}
+                className={`rounded-md px-2 py-1 text-xs transition-colors ${isNoteHidden ? 'text-card/30 hover:text-card/60' : 'text-accent-teal/70 hover:text-accent-teal'}`}
+                title={isNoteHidden ? '표시하기' : '숨기기'}
+              >
+                {isNoteHidden ? '👁️‍🗨️ 숨김' : '👁️ 표시'}
+              </button>
+            </div>
+            {!isNoteHidden && (
+              <>
+                <p className="text-[10px] text-card/30">
+                  책을 위아래로 흔들면 떨어지는 쪽지입니다.
+                </p>
+                <TextInput
+                  label="제목"
+                  value={noteContent.title || t('note.title', editLang)}
+                  onChange={(v) => onNoteContentChange({ ...noteContent, title: v || undefined })}
+                />
+                <div className="space-y-1.5">
+                  <label className="text-[11px] text-card/50">내용</label>
+                  {(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)]).map((line, i) => (
+                    <div key={i} className="flex gap-1">
+                      <textarea
+                        value={line}
+                        onChange={(e) => {
+                          const lines = [...(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)])];
+                          lines[i] = e.target.value;
+                          onNoteContentChange({ ...noteContent, lines });
+                        }}
+                        rows={2}
+                        className="flex-1 resize-y rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const lines = [...(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)])];
+                          lines.splice(i, 1);
+                          onNoteContentChange({ ...noteContent, lines });
+                        }}
+                        className="self-start rounded px-2 py-1 text-xs text-accent-red/60 hover:bg-accent-red/10"
+                      >
+                        &#10005;
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const lines = [...(noteContent.lines?.length ? noteContent.lines : [t('note.line1', editLang), t('note.line2', editLang)]), ''];
+                      onNoteContentChange({ ...noteContent, lines });
+                    }}
+                    className="text-[11px] text-gold/70 hover:text-gold"
+                  >
+                    + 줄 추가
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -508,6 +580,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
         hobbies: data.hobbies as PortfolioBundle['hobbies'],
         cdStory: data.cd_story as string[],
         itemLabels: (data.item_labels as PortfolioBundle['itemLabels']) ?? {},
+        noteContent: (data.note_content as PortfolioBundle['noteContent']) ?? {},
       };
       setDraft(loaded);
     } else {
@@ -531,6 +604,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
       education: [], certifications: [], projects: [], awards: [],
       games: [], albums: [], books: [], hobbies: [], cd_story: [],
       item_labels: {},
+      note_content: {},
     }, { onConflict: 'portfolio_id,lang' });
 
     const newLangs = [...availableLangs, targetLang] as Language[];
@@ -588,6 +662,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
         hobbies: draft.hobbies as unknown as Record<string, unknown>[],
         cd_story: draft.cdStory as unknown as Record<string, unknown>[],
         item_labels: (draft.itemLabels ?? {}) as unknown as Record<string, unknown>,
+        note_content: (draft.noteContent ?? {}) as unknown as Record<string, unknown>,
       }, { onConflict: 'portfolio_id,lang' });
 
     await supabase
@@ -742,7 +817,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                 </div>
               ) : (
                 <>
-                  {activeSection === 'itemLabels' && <ItemLabelsEditor labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} />}
+                  {activeSection === 'itemLabels' && <ItemLabelsEditor labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} noteContent={draft.noteContent ?? {}} onNoteContentChange={(v) => updateDraft('noteContent', v)} />}
                   {activeSection === 'profile' && <ProfileEditor profile={draft.profile} onChange={(v) => updateDraft('profile', v)} />}
                   {activeSection === 'education' && <EducationEditor items={draft.education} onChange={(v) => updateDraft('education', v)} />}
                   {activeSection === 'certifications' && <CertificationsEditor items={draft.certifications} onChange={(v) => updateDraft('certifications', v)} />}

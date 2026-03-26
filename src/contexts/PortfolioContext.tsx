@@ -17,6 +17,11 @@ export interface ItemLabel {
   subtitle?: string;
 }
 
+export interface NoteContent {
+  title?: string;
+  lines?: string[];
+}
+
 export interface PortfolioBundle {
   profile: Profile;
   education: Education[];
@@ -29,6 +34,7 @@ export interface PortfolioBundle {
   hobbies: Hobby[];
   cdStory: string[];
   itemLabels?: Record<string, ItemLabel>;
+  noteContent?: NoteContent;
 }
 
 export interface ItemPosition {

@@ -98,10 +98,12 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   const portfolioData = usePortfolioData();
   const portfolioMeta = usePortfolioMeta();
   const hiddenItems = portfolioMeta.hiddenItems ?? [];
+  const noteEnabled = !hiddenItems.includes('note');
   const visibleItems = useMemo(
     () => itemDefs.filter((d) => !hiddenItems.includes(d.id)),
     [hiddenItems],
   );
+  const noteContent = portfolioData.noteContent;
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [tappedItem, setTappedItem] = useState<ItemId | null>(null);
@@ -241,7 +243,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       if (!ds.moved && Math.abs(dx) + Math.abs(dy) < threshold) return;
       ds.moved = true;
 
-      if (ds.id === 'book' && !noteReleasedRef.current) {
+      if (ds.id === 'book' && !noteReleasedRef.current && noteEnabled) {
         const shake = bookShakeRef.current;
         const deltaY = e.clientY - shake.lastY;
         const MIN_MOVE = 10;
@@ -422,7 +424,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       <div ref={containerRef} className="relative aspect-square w-full max-w-[500px]">
         <SuitcaseOpen className="absolute inset-0 h-full w-full" />
 
-        {noteReleased && (
+        {noteEnabled && noteReleased && (
           <motion.div
             className="group absolute w-max touch-none"
             style={{
@@ -558,11 +560,13 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                 <div className="flex flex-col items-center gap-3">
                   <img src={noteImg} alt="" className="w-14" draggable={false} />
                   <h3 className="font-display text-lg font-bold text-amber-900">
-                    {t('note.title', lang)}
+                    {noteContent?.title || t('note.title', lang)}
                   </h3>
                   <div className="w-10 border-t border-amber-300/60" />
                   <p className="whitespace-pre-line text-center font-accent text-sm leading-relaxed text-amber-800">
-                    {t('note.line1', lang)}{'\n'}{t('note.line2', lang)}
+                    {noteContent?.lines?.length
+                      ? noteContent.lines.join('\n')
+                      : `${t('note.line1', lang)}\n${t('note.line2', lang)}`}
                   </p>
                 </div>
               </div>
