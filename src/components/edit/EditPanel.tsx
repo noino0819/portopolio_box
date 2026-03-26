@@ -36,7 +36,8 @@ const SECTION_LABELS: Record<Section, Record<Language, string>> = {
   cdStory: { ko: 'CD 스토리', en: 'CD Story', ja: 'CDストーリー', zh: 'CD故事' },
   youtube: { ko: 'YouTube', en: 'YouTube', ja: 'YouTube', zh: 'YouTube' },
 };
-const SECTION_IDS = Object.keys(SECTION_LABELS) as Section[];
+const ITEM_SECTION_IDS: Section[] = ['itemConfig', 'item_nametag', 'item_book', 'item_switch', 'item_cd', 'item_note'];
+const DATA_SECTION_IDS: Section[] = ['profile', 'education', 'certifications', 'projects', 'awards', 'games', 'albums', 'books', 'hobbies', 'cdStory', 'youtube'];
 
 function TextInput({ label, value, onChange, multiline = false }: { label: string; value: string; onChange: (v: string) => void; multiline?: boolean }) {
   const cls = "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-card outline-none transition-colors focus:border-gold/50";
@@ -838,8 +839,9 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
             </div>
 
             {/* Section tabs */}
-            <div className="flex gap-1 overflow-x-auto border-b border-white/5 px-4 py-2 scrollbar-hide">
-              {SECTION_IDS.map((id) => {
+            {/* Item tabs row */}
+            <div className="flex gap-1 overflow-x-auto border-b border-white/5 px-4 pb-1.5 pt-2 scrollbar-hide">
+              {ITEM_SECTION_IDS.map((id) => {
                 const itemIdMap: Record<string, string> = { item_nametag: 'nametag', item_book: 'book', item_switch: 'switch', item_cd: 'cd', item_note: 'note' };
                 const mappedItemId = itemIdMap[id];
                 const isItemHidden = mappedItemId ? hiddenItems.includes(mappedItemId) : false;
@@ -850,7 +852,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                     onClick={() => setActiveSection(id)}
                     className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
                       activeSection === id
-                        ? 'bg-accent-purple/15 text-accent-purple'
+                        ? 'bg-gold/15 text-gold'
                         : isItemHidden
                           ? 'text-card/20 hover:bg-white/5 hover:text-card/40'
                           : 'text-card/40 hover:bg-white/5 hover:text-card/60'
@@ -860,6 +862,24 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                   </button>
                 );
               })}
+            </div>
+
+            {/* Data tabs row */}
+            <div className="flex gap-1 overflow-x-auto border-b border-white/5 px-4 pb-2 pt-1.5 scrollbar-hide">
+              {DATA_SECTION_IDS.map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setActiveSection(id)}
+                  className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                    activeSection === id
+                      ? 'bg-accent-purple/15 text-accent-purple'
+                      : 'text-card/40 hover:bg-white/5 hover:text-card/60'
+                  }`}
+                >
+                  {SECTION_LABELS[id][lang]}
+                </button>
+              ))}
             </div>
 
             {/* Content */}
