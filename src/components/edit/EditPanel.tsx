@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
-import { usePortfolioMeta, usePortfolioData, useUpdatePortfolio } from '@/contexts/PortfolioContext';
+import { usePortfolioMeta, usePortfolioData, useUpdatePortfolio, useAvailableLangs } from '@/contexts/PortfolioContext';
 import { supabase } from '@/lib/supabase';
 import type { PortfolioBundle, ItemLabel } from '@/contexts/PortfolioContext';
 import type { Profile, Education, Certification, Project, Award, Game, Album, Book, Hobby } from '@/data/portfolio';
@@ -17,20 +17,21 @@ interface EditPanelProps {
 
 type Section = 'itemLabels' | 'profile' | 'education' | 'certifications' | 'projects' | 'awards' | 'games' | 'albums' | 'books' | 'hobbies' | 'cdStory' | 'youtube';
 
-const SECTIONS: { id: Section; label: string }[] = [
-  { id: 'itemLabels', label: '개체 이름' },
-  { id: 'profile', label: 'Profile' },
-  { id: 'education', label: 'Education' },
-  { id: 'certifications', label: 'Certifications' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'awards', label: 'Awards' },
-  { id: 'games', label: 'Games' },
-  { id: 'albums', label: 'Albums' },
-  { id: 'books', label: 'Books' },
-  { id: 'hobbies', label: 'Hobbies' },
-  { id: 'cdStory', label: 'CD Story' },
-  { id: 'youtube', label: 'YouTube' },
-];
+const SECTION_LABELS: Record<Section, Record<Language, string>> = {
+  itemLabels: { ko: '물건', en: 'Items', ja: 'アイテム', zh: '物品' },
+  profile: { ko: '프로필', en: 'Profile', ja: 'プロフィール', zh: '简介' },
+  education: { ko: '학력', en: 'Education', ja: '学歴', zh: '教育' },
+  certifications: { ko: '자격증', en: 'Certs', ja: '資格', zh: '证书' },
+  projects: { ko: '프로젝트', en: 'Projects', ja: 'PJ', zh: '项目' },
+  awards: { ko: '수상', en: 'Awards', ja: '受賞', zh: '获奖' },
+  games: { ko: '게임', en: 'Games', ja: 'ゲーム', zh: '游戏' },
+  albums: { ko: '앨범', en: 'Albums', ja: 'アルバム', zh: '专辑' },
+  books: { ko: '도서', en: 'Books', ja: '本', zh: '书' },
+  hobbies: { ko: '취미', en: 'Hobbies', ja: '趣味', zh: '爱好' },
+  cdStory: { ko: 'CD 스토리', en: 'CD Story', ja: 'CDストーリー', zh: 'CD故事' },
+  youtube: { ko: 'YouTube', en: 'YouTube', ja: 'YouTube', zh: 'YouTube' },
+};
+const SECTION_IDS = Object.keys(SECTION_LABELS) as Section[];
 
 function TextInput({ label, value, onChange, multiline = false }: { label: string; value: string; onChange: (v: string) => void; multiline?: boolean }) {
   const cls = "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-card outline-none transition-colors focus:border-gold/50";
@@ -327,17 +328,14 @@ function CdStoryEditor({ items, onChange }: { items: string[]; onChange: (v: str
 }
 
 const ITEM_IDS = ['nametag', 'book', 'switch', 'cd'] as const;
-const ITEM_DISPLAY: Record<string, string> = {
-  nametag: '🏷️ 이름표 (Nametag)',
-  book: '📖 책 (Book)',
-  switch: '🎮 게임기 (Console)',
-  cd: '💿 CD',
-};
+const ITEM_EMOJI: Record<string, string> = { nametag: '🏷️', book: '📖', switch: '🎮', cd: '💿' };
 
-function ItemLabelsEditor({ labels, onChange, editLang }: {
+function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleItem }: {
   labels: Record<string, ItemLabel>;
   onChange: (v: Record<string, ItemLabel>) => void;
   editLang: Language;
+  hiddenItems: string[];
+  onToggleItem: (id: string) => void;
 }) {
   const updateItem = (id: string, field: keyof ItemLabel, value: string) => {
     const current = labels[id] ?? {};
@@ -345,31 +343,48 @@ function ItemLabelsEditor({ labels, onChange, editLang }: {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <p className="text-[11px] text-card/40">
-        가방 안 개체들의 이름, 설명, 소개 문구를 변경할 수 있어요. 비워두면 기본값이 사용됩니다.
+        가방 안 물건의 이름, 설명, 소개 문구를 자유롭게 수정하세요. 눈 아이콘으로 표시/숨기기를 전환할 수 있어요.
       </p>
       {ITEM_IDS.map((id) => {
         const item = labels[id] ?? {};
+        const isHidden = hiddenItems.includes(id);
         return (
-          <div key={id} className="rounded-lg border border-white/5 bg-white/[0.02] p-3 space-y-2">
-            <h4 className="text-xs font-semibold text-card/70">{ITEM_DISPLAY[id]}</h4>
-            <TextInput
-              label={`이름 (기본: ${t(`items.${id}.label`, editLang)})`}
-              value={item.label ?? ''}
-              onChange={(v) => updateItem(id, 'label', v)}
-            />
-            <TextInput
-              label={`설명 (기본: ${t(`items.${id}.sublabel`, editLang)})`}
-              value={item.sublabel ?? ''}
-              onChange={(v) => updateItem(id, 'sublabel', v)}
-            />
-            <TextInput
-              label={`소개 문구 (기본: ${t(`items.${id}.subtitle`, editLang)})`}
-              value={item.subtitle ?? ''}
-              onChange={(v) => updateItem(id, 'subtitle', v)}
-              multiline
-            />
+          <div key={id} className={`rounded-lg border p-3 space-y-2 transition-opacity ${isHidden ? 'border-white/5 bg-white/[0.01] opacity-50' : 'border-white/10 bg-white/[0.02]'}`}>
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-semibold text-card/70">
+                {ITEM_EMOJI[id]} {item.label || t(`items.${id}.label`, editLang)}
+              </h4>
+              <button
+                type="button"
+                onClick={() => onToggleItem(id)}
+                className={`rounded-md px-2 py-1 text-xs transition-colors ${isHidden ? 'text-card/30 hover:text-card/60' : 'text-accent-teal/70 hover:text-accent-teal'}`}
+                title={isHidden ? '표시하기' : '숨기기'}
+              >
+                {isHidden ? '👁️‍🗨️ 숨김' : '👁️ 표시'}
+              </button>
+            </div>
+            {!isHidden && (
+              <>
+                <TextInput
+                  label="이름"
+                  value={item.label || t(`items.${id}.label`, editLang)}
+                  onChange={(v) => updateItem(id, 'label', v)}
+                />
+                <TextInput
+                  label="설명"
+                  value={item.sublabel || t(`items.${id}.sublabel`, editLang)}
+                  onChange={(v) => updateItem(id, 'sublabel', v)}
+                />
+                <TextInput
+                  label="소개 문구"
+                  value={item.subtitle || t(`items.${id}.subtitle`, editLang)}
+                  onChange={(v) => updateItem(id, 'subtitle', v)}
+                  multiline
+                />
+              </>
+            )}
           </div>
         );
       })}
@@ -388,6 +403,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
   const meta = usePortfolioMeta();
   const currentData = usePortfolioData();
   const { updateData, updateMeta } = useUpdatePortfolio();
+  const { availableLangs, setAvailableLangs } = useAvailableLangs();
 
   const [editLang, setEditLang] = useState<Language>(lang);
   const [activeSection, setActiveSection] = useState<Section>('profile');
@@ -397,23 +413,10 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [loadingLang, setLoadingLang] = useState(false);
+  const [hiddenItems, setHiddenItems] = useState<string[]>(meta.hiddenItems ?? []);
 
-  const [availableLangs, setAvailableLangs] = useState<Language[]>(['ko']);
   const [addingLang, setAddingLang] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    supabase
-      .from('portfolio_data')
-      .select('lang')
-      .eq('portfolio_id', meta.id)
-      .then(({ data }) => {
-        if (data) {
-          const langs = (data as { lang: string }[]).map((r) => r.lang as Language);
-          setAvailableLangs(langs.length > 0 ? langs : ['ko']);
-        }
-      });
-  }, [open, meta.id]);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
 
   const loadLangData = useCallback(async (targetLang: Language) => {
     setLoadingLang(true);
@@ -452,6 +455,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
 
   const handleAddLang = useCallback(async (targetLang: Language) => {
     setAddingLang(true);
+    setLangMenuOpen(false);
     await supabase.from('portfolio_data').upsert({
       portfolio_id: meta.id,
       lang: targetLang,
@@ -461,11 +465,12 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
       item_labels: {},
     }, { onConflict: 'portfolio_id,lang' });
 
-    setAvailableLangs((prev) => [...prev, targetLang]);
+    const newLangs = [...availableLangs, targetLang] as Language[];
+    setAvailableLangs(newLangs);
     setEditLang(targetLang);
     setDraft({ ...EMPTY_BUNDLE });
     setAddingLang(false);
-  }, [meta.id]);
+  }, [meta.id, availableLangs, setAvailableLangs]);
 
   const handleDeleteLang = useCallback(async (targetLang: Language) => {
     if (targetLang === 'ko') return;
@@ -475,10 +480,19 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
       .delete()
       .eq('portfolio_id', meta.id)
       .eq('lang', targetLang);
-    setAvailableLangs((prev) => prev.filter((l) => l !== targetLang));
+    const newLangs = availableLangs.filter((l) => l !== targetLang);
+    setAvailableLangs(newLangs);
     setEditLang('ko');
     await loadLangData('ko');
-  }, [meta.id, loadLangData]);
+  }, [meta.id, loadLangData, availableLangs, setAvailableLangs]);
+
+  const handleToggleItem = useCallback((id: string) => {
+    setHiddenItems((prev) => {
+      const next = prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id];
+      updateMeta({ hiddenItems: next });
+      return next;
+    });
+  }, [updateMeta]);
 
   useEffect(() => {
     if (editLang === lang) {
@@ -508,27 +522,31 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
         item_labels: (draft.itemLabels ?? {}) as unknown as Record<string, unknown>,
       }, { onConflict: 'portfolio_id,lang' });
 
-    if (activeSection === 'youtube') {
-      await supabase
-        .from('portfolios')
-        .update({
-          youtube_playlist_id: ytPlaylistId || null,
-          youtube_first_video_id: ytFirstVideoId || null,
-        })
-        .eq('id', meta.id);
-      updateMeta({ youtubePlaylistId: ytPlaylistId || null, youtubeFirstVideoId: ytFirstVideoId || null });
-    }
+    await supabase
+      .from('portfolios')
+      .update({
+        youtube_playlist_id: ytPlaylistId || null,
+        youtube_first_video_id: ytFirstVideoId || null,
+        hidden_items: hiddenItems,
+      })
+      .eq('id', meta.id);
+    updateMeta({
+      youtubePlaylistId: ytPlaylistId || null,
+      youtubeFirstVideoId: ytFirstVideoId || null,
+      hiddenItems,
+    });
 
     setSaving(false);
     setSaveMsg(dataErr ? `Error: ${dataErr.message}` : 'Saved!');
     setTimeout(() => setSaveMsg(null), 3000);
-  }, [meta.id, editLang, draft, ytPlaylistId, ytFirstVideoId, activeSection, updateMeta]);
+  }, [meta.id, editLang, draft, ytPlaylistId, ytFirstVideoId, hiddenItems, updateMeta]);
 
   const updateDraft = <K extends keyof PortfolioBundle>(key: K, value: PortfolioBundle[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
   };
 
-  const missingLangs = ALL_LANGUAGES.filter((l) => !availableLangs.includes(l));
+  const typedAvailableLangs = availableLangs as Language[];
+  const missingLangs = ALL_LANGUAGES.filter((l) => !typedAvailableLangs.includes(l));
 
   return (
     <AnimatePresence>
@@ -573,7 +591,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
 
             {/* Language tabs */}
             <div className="flex items-center gap-1 border-b border-white/5 px-4 py-2">
-              {availableLangs.map((l) => (
+              {typedAvailableLangs.map((l) => (
                 <div key={l} className="group/lang relative">
                   <button
                     type="button"
@@ -602,26 +620,31 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                     onClick={() => {
                       if (missingLangs.length === 1) {
                         handleAddLang(missingLangs[0]);
+                      } else {
+                        setLangMenuOpen((prev) => !prev);
                       }
                     }}
-                    className="group rounded-md border border-dashed border-white/10 px-2 py-1.5 text-xs text-card/30 transition-colors hover:border-gold/30 hover:text-gold/70"
+                    className="rounded-md border border-dashed border-white/10 px-2 py-1.5 text-xs text-card/30 transition-colors hover:border-gold/30 hover:text-gold/70"
                     disabled={addingLang}
                   >
                     {addingLang ? '...' : '+ 언어'}
                   </button>
-                  {missingLangs.length > 1 && (
-                    <div className="absolute left-0 top-full z-50 mt-1 hidden rounded-lg border border-white/10 bg-bg-dark p-1 shadow-lg group-focus-within:block hover:block">
-                      {missingLangs.map((l) => (
-                        <button
-                          key={l}
-                          type="button"
-                          onClick={() => handleAddLang(l)}
-                          className="block w-full rounded-md px-3 py-1.5 text-left text-xs text-card/60 transition-colors hover:bg-white/5 hover:text-card"
-                        >
-                          {LANGUAGE_LABELS[l]}
-                        </button>
-                      ))}
-                    </div>
+                  {langMenuOpen && missingLangs.length > 1 && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setLangMenuOpen(false)} />
+                      <div className="absolute left-0 top-full z-50 mt-1 rounded-lg border border-white/10 bg-bg-dark p-1 shadow-lg">
+                        {missingLangs.map((l) => (
+                          <button
+                            key={l}
+                            type="button"
+                            onClick={() => handleAddLang(l)}
+                            className="block w-full rounded-md px-3 py-1.5 text-left text-xs text-card/60 transition-colors hover:bg-white/5 hover:text-card"
+                          >
+                            {LANGUAGE_LABELS[l]}
+                          </button>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               )}
@@ -629,14 +652,14 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
 
             {/* Section tabs */}
             <div className="flex gap-1 overflow-x-auto border-b border-white/5 px-4 py-2 scrollbar-hide">
-              {SECTIONS.map((s) => (
+              {SECTION_IDS.map((id) => (
                 <button
-                  key={s.id}
+                  key={id}
                   type="button"
-                  onClick={() => setActiveSection(s.id)}
-                  className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${activeSection === s.id ? 'bg-accent-purple/15 text-accent-purple' : 'text-card/40 hover:bg-white/5 hover:text-card/60'}`}
+                  onClick={() => setActiveSection(id)}
+                  className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${activeSection === id ? 'bg-accent-purple/15 text-accent-purple' : 'text-card/40 hover:bg-white/5 hover:text-card/60'}`}
                 >
-                  {s.label}
+                  {SECTION_LABELS[id][lang]}
                 </button>
               ))}
             </div>
@@ -649,7 +672,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                 </div>
               ) : (
                 <>
-                  {activeSection === 'itemLabels' && <ItemLabelsEditor labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} />}
+                  {activeSection === 'itemLabels' && <ItemLabelsEditor labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} hiddenItems={hiddenItems} onToggleItem={handleToggleItem} />}
                   {activeSection === 'profile' && <ProfileEditor profile={draft.profile} onChange={(v) => updateDraft('profile', v)} />}
                   {activeSection === 'education' && <EducationEditor items={draft.education} onChange={(v) => updateDraft('education', v)} />}
                   {activeSection === 'certifications' && <CertificationsEditor items={draft.certifications} onChange={(v) => updateDraft('certifications', v)} />}

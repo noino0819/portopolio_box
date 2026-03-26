@@ -29,7 +29,7 @@ function NotFoundScreen() {
 export default function PortfolioPage() {
   const { slug } = useParams<{ slug: string }>();
   const { lang } = useLanguage();
-  const { meta, data, loading, error } = usePortfolio(slug, lang);
+  const { meta, data, availableLangs, loading, error } = usePortfolio(slug, lang);
   const { user } = useAuth();
 
   if (loading) return <LoadingScreen />;
@@ -38,7 +38,7 @@ export default function PortfolioPage() {
   const isOwner = !!user && !!meta.userId && user.id === meta.userId;
 
   return (
-    <PortfolioProvider meta={meta} data={data} isOwner={isOwner}>
+    <PortfolioProvider meta={meta} data={data} isOwner={isOwner} availableLangs={availableLangs}>
       <App />
     </PortfolioProvider>
   );

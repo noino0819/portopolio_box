@@ -9,6 +9,7 @@ interface PortfolioRow {
   slug: string;
   youtube_playlist_id: string | null;
   youtube_first_video_id: string | null;
+  hidden_items: string[] | null;
 }
 
 interface PortfolioDataRow {
@@ -44,6 +45,7 @@ function mapDataRow(row: PortfolioDataRow): PortfolioBundle {
 interface UsePortfolioResult {
   meta: PortfolioMeta | null;
   data: PortfolioBundle | null;
+  availableLangs: string[];
   loading: boolean;
   error: string | null;
 }
@@ -51,6 +53,7 @@ interface UsePortfolioResult {
 export function usePortfolio(slug: string | undefined, lang: Language): UsePortfolioResult {
   const [meta, setMeta] = useState<PortfolioMeta | null>(null);
   const [data, setData] = useState<PortfolioBundle | null>(null);
+  const [availableLangs, setAvailableLangs] = useState<string[]>(['ko']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,6 +86,15 @@ export function usePortfolio(slug: string | undefined, lang: Language): UsePortf
 
       const p = portfolio as unknown as PortfolioRow;
 
+      const { data: langRows } = await supabase
+        .from('portfolio_data')
+        .select('lang')
+        .eq('portfolio_id', p.id);
+      const langs = langRows
+        ? (langRows as { lang: string }[]).map((r) => r.lang)
+        : ['ko'];
+      if (!cancelled) setAvailableLangs(langs.length > 0 ? langs : ['ko']);
+
       const { data: portfolioData, error: dataError } = await supabase
         .from('portfolio_data')
         .select('*')
@@ -97,6 +109,7 @@ export function usePortfolio(slug: string | undefined, lang: Language): UsePortf
           userId: p.user_id,
           youtubePlaylistId: p.youtube_playlist_id,
           youtubeFirstVideoId: p.youtube_first_video_id,
+          hiddenItems: (p.hidden_items as string[]) ?? [],
         };
 
         if (dataError || !portfolioData) {
@@ -125,5 +138,5 @@ export function usePortfolio(slug: string | undefined, lang: Language): UsePortf
     return () => { cancelled = true; };
   }, [slug, lang]);
 
-  return { meta, data, loading, error };
+  return { meta, data, availableLangs, loading, error };
 }

@@ -4,15 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAvailableLangs } from '@/contexts/PortfolioContext';
 import gearImg from '@/assets/gear.png';
-
-const LANGUAGES: Language[] = ['ko', 'en', 'ja', 'zh'];
 
 export default function Settings() {
   const { lang, setLang } = useLanguage();
   const { user, signOut } = useAuth();
+  const { availableLangs } = useAvailableLangs();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const langOptions = (availableLangs.length > 0 ? availableLangs : ['ko']) as Language[];
 
   return (
     <>
@@ -56,7 +57,7 @@ export default function Settings() {
               <div className="px-4 py-3">
                 <p className="mb-2 text-xs text-card/50">{t('settings.language', lang)}</p>
                 <div className="space-y-1">
-                  {LANGUAGES.map((l) => (
+                  {langOptions.map((l) => (
                     <button
                       key={l}
                       type="button"

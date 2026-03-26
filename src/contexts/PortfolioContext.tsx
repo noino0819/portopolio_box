@@ -37,14 +37,17 @@ export interface PortfolioMeta {
   userId: string | null;
   youtubePlaylistId: string | null;
   youtubeFirstVideoId: string | null;
+  hiddenItems: string[];
 }
 
 interface PortfolioContextType {
   meta: PortfolioMeta;
   data: PortfolioBundle;
   isOwner: boolean;
+  availableLangs: string[];
   updateData: (data: PortfolioBundle) => void;
   updateMeta: (meta: Partial<PortfolioMeta>) => void;
+  setAvailableLangs: (langs: string[]) => void;
 }
 
 const PortfolioContext = createContext<PortfolioContextType | null>(null);
@@ -53,10 +56,12 @@ export function PortfolioProvider({
   meta: initialMeta,
   data: initialData,
   isOwner,
+  availableLangs: initialLangs,
   children,
-}: { meta: PortfolioMeta; data: PortfolioBundle; isOwner: boolean; children: ReactNode }) {
+}: { meta: PortfolioMeta; data: PortfolioBundle; isOwner: boolean; availableLangs: string[]; children: ReactNode }) {
   const [data, setData] = useState(initialData);
   const [meta, setMeta] = useState(initialMeta);
+  const [availableLangs, setAvailableLangs] = useState(initialLangs);
 
   const updateData = useCallback((newData: PortfolioBundle) => {
     setData(newData);
@@ -67,7 +72,7 @@ export function PortfolioProvider({
   }, []);
 
   return (
-    <PortfolioContext.Provider value={{ meta, data, isOwner, updateData, updateMeta }}>
+    <PortfolioContext.Provider value={{ meta, data, isOwner, availableLangs, updateData, updateMeta, setAvailableLangs }}>
       {children}
     </PortfolioContext.Provider>
   );
@@ -94,4 +99,10 @@ export function useUpdatePortfolio() {
   const ctx = useContext(PortfolioContext);
   if (!ctx) throw new Error('useUpdatePortfolio must be used within PortfolioProvider');
   return { updateData: ctx.updateData, updateMeta: ctx.updateMeta };
+}
+
+export function useAvailableLangs() {
+  const ctx = useContext(PortfolioContext);
+  if (!ctx) throw new Error('useAvailableLangs must be used within PortfolioProvider');
+  return { availableLangs: ctx.availableLangs, setAvailableLangs: ctx.setAvailableLangs };
 }
