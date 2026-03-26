@@ -76,3 +76,84 @@ values (
   '[{"label":"游戏","emoji":"🎮"},{"label":"听音乐","emoji":"🎵"},{"label":"读书","emoji":"📚"},{"label":"摄影","emoji":"📷"}]',
   '["小时候，\n模糊地梦想着成为改变世界的人。","在思考如何改变世界的时候，\n给我答案的是\"软件\"。","不受环境和条件限制，\n能够平等地触达每一个人。","可以随时随地免费提供，\n在用户身边以万千形态变化，\n帮助生活的存在。","我被那无限的可能性所吸引。","从高中时代起，\n我开始了向\"改变世界的开发者\"这个梦想航行。","今天打开我航行行李箱的你，\n我想为你播放我最珍爱的歌曲。"]'
 );
+
+-- ==============================================
+-- 예시 포트폴리오 (example) — 개인정보 없는 데모용
+-- ==============================================
+insert into public.portfolios (id, user_id, slug, is_active, youtube_playlist_id, youtube_first_video_id)
+values (
+  '00000000-0000-0000-0000-000000000002',
+  null,
+  'example',
+  true,
+  'PLDIoUOhQQPlXr63I_vwF9GD8sAKh77dWU',
+  'dQw4w9WgXcQ'
+);
+
+-- Example Korean
+insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+values (
+  '00000000-0000-0000-0000-000000000002',
+  'ko',
+  '{"name":"홍길동","title":"Frontend Developer","headline":"사용자 경험을 최우선으로 생각하는 프론트엔드 개발자입니다.","bioPoints":[{"emoji":"🎨","text":"직관적이고 아름다운 UI/UX를 만드는 것을 좋아합니다."},{"emoji":"🚀","text":"새로운 기술을 배우고 적용하는 것에 열정적입니다."},{"emoji":"🤝","text":"팀원과의 소통을 통해 더 나은 결과물을 만들어냅니다."},{"emoji":"📖","text":"꾸준한 학습과 기록을 통해 성장하는 개발자입니다."}],"skills":["React","TypeScript","Next.js","Tailwind CSS","Node.js","Python","Git","Figma"],"contacts":[{"label":"이메일","value":"example@email.com","url":"mailto:example@email.com","icon":"✉️"},{"label":"깃허브","value":"github-user","url":"https://github.com","icon":"😺","tooltip":"GitHub 프로필 구경하기!"},{"label":"블로그","value":"기술 블로그","url":"https://blog.example.com","icon":"📝"}]}',
+  '[{"institution":"한국대학교","period":"2018.03 - 2024.02","details":["컴퓨터공학과 (GPA 3.8/4.5)"],"status":"졸업"},{"institution":"ABC 소프트웨어","period":"2024.03 - 현재","details":["프론트엔드 개발팀","웹 서비스 개발 및 유지보수"],"status":"재직중"}]',
+  '[{"category":"IT","categoryIcon":"💻","items":[{"name":"정보처리기사","date":"2023.06"},{"name":"AWS Cloud Practitioner","date":"2023.09"}]},{"category":"어학","categoryIcon":"🗣️","items":[{"name":"TOEIC","date":"2023.03","detail":"900점"}]}]',
+  '[{"title":"온라인 협업 플랫폼","period":"2024.01 - 2024.06","affiliation":"ABC 소프트웨어","description":"실시간 문서 편집과 화상 회의를 지원하는 팀 협업 플랫폼. WebSocket 기반 실시간 동기화와 WebRTC 화상 통화 구현.","highlights":["실시간 공동 편집 — Operational Transform 알고리즘 적용","화상 회의 — WebRTC + SFU 서버 구성","알림 시스템 — SSE 기반 실시간 알림"],"techs":["React","TypeScript","WebSocket","WebRTC","Node.js"]},{"title":"개인 블로그 플랫폼","period":"2023.06 - 2023.12","affiliation":"개인 프로젝트","description":"MDX 기반 정적 블로그. SEO 최적화와 다크 모드를 지원하는 미니멀 디자인.","highlights":["MDX 기반 콘텐츠 관리","ISR을 활용한 빌드 최적화","다크 모드 및 반응형 디자인"],"techs":["Next.js","MDX","Tailwind CSS","Vercel"],"github":"https://github.com"}]',
+  '[{"title":"해커톤 우수상","grade":"2등","issuer":"한국대학교","date":"2023.11","affiliation":"한국대학교","description":"24시간 해커톤에서 AI 기반 학습 도우미 서비스를 개발하여 수상."}]',
+  '[{"title":"젤다의 전설: 티어스 오브 더 킹덤","platform":"Nintendo Switch","comment":"자유로운 창의성이 돋보이는 오픈월드의 정점"},{"title":"엘든 링","platform":"PC","comment":"도전과 보상의 완벽한 균형"}]',
+  '[{"artist":"IU","title":"Lilac","comment":"봄이 오면 꼭 듣는 앨범"},{"artist":"Radiohead","title":"OK Computer","comment":"시대를 앞서간 명반"}]',
+  '[{"author":"유발 하라리","titles":["사피엔스","호모 데우스"],"comment":"인류의 과거와 미래를 생각하게 해주는 책"}]',
+  '[{"label":"코딩","emoji":"💻"},{"label":"게임","emoji":"🎮"},{"label":"음악 감상","emoji":"🎵"},{"label":"산책","emoji":"🚶"}]',
+  '["어릴 때부터\n컴퓨터 앞에 앉아있는 걸 좋아했습니다.","처음 HTML로 만든 홈페이지가\n브라우저에 나타났을 때의 그 감동은\n아직도 잊을 수 없어요.","코드 한 줄이\n누군가의 하루를 편하게 만들 수 있다는 것.\n그게 저를 개발자로 이끌었습니다.","지금도 매일\n더 나은 코드, 더 나은 경험을 위해\n끊임없이 배우고 있습니다.","제 이야기가 궁금하셨다면,\n이 노래를 들으며 천천히 둘러봐주세요."]'
+);
+
+-- Example English
+insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+values (
+  '00000000-0000-0000-0000-000000000002',
+  'en',
+  '{"name":"Gildong Hong","title":"Frontend Developer","headline":"A frontend developer who prioritizes user experience above all.","bioPoints":[{"emoji":"🎨","text":"Passionate about creating intuitive and beautiful UI/UX."},{"emoji":"🚀","text":"Enthusiastic about learning and applying new technologies."},{"emoji":"🤝","text":"Achieves better results through team communication."},{"emoji":"📖","text":"A developer who grows through continuous learning."}],"skills":["React","TypeScript","Next.js","Tailwind CSS","Node.js","Python","Git","Figma"],"contacts":[{"label":"Email","value":"example@email.com","url":"mailto:example@email.com","icon":"✉️"},{"label":"GitHub","value":"github-user","url":"https://github.com","icon":"😺","tooltip":"Check out my GitHub!"},{"label":"Blog","value":"Tech Blog","url":"https://blog.example.com","icon":"📝"}]}',
+  '[{"institution":"Korea University","period":"2018.03 - 2024.02","details":["Computer Science (GPA 3.8/4.5)"],"status":"Graduated"},{"institution":"ABC Software","period":"2024.03 - Present","details":["Frontend Development Team","Web service development and maintenance"],"status":"Employed"}]',
+  '[{"category":"IT","categoryIcon":"💻","items":[{"name":"Engineer Information Processing","date":"2023.06"},{"name":"AWS Cloud Practitioner","date":"2023.09"}]},{"category":"Language","categoryIcon":"🗣️","items":[{"name":"TOEIC","date":"2023.03","detail":"900"}]}]',
+  '[{"title":"Online Collaboration Platform","period":"2024.01 - 2024.06","affiliation":"ABC Software","description":"A team collaboration platform with real-time document editing and video conferencing.","highlights":["Real-time co-editing with OT algorithm","Video conferencing with WebRTC + SFU","SSE-based real-time notifications"],"techs":["React","TypeScript","WebSocket","WebRTC","Node.js"]},{"title":"Personal Blog Platform","period":"2023.06 - 2023.12","affiliation":"Personal Project","description":"An MDX-based static blog with SEO optimization and dark mode.","highlights":["MDX-based content management","Build optimization with ISR","Dark mode and responsive design"],"techs":["Next.js","MDX","Tailwind CSS","Vercel"],"github":"https://github.com"}]',
+  '[{"title":"Hackathon Excellence Award","grade":"2nd Place","issuer":"Korea University","date":"2023.11","affiliation":"Korea University","description":"Developed an AI-based learning assistant at a 24-hour hackathon."}]',
+  '[{"title":"Zelda: Tears of the Kingdom","platform":"Nintendo Switch","comment":"The pinnacle of open-world creativity"},{"title":"Elden Ring","platform":"PC","comment":"Perfect balance of challenge and reward"}]',
+  '[{"artist":"IU","title":"Lilac","comment":"The album I always listen to in spring"},{"artist":"Radiohead","title":"OK Computer","comment":"A masterpiece ahead of its time"}]',
+  '[{"author":"Yuval Noah Harari","titles":["Sapiens","Homo Deus"],"comment":"Books that make you think about humanity"}]',
+  '[{"label":"Coding","emoji":"💻"},{"label":"Gaming","emoji":"🎮"},{"label":"Music","emoji":"🎵"},{"label":"Walking","emoji":"🚶"}]',
+  '["Ever since I was young,\nI loved sitting in front of a computer.","The excitement when my first HTML page\nappeared in the browser —\nI''ll never forget that moment.","A single line of code\ncan make someone''s day easier.\nThat''s what led me to become a developer.","Even now, every day,\nI keep learning\nfor better code and better experiences.","If you''re curious about my story,\nlisten to this song and take your time exploring."]'
+);
+
+-- Example Japanese
+insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+values (
+  '00000000-0000-0000-0000-000000000002',
+  'ja',
+  '{"name":"ホン・ギルドン","title":"Frontend Developer","headline":"ユーザー体験を最優先に考えるフロントエンド開発者です。","bioPoints":[{"emoji":"🎨","text":"直感的で美しいUI/UXを作ることが好きです。"},{"emoji":"🚀","text":"新しい技術を学び適用することに情熱的です。"},{"emoji":"🤝","text":"チームとのコミュニケーションでより良い成果を出します。"},{"emoji":"📖","text":"継続的な学習で成長する開発者です。"}],"skills":["React","TypeScript","Next.js","Tailwind CSS","Node.js","Python","Git","Figma"],"contacts":[{"label":"メール","value":"example@email.com","url":"mailto:example@email.com","icon":"✉️"},{"label":"GitHub","value":"github-user","url":"https://github.com","icon":"😺"},{"label":"ブログ","value":"技術ブログ","url":"https://blog.example.com","icon":"📝"}]}',
+  '[{"institution":"韓国大学","period":"2018.03 - 2024.02","details":["コンピュータ工学科 (GPA 3.8/4.5)"],"status":"卒業"},{"institution":"ABCソフトウェア","period":"2024.03 - 現在","details":["フロントエンド開発チーム"],"status":"在職中"}]',
+  '[{"category":"IT","categoryIcon":"💻","items":[{"name":"情報処理技師","date":"2023.06"},{"name":"AWS Cloud Practitioner","date":"2023.09"}]}]',
+  '[{"title":"オンライン協業プラットフォーム","period":"2024.01 - 2024.06","affiliation":"ABCソフトウェア","description":"リアルタイム共同編集とビデオ会議を支援する協業プラットフォーム。","highlights":["OTアルゴリズムによるリアルタイム共同編集","WebRTCビデオ会議","SSEリアルタイム通知"],"techs":["React","TypeScript","WebSocket","WebRTC","Node.js"]},{"title":"個人ブログ","period":"2023.06 - 2023.12","affiliation":"個人プロジェクト","description":"MDXベースの静的ブログ。","highlights":["MDXコンテンツ管理","ISRビルド最適化","ダークモード対応"],"techs":["Next.js","MDX","Tailwind CSS","Vercel"],"github":"https://github.com"}]',
+  '[{"title":"ハッカソン優秀賞","grade":"2位","issuer":"韓国大学","date":"2023.11","affiliation":"韓国大学","description":"24時間ハッカソンでAI学習支援サービスを開発。"}]',
+  '[{"title":"ゼルダの伝説 TotK","platform":"Nintendo Switch","comment":"オープンワールドの創造性の頂点"},{"title":"エルデンリング","platform":"PC","comment":"挑戦と報酬の完璧なバランス"}]',
+  '[{"artist":"IU","title":"Lilac","comment":"春に必ず聴くアルバム"},{"artist":"Radiohead","title":"OK Computer","comment":"時代を先取りした名盤"}]',
+  '[{"author":"ユヴァル・ノア・ハラリ","titles":["サピエンス","ホモ・デウス"],"comment":"人類について考えさせられる本"}]',
+  '[{"label":"コーディング","emoji":"💻"},{"label":"ゲーム","emoji":"🎮"},{"label":"音楽","emoji":"🎵"},{"label":"散歩","emoji":"🚶"}]',
+  '["幼い頃から\nコンピュータの前に座るのが好きでした。","初めてHTMLで作ったページが\nブラウザに表示された時の感動は\n今でも忘れられません。","コード一行が\n誰かの一日を楽にできる。\nそれが私を開発者に導きました。","今も毎日\nより良いコード、より良い体験のために\n学び続けています。","私の物語に興味を持ってくれたなら、\nこの曲を聴きながらゆっくりご覧ください。"]'
+);
+
+-- Example Chinese
+insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+values (
+  '00000000-0000-0000-0000-000000000002',
+  'zh',
+  '{"name":"洪吉童","title":"Frontend Developer","headline":"以用户体验为首要考量的前端开发者。","bioPoints":[{"emoji":"🎨","text":"喜欢创造直观美丽的UI/UX。"},{"emoji":"🚀","text":"热衷于学习和应用新技术。"},{"emoji":"🤝","text":"通过团队沟通创造更好的成果。"},{"emoji":"📖","text":"通过持续学习不断成长的开发者。"}],"skills":["React","TypeScript","Next.js","Tailwind CSS","Node.js","Python","Git","Figma"],"contacts":[{"label":"邮箱","value":"example@email.com","url":"mailto:example@email.com","icon":"✉️"},{"label":"GitHub","value":"github-user","url":"https://github.com","icon":"😺"},{"label":"博客","value":"技术博客","url":"https://blog.example.com","icon":"📝"}]}',
+  '[{"institution":"韩国大学","period":"2018.03 - 2024.02","details":["计算机工程系 (GPA 3.8/4.5)"],"status":"毕业"},{"institution":"ABC软件","period":"2024.03 - 现在","details":["前端开发团队"],"status":"在职"}]',
+  '[{"category":"IT","categoryIcon":"💻","items":[{"name":"信息处理工程师","date":"2023.06"},{"name":"AWS Cloud Practitioner","date":"2023.09"}]}]',
+  '[{"title":"在线协作平台","period":"2024.01 - 2024.06","affiliation":"ABC软件","description":"支持实时文档编辑和视频会议的团队协作平台。","highlights":["OT算法实时协同编辑","WebRTC视频会议","SSE实时通知"],"techs":["React","TypeScript","WebSocket","WebRTC","Node.js"]},{"title":"个人博客","period":"2023.06 - 2023.12","affiliation":"个人项目","description":"基于MDX的静态博客。","highlights":["MDX内容管理","ISR构建优化","深色模式"],"techs":["Next.js","MDX","Tailwind CSS","Vercel"],"github":"https://github.com"}]',
+  '[{"title":"黑客马拉松优秀奖","grade":"第二名","issuer":"韩国大学","date":"2023.11","affiliation":"韩国大学","description":"在24小时黑客马拉松中开发了AI学习助手。"}]',
+  '[{"title":"塞尔达传说：王国之泪","platform":"Nintendo Switch","comment":"开放世界创造力的巅峰"},{"title":"艾尔登法环","platform":"PC","comment":"挑战与奖励的完美平衡"}]',
+  '[{"artist":"IU","title":"Lilac","comment":"春天必听的专辑"},{"artist":"Radiohead","title":"OK Computer","comment":"超越时代的杰作"}]',
+  '[{"author":"尤瓦尔·赫拉利","titles":["人类简史","未来简史"],"comment":"让人思考人类命运的书"}]',
+  '[{"label":"编程","emoji":"💻"},{"label":"游戏","emoji":"🎮"},{"label":"音乐","emoji":"🎵"},{"label":"散步","emoji":"🚶"}]',
+  '["从小时候起，\n就喜欢坐在电脑前。","第一次用HTML做的页面\n在浏览器中显示时的那份感动，\n至今难忘。","一行代码\n就能让某人的一天变得更轻松。\n这就是引领我成为开发者的动力。","即使现在，每一天\n我都在为更好的代码、更好的体验\n而不断学习。","如果你对我的故事感兴趣，\n请听着这首歌慢慢浏览。"]'
+);
