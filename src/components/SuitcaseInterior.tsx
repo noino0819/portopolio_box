@@ -150,10 +150,12 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     sessionStorage.setItem('item-positions', JSON.stringify(positions));
   }, [positions]);
 
+  const didPlayOpen = useRef(false);
   useEffect(() => {
+    if (didPlayOpen.current) return;
+    didPlayOpen.current = true;
     playOpen();
-    bump.prepare();
-  }, [playOpen, bump]);
+  }, [playOpen]);
 
   useEffect(() => {
     if (!noteOpen) return;

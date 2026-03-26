@@ -2,37 +2,32 @@ import { useCallback, useMemo, useRef } from 'react';
 
 export function useBumpSound() {
   const ctxRef = useRef<AudioContext | null>(null);
-  const unlockedRef = useRef(false);
   const lastBumpRef = useRef(0);
 
   const prepare = useCallback(() => {
     if (!ctxRef.current) ctxRef.current = new AudioContext();
     const ctx = ctxRef.current;
-    if (ctx.state === 'suspended') ctx.resume();
-
-    if (!unlockedRef.current) {
-      const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      src.connect(ctx.destination);
-      src.start();
-      unlockedRef.current = true;
+    if (ctx.state !== 'running') {
+      ctx.resume().then(() => {
+        const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.connect(ctx.destination);
+        src.start();
+      }).catch(() => {});
     }
-
-    return ctx;
   }, []);
 
   const play = useCallback(() => {
+    const ctx = ctxRef.current;
+    if (!ctx || ctx.state !== 'running') return;
+
     const now = performance.now();
-    if (now - lastBumpRef.current < 250) return;
+    if (now - lastBumpRef.current < 300) return;
     lastBumpRef.current = now;
 
-    const ctx = ctxRef.current;
-    if (!ctx || ctx.state === 'closed') return;
-    if (ctx.state === 'suspended') ctx.resume();
-
-    const t = ctx.currentTime + 0.01;
     try {
+      const t = ctx.currentTime + 0.01;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
@@ -44,6 +39,7 @@ export function useBumpSound() {
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
       osc.start(t);
       osc.stop(t + 0.09);
+      osc.onended = () => { osc.disconnect(); gain.disconnect(); };
     } catch { /* context not ready */ }
   }, []);
 
