@@ -1,114 +1,46 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { education, certifications, projects } from '@/data/portfolio';
+import { useLanguage, type Language } from '@/i18n/LanguageContext';
+import { t } from '@/i18n/ui';
+import { getPortfolio } from '@/i18n/portfolioData';
 import type { Project } from '@/data/portfolio';
 
-const sections = [
-  { id: 'education', label: 'Education', icon: '🎓' },
-  { id: 'certifications', label: 'Certs', icon: '📜' },
-  { id: 'projects', label: 'Projects', icon: '🚀' },
-] as const;
+type SectionId = 'education' | 'certifications' | 'projects';
 
-type SectionId = (typeof sections)[number]['id'];
-
-function ProjectCard({
-  project,
-  isOpen,
-  onToggle,
-}: {
-  project: Project;
-  isOpen: boolean;
-  onToggle: () => void;
-}) {
+function ProjectCard({ project, isOpen, onToggle, lang }: { project: Project; isOpen: boolean; onToggle: () => void; lang: Language }) {
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.03] transition-colors hover:bg-white/[0.06]">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full cursor-pointer items-start justify-between gap-3 p-4 text-left"
-        aria-expanded={isOpen}
-      >
+      <button type="button" onClick={onToggle} className="flex w-full cursor-pointer items-start justify-between gap-3 p-4 text-left" aria-expanded={isOpen}>
         <div className="min-w-0 flex-1">
-          <h4 className="font-display text-base font-semibold text-card">
-            {project.title}
-          </h4>
+          <h4 className="font-display text-base font-semibold text-card">{project.title}</h4>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-card/50">
             <span>{project.affiliation}</span>
-            <span className="font-code text-accent-purple/70">
-              {project.period}
-            </span>
+            <span className="font-code text-accent-purple/70">{project.period}</span>
           </div>
-          <p className="mt-1.5 text-sm leading-relaxed text-card/70">
-            {project.description}
-          </p>
+          <p className="mt-1.5 text-sm leading-relaxed text-card/70">{project.description}</p>
         </div>
-        <span
-          className="mt-1 shrink-0 text-card/40 transition-transform duration-200"
-          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-        >
-          ▼
-        </span>
+        <span className="mt-1 shrink-0 text-card/40 transition-transform duration-200" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
       </button>
-
       <AnimatePresence initial={false}>
         {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="overflow-hidden"
-          >
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: 'easeInOut' }} className="overflow-hidden">
             <div className="border-t border-white/5 px-4 pb-4 pt-3">
-              <h5 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gold/80">
-                주요 활동
-              </h5>
+              <h5 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gold/80">{t('book.highlights', lang)}</h5>
               <ul className="space-y-1.5">
                 {project.highlights.map((h, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-2 text-sm leading-relaxed text-card/70"
-                  >
-                    <span className="mt-0.5 shrink-0 text-accent-teal/60">
-                      ›
-                    </span>
-                    <span>{h}</span>
+                  <li key={i} className="flex items-start gap-2 text-sm leading-relaxed text-card/70">
+                    <span className="mt-0.5 shrink-0 text-accent-teal/60">›</span><span>{h}</span>
                   </li>
                 ))}
               </ul>
-
               <div className="mt-3 flex flex-wrap gap-1.5">
-                {project.techs.map((t) => (
-                  <span
-                    key={t}
-                    className="rounded bg-accent-purple/15 px-2 py-0.5 font-code text-[10px] text-accent-purple"
-                  >
-                    {t}
-                  </span>
+                {project.techs.map((tc) => (
+                  <span key={tc} className="rounded bg-accent-purple/15 px-2 py-0.5 font-code text-[10px] text-accent-purple">{tc}</span>
                 ))}
               </div>
-
               <div className="mt-3 flex gap-3">
-                {project.url && (
-                  <a
-                    href={project.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-accent-blue hover:underline"
-                  >
-                    Live →
-                  </a>
-                )}
-                {project.github && (
-                  <a
-                    href={project.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-card/50 hover:text-card/80 hover:underline"
-                  >
-                    GitHub →
-                  </a>
-                )}
+                {project.url && <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-xs text-accent-blue hover:underline">Live →</a>}
+                {project.github && <a href={project.github} target="_blank" rel="noopener noreferrer" className="text-xs text-card/50 hover:text-card/80 hover:underline">GitHub →</a>}
               </div>
             </div>
           </motion.div>
@@ -119,11 +51,16 @@ function ProjectCard({
 }
 
 export default function BookDetail() {
-  const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({
-    education: null,
-    certifications: null,
-    projects: null,
-  });
+  const { lang } = useLanguage();
+  const { education, certifications, projects } = getPortfolio(lang);
+
+  const sections: { id: SectionId; label: string; icon: string }[] = [
+    { id: 'education', label: t('book.sections.education', lang), icon: '🎓' },
+    { id: 'certifications', label: t('book.sections.certs', lang), icon: '📜' },
+    { id: 'projects', label: t('book.sections.projects', lang), icon: '🚀' },
+  ];
+
+  const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({ education: null, certifications: null, projects: null });
   const [activeBookmark, setActiveBookmark] = useState<SectionId>('education');
   const [openProject, setOpenProject] = useState<string | null>(null);
   const isScrollingRef = useRef(false);
@@ -134,106 +71,50 @@ export default function BookDetail() {
     if (el) {
       isScrollingRef.current = true;
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 600);
+      setTimeout(() => { isScrollingRef.current = false; }, 600);
     }
   };
 
   useEffect(() => {
-    const els = Object.entries(sectionRefs.current)
-      .filter(([, el]) => el !== null)
-      .map(([id, el]) => ({ id: id as SectionId, el: el! }));
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isScrollingRef.current) return;
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const id = entry.target.getAttribute('data-section') as SectionId;
-            if (id) setActiveBookmark(id);
-          }
+    const els = Object.entries(sectionRefs.current).filter(([, el]) => el !== null).map(([id, el]) => ({ id: id as SectionId, el: el! }));
+    const observer = new IntersectionObserver((entries) => {
+      if (isScrollingRef.current) return;
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('data-section') as SectionId;
+          if (id) setActiveBookmark(id);
         }
-      },
-      { rootMargin: '-10% 0px -70% 0px' },
-    );
-
+      }
+    }, { rootMargin: '-10% 0px -70% 0px' });
     for (const { el } of els) observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
   return (
     <div className="relative">
-      {/* 책갈피 탭 — 상단 고정 */}
-      <nav
-        className="sticky top-0 z-10 -mx-1 mb-5 flex gap-1 rounded-lg border border-white/5 bg-bg-dark/90 p-1 backdrop-blur-md"
-        aria-label="섹션 바로가기"
-      >
+      <nav className="sticky top-0 z-10 -mx-1 mb-5 flex gap-1 rounded-lg border border-white/5 bg-bg-dark/90 p-1 backdrop-blur-md" aria-label="Section navigation">
         {sections.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => scrollToSection(s.id)}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-2 text-xs font-medium transition-all duration-200 ${
-              activeBookmark === s.id
-                ? 'bg-gold/15 text-gold shadow-sm'
-                : 'text-card/50 hover:bg-white/[0.06] hover:text-card/70'
-            }`}
-            aria-label={`${s.label} 섹션으로 이동`}
-          >
-            <span className="text-sm">{s.icon}</span>
-            <span>{s.label}</span>
+          <button key={s.id} type="button" onClick={() => scrollToSection(s.id)} className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-2 text-xs font-medium transition-all duration-200 ${activeBookmark === s.id ? 'bg-gold/15 text-gold shadow-sm' : 'text-card/50 hover:bg-white/[0.06] hover:text-card/70'}`}>
+            <span className="text-sm">{s.icon}</span><span>{s.label}</span>
           </button>
         ))}
       </nav>
 
-      {/* 섹션 콘텐츠 */}
       <div className="space-y-8">
-        {/* Education & Career */}
-        <section
-          ref={(el) => {
-            sectionRefs.current.education = el;
-          }}
-          data-section="education"
-          aria-labelledby="education-heading"
-        >
-          <h3
-            id="education-heading"
-            className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold"
-          >
-            Education & Career
-          </h3>
+        <section ref={(el) => { sectionRefs.current.education = el; }} data-section="education">
+          <h3 className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold">{t('book.educationCareer', lang)}</h3>
           <div className="relative space-y-5 pl-6 before:absolute before:left-2 before:top-1 before:h-[calc(100%-8px)] before:w-0.5 before:bg-accent-purple/30">
             {education.map((entry) => (
               <div key={entry.institution} className="relative">
                 <div className="absolute -left-[18px] top-1.5 h-3 w-3 rounded-full border-2 border-accent-purple bg-bg-dark" />
                 <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="font-display text-sm font-semibold text-card">
-                    {entry.institution}
-                  </h4>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                      entry.status === '재직중'
-                        ? 'bg-accent-teal/15 text-accent-teal'
-                        : 'bg-accent-purple/15 text-accent-purple'
-                    }`}
-                  >
-                    {entry.status}
-                  </span>
+                  <h4 className="font-display text-sm font-semibold text-card">{entry.institution}</h4>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${entry.status === '재직중' || entry.status === 'Employed' || entry.status === '在職中' || entry.status === '在职' ? 'bg-accent-teal/15 text-accent-teal' : 'bg-accent-purple/15 text-accent-purple'}`}>{entry.status}</span>
                 </div>
-                <span className="font-code text-xs text-accent-purple/70">
-                  {entry.period}
-                </span>
+                <span className="font-code text-xs text-accent-purple/70">{entry.period}</span>
                 {entry.details.length > 0 && (
                   <ul className="mt-1.5 space-y-0.5">
-                    {entry.details.map((d, i) => (
-                      <li
-                        key={i}
-                        className="text-xs leading-relaxed text-card/60"
-                      >
-                        · {d}
-                      </li>
-                    ))}
+                    {entry.details.map((d, i) => (<li key={i} className="text-xs leading-relaxed text-card/60">· {d}</li>))}
                   </ul>
                 )}
               </div>
@@ -241,47 +122,18 @@ export default function BookDetail() {
           </div>
         </section>
 
-        {/* Certifications */}
-        <section
-          ref={(el) => {
-            sectionRefs.current.certifications = el;
-          }}
-          data-section="certifications"
-          aria-labelledby="cert-heading"
-        >
-          <h3
-            id="cert-heading"
-            className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold"
-          >
-            Certifications
-          </h3>
+        <section ref={(el) => { sectionRefs.current.certifications = el; }} data-section="certifications">
+          <h3 className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold">{t('book.certifications', lang)}</h3>
           <div className="space-y-3">
             {certifications.map((cat) => (
-              <div
-                key={cat.category}
-                className="rounded-xl border border-white/5 bg-white/[0.03] p-4"
-              >
-                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-card/70">
-                  <span>{cat.categoryIcon}</span>
-                  <span>{cat.category}</span>
-                </div>
+              <div key={cat.category} className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-card/70"><span>{cat.categoryIcon}</span><span>{cat.category}</span></div>
                 <ul className="space-y-2">
                   {cat.items.map((item) => (
-                    <li
-                      key={item.name}
-                      className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3"
-                    >
-                      <span className="font-display text-sm text-card">
-                        {item.name}
-                      </span>
-                      <span className="font-code text-[10px] text-accent-purple/70">
-                        {item.date}
-                      </span>
-                      {item.detail && (
-                        <span className="text-[10px] text-card/40">
-                          {item.detail}
-                        </span>
-                      )}
+                    <li key={item.name} className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3">
+                      <span className="font-display text-sm text-card">{item.name}</span>
+                      <span className="font-code text-[10px] text-accent-purple/70">{item.date}</span>
+                      {item.detail && <span className="text-[10px] text-card/40">{item.detail}</span>}
                     </li>
                   ))}
                 </ul>
@@ -290,32 +142,11 @@ export default function BookDetail() {
           </div>
         </section>
 
-        {/* Projects */}
-        <section
-          ref={(el) => {
-            sectionRefs.current.projects = el;
-          }}
-          data-section="projects"
-          aria-labelledby="projects-heading"
-        >
-          <h3
-            id="projects-heading"
-            className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold"
-          >
-            Projects
-          </h3>
+        <section ref={(el) => { sectionRefs.current.projects = el; }} data-section="projects">
+          <h3 className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold">{t('book.projects', lang)}</h3>
           <div className="space-y-3">
             {projects.map((project) => (
-              <ProjectCard
-                key={project.title}
-                project={project}
-                isOpen={openProject === project.title}
-                onToggle={() =>
-                  setOpenProject((prev) =>
-                    prev === project.title ? null : project.title,
-                  )
-                }
-              />
+              <ProjectCard key={project.title} project={project} lang={lang} isOpen={openProject === project.title} onToggle={() => setOpenProject((prev) => prev === project.title ? null : project.title)} />
             ))}
           </div>
         </section>

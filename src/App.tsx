@@ -4,11 +4,15 @@ import Landing from '@/components/Landing';
 import SuitcaseInterior from '@/components/SuitcaseInterior';
 import DetailPanel from '@/components/DetailPanel';
 import MusicPlayer from '@/components/MusicPlayer';
+import Settings from '@/components/Settings';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { t } from '@/i18n/ui';
 import type { ItemId } from '@/components/SuitcaseInterior';
 
 type Screen = 'landing' | 'interior';
 
 export default function App() {
+  const { lang } = useLanguage();
   const [screen, setScreen] = useState<Screen>('landing');
   const [activeItem, setActiveItem] = useState<ItemId | null>(null);
   const [musicActivated, setMusicActivated] = useState(false);
@@ -68,7 +72,8 @@ export default function App() {
 
   return (
     <main className="min-h-dvh bg-bg-dark">
-      <h1 className="sr-only">Suitcase Portfolio</h1>
+      <h1 className="sr-only">{t('srOnly.title', lang)}</h1>
+      <Settings />
 
       <AnimatePresence mode="wait">
         {screen === 'landing' && <Landing key="landing" onOpen={handleOpen} />}

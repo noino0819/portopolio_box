@@ -1,19 +1,22 @@
-import { profile, awards } from '@/data/portfolio';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { t } from '@/i18n/ui';
+import { getPortfolio } from '@/i18n/portfolioData';
 
 export default function NametagDetail() {
+  const { lang } = useLanguage();
+  const { profile, awards } = getPortfolio(lang);
+
   return (
     <div className="space-y-6">
-      {/* Profile header */}
       <section aria-labelledby="profile-heading">
-        <p className="mb-1 text-sm text-card/50">안녕하세요,</p>
+        <p className="mb-1 text-sm text-card/50">{t('nametag.greeting', lang)}</p>
         <h3 id="profile-heading" className="font-display text-xl font-extrabold leading-snug text-card sm:text-2xl">
           {profile.headline}
         </h3>
       </section>
 
-      {/* Bio points */}
       <section aria-labelledby="bio-heading">
-        <h3 id="bio-heading" className="sr-only">소개</h3>
+        <h3 id="bio-heading" className="sr-only">Bio</h3>
         <ul className="space-y-2.5">
           {profile.bioPoints.map((point, i) => (
             <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-card/80">
@@ -24,46 +27,32 @@ export default function NametagDetail() {
         </ul>
       </section>
 
-      {/* Skills */}
       <section aria-labelledby="skills-heading">
         <h3 id="skills-heading" className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-gold">
-          Skills
+          {t('nametag.skills', lang)}
         </h3>
         <div className="flex flex-wrap gap-2">
           {profile.skills.map((skill) => (
-            <span
-              key={skill}
-              className="rounded-md bg-accent-teal/15 px-3 py-1 font-code text-xs text-accent-teal"
-            >
+            <span key={skill} className="rounded-md bg-accent-teal/15 px-3 py-1 font-code text-xs text-accent-teal">
               {skill}
             </span>
           ))}
         </div>
       </section>
 
-      {/* Awards */}
       <section aria-labelledby="awards-heading">
         <h3 id="awards-heading" className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold">
-          🏆 Awards
+          {t('nametag.awards', lang)}
         </h3>
         <div className="space-y-3">
           {awards.map((award) => (
-            <div
-              key={award.title}
-              className="rounded-xl border border-white/5 bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.06]"
-            >
+            <div key={award.title} className="rounded-xl border border-white/5 bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.06]">
               <div className="flex flex-wrap items-center gap-2">
                 <h4 className="font-display text-sm font-semibold text-card">{award.title}</h4>
-                <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-medium text-gold">
-                  {award.grade}
-                </span>
+                <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-medium text-gold">{award.grade}</span>
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-card/50">
-                <span>{award.issuer}</span>
-                <span>·</span>
-                <span>{award.date}</span>
-                <span>·</span>
-                <span>{award.affiliation}</span>
+                <span>{award.issuer}</span><span>·</span><span>{award.date}</span><span>·</span><span>{award.affiliation}</span>
               </div>
               <p className="mt-2 text-xs leading-relaxed text-card/60">{award.description}</p>
             </div>
@@ -71,24 +60,18 @@ export default function NametagDetail() {
         </div>
       </section>
 
-      {/* Profile info & Contacts */}
       <section aria-labelledby="contacts-heading">
         <h3 id="contacts-heading" className="mb-3 font-display text-sm font-semibold uppercase tracking-widest text-gold">
-          Profile
+          {t('nametag.profile', lang)}
         </h3>
         <ul className="space-y-1.5">
           {profile.contacts.map((c) => (
             <li key={c.label} className="group/contact relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
               <span className="shrink-0 text-base">{c.icon}</span>
-              <span className="shrink-0 w-16 text-card/50">{c.label}</span>
+              <span className="w-16 shrink-0 text-card/50">{c.label}</span>
               <span className="relative">
                 {c.url ? (
-                  <a
-                    href={c.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-card/80 transition-colors hover:text-accent-blue hover:underline"
-                  >
+                  <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-card/80 transition-colors hover:text-accent-blue hover:underline">
                     {c.value}
                   </a>
                 ) : (

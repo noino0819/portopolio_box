@@ -9,6 +9,8 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useOpenSound } from '@/hooks/useOpenSound';
 import { useItemSounds } from '@/hooks/useItemSounds';
 import { useBumpSound } from '@/hooks/useBumpSound';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { t } from '@/i18n/ui';
 
 export type ItemId = 'nametag' | 'book' | 'switch' | 'cd';
 
@@ -83,6 +85,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
   const playOpen = useOpenSound();
   const sounds = useItemSounds();
   const bump = useBumpSound();
+  const { lang } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [tappedItem, setTappedItem] = useState<ItemId | null>(null);
@@ -245,16 +248,18 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: reduced ? 0 : 0.4 }}
-        aria-label="가방 닫기, 랜딩으로 돌아가기"
+        aria-label={t('interior.backAria', lang)}
       >
-        ← 뒤로
+        {t('interior.back', lang)}
       </motion.button>
 
       <div ref={containerRef} className="relative aspect-square w-full max-w-[500px]">
         <SuitcaseOpen className="absolute inset-0 h-full w-full" />
 
         {itemDefs.map((item, i) => {
-          const { id, label, sublabel, Component, rotation, size, color } = item;
+          const { id, Component, rotation, size, color } = item;
+          const label = t(`items.${id}.label`, lang);
+          const sublabel = t(`items.${id}.sublabel`, lang);
           const pos = positions[id];
           return (
             <motion.div
@@ -288,7 +293,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
               onPointerUp={(e) => handlePointerUp(e, id)}
               role="button"
               tabIndex={0}
-              aria-label={`${label} 열기 - ${sublabel} (드래그하여 이동 가능)`}
+              aria-label={`${label} - ${sublabel} (${t('detail.dragHint', lang)})`}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();

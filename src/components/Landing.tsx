@@ -3,6 +3,8 @@ import { motion, useAnimation } from 'framer-motion';
 import SuitcaseClosed from '@/assets/SuitcaseClosed';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useKnockSound } from '@/hooks/useKnockSound';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { t } from '@/i18n/ui';
 
 interface LandingProps {
   onOpen: () => void;
@@ -11,6 +13,7 @@ interface LandingProps {
 export default function Landing({ onOpen }: LandingProps) {
   const reduced = useReducedMotion();
   const playKnock = useKnockSound();
+  const { lang } = useLanguage();
   const controls = useAnimation();
   const textControls = useAnimation();
   const [isOpening, setIsOpening] = useState(false);
@@ -76,7 +79,7 @@ export default function Landing({ onOpen }: LandingProps) {
         whileHover={isOpening || reduced ? {} : { scale: 1.03 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
         role="button"
-        aria-label="여행가방 두드려 열기"
+        aria-label={t('landing.ariaLabel', lang)}
         disabled={isOpening}
       >
         <SuitcaseClosed className="w-[280px] drop-shadow-2xl sm:w-[340px] md:w-[400px]" />
@@ -88,7 +91,7 @@ export default function Landing({ onOpen }: LandingProps) {
         animate={textControls}
       >
         <span className={reduced ? '' : 'animate-soft-pulse'}>
-          {isOpening ? '안에 뭐가 있을까 ?' : '두드려 안을 보기'}
+          {isOpening ? t('landing.hintOpening', lang) : t('landing.hint', lang)}
         </span>
       </motion.p>
     </motion.div>
