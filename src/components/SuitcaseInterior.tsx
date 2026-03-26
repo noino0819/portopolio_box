@@ -111,6 +111,7 @@ interface DraggableItemProps {
   onPointerMove: (e: React.PointerEvent) => void;
   onPointerUp: (e: React.PointerEvent, id: ItemId) => void;
   onPointerCancel: (e: React.PointerEvent, id: ItemId) => void;
+  onClick: (id: ItemId) => void;
   onSelect: (id: ItemId) => void;
   onResetIdle: () => void;
   onBringToFront: (id: ItemId | 'note') => void;
@@ -121,7 +122,7 @@ interface DraggableItemProps {
 const DraggableItem = memo(function DraggableItem({
   item, posX, posY, zIndex, isTapped, isNudging,
   canHover, reduced, index, label, sublabel, dragHint,
-  onPointerDown, onPointerMove, onPointerUp, onPointerCancel,
+  onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onClick,
   onSelect, onResetIdle, onBringToFront, playSound, onNudgeEnd,
 }: DraggableItemProps) {
   const { id, Component, rotation, size, color } = item;
@@ -137,6 +138,10 @@ const DraggableItem = memo(function DraggableItem({
   const handleCancel = useCallback(
     (e: React.PointerEvent) => onPointerCancel(e, id),
     [onPointerCancel, id],
+  );
+  const handleClick = useCallback(
+    () => onClick(id),
+    [onClick, id],
   );
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -176,6 +181,7 @@ const DraggableItem = memo(function DraggableItem({
       onPointerMove={onPointerMove}
       onPointerUp={handleUp}
       onPointerCancel={handleCancel}
+      onClick={handleClick}
       role="button"
       tabIndex={0}
       aria-label={`${label} - ${sublabel} (${dragHint})`}
@@ -344,8 +350,11 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent, id: ItemId) => {
-      if (e.pointerType !== 'touch') e.preventDefault();
-      e.currentTarget.setPointerCapture(e.pointerId);
+      if (e.pointerType !== 'touch') {
+        e.preventDefault();
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }
+      wasDragRef.current = false;
       resetIdleTimer();
       bump.prepare();
       bringToFront(id);
@@ -451,10 +460,14 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     dragState.current = null;
   }, []);
 
+  const wasDragRef = useRef(false);
+
   const handleNotePointerDown = useCallback(
     (e: React.PointerEvent) => {
-      if (e.pointerType !== 'touch') e.preventDefault();
-      e.currentTarget.setPointerCapture(e.pointerId);
+      if (e.pointerType !== 'touch') {
+        e.preventDefault();
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }
       resetIdleTimer();
       bump.prepare();
       bringToFront('note');
@@ -529,23 +542,31 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       if (!ds) return;
       const wasDrag = ds.moved;
       dragState.current = null;
+      wasDragRef.current = wasDrag;
 
       if (!wasDrag) {
-        sounds[id]();
+        try { sounds[id](); } catch { /* AudioContext may fail */ }
         bringToFront(id);
-        const isTouch = e.pointerType === 'touch';
-        if (isTouch) {
-          onSelectItem(id);
-        } else {
+        if (e.pointerType !== 'touch') {
           setTappedItem(id);
-          setTimeout(() => {
-            setTappedItem(null);
-            onSelectItem(id);
-          }, 120);
+          setTimeout(() => setTappedItem(null), 120);
         }
       }
     },
-    [sounds, onSelectItem, bringToFront],
+    [sounds, bringToFront],
+  );
+
+  const handleItemClick = useCallback(
+    (id: ItemId) => {
+      if (wasDragRef.current) {
+        wasDragRef.current = false;
+        return;
+      }
+      resetIdleTimer();
+      bringToFront(id);
+      onSelectItem(id);
+    },
+    [resetIdleTimer, bringToFront, onSelectItem],
   );
 
   const handleNudgeEnd = useCallback(() => setNudgeItem(null), []);
@@ -639,6 +660,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
+              onClick={handleItemClick}
               onSelect={onSelectItem}
               onResetIdle={resetIdleTimer}
               onBringToFront={bringToFront}
