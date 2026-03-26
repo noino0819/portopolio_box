@@ -6,15 +6,8 @@ export function useBumpSound() {
 
   const prepare = useCallback(() => {
     if (!ctxRef.current) ctxRef.current = new AudioContext();
-    const ctx = ctxRef.current;
-    if (ctx.state !== 'running') {
-      ctx.resume().then(() => {
-        const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
-        const src = ctx.createBufferSource();
-        src.buffer = buf;
-        src.connect(ctx.destination);
-        src.start();
-      }).catch(() => {});
+    if (ctxRef.current.state === 'suspended') {
+      ctxRef.current.resume().catch(() => {});
     }
   }, []);
 
