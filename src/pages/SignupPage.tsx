@@ -1,16 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { getPortfolioSlug } from '@/lib/portfolio';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 
 export default function SignupPage() {
-  const { signUp } = useAuth();
+  const { signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+    setRedirecting(true);
+    getPortfolioSlug(user.id).then((slug) => {
+      navigate(slug ? `/${slug}` : '/onboarding', { replace: true });
+    });
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +42,14 @@ export default function SignupPage() {
       navigate('/onboarding');
     }
   };
+
+  if (authLoading || redirecting) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-bg-dark">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-gold/30 border-t-gold" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-bg-dark px-4">
