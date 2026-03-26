@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 export function useBumpSound() {
   const ctxRef = useRef<AudioContext | null>(null);
@@ -47,5 +47,5 @@ export function useBumpSound() {
     } catch { /* context not ready */ }
   }, []);
 
-  return { prepare, play };
+  return useMemo(() => ({ prepare, play }), [prepare, play]);
 }
