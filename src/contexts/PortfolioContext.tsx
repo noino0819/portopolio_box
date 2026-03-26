@@ -31,6 +31,11 @@ export interface PortfolioBundle {
   itemLabels?: Record<string, ItemLabel>;
 }
 
+export interface ItemPosition {
+  x: number;
+  y: number;
+}
+
 export interface PortfolioMeta {
   id: string;
   slug: string;
@@ -38,6 +43,7 @@ export interface PortfolioMeta {
   youtubePlaylistId: string | null;
   youtubeFirstVideoId: string | null;
   hiddenItems: string[];
+  itemPositions: Record<string, ItemPosition>;
 }
 
 interface PortfolioContextType {

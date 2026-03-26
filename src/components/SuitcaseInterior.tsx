@@ -149,19 +149,25 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     });
   }, []);
 
+  const storageKey = `item-positions-${portfolioMeta.slug}`;
+  const customPos = portfolioMeta.itemPositions;
+
   const [positions, setPositions] = useState<Record<ItemId, { x: number; y: number }>>(() => {
-    const saved = sessionStorage.getItem('item-positions');
+    const saved = sessionStorage.getItem(storageKey);
     if (saved) {
       try { return JSON.parse(saved); } catch { /* ignore */ }
     }
     return Object.fromEntries(
-      itemDefs.map((d) => [d.id, { x: d.defaultX, y: d.defaultY }]),
+      itemDefs.map((d) => [d.id, {
+        x: customPos[d.id]?.x ?? d.defaultX,
+        y: customPos[d.id]?.y ?? d.defaultY,
+      }]),
     ) as Record<ItemId, { x: number; y: number }>;
   });
 
   useEffect(() => {
-    sessionStorage.setItem('item-positions', JSON.stringify(positions));
-  }, [positions]);
+    sessionStorage.setItem(storageKey, JSON.stringify(positions));
+  }, [positions, storageKey]);
 
   const didPlayOpen = useRef(false);
   useEffect(() => {

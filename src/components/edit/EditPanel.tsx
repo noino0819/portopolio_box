@@ -330,23 +330,90 @@ function CdStoryEditor({ items, onChange }: { items: string[]; onChange: (v: str
 const ITEM_IDS = ['nametag', 'book', 'switch', 'cd'] as const;
 const ITEM_EMOJI: Record<string, string> = { nametag: '🏷️', book: '📖', switch: '🎮', cd: '💿' };
 
-function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleItem }: {
+function ItemLabelsEditor({ labels, onChange, editLang, hiddenItems, onToggleItem, itemPositions, onPositionsChange, slug }: {
   labels: Record<string, ItemLabel>;
   onChange: (v: Record<string, ItemLabel>) => void;
   editLang: Language;
   hiddenItems: string[];
   onToggleItem: (id: string) => void;
+  itemPositions: Record<string, { x: number; y: number }>;
+  onPositionsChange: (v: Record<string, { x: number; y: number }>) => void;
+  slug: string;
 }) {
   const updateItem = (id: string, field: keyof ItemLabel, value: string) => {
     const current = labels[id] ?? {};
     onChange({ ...labels, [id]: { ...current, [field]: value || undefined } });
   };
 
+  const handleCaptureCurrentPositions = () => {
+    const storageKey = `item-positions-${slug}`;
+    const saved = sessionStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as Record<string, { x: number; y: number }>;
+        const rounded: Record<string, { x: number; y: number }> = {};
+        for (const id of ITEM_IDS) {
+          if (parsed[id]) {
+            rounded[id] = { x: Math.round(parsed[id].x), y: Math.round(parsed[id].y) };
+          }
+        }
+        onPositionsChange(rounded);
+      } catch { /* ignore */ }
+    }
+  };
+
+  const handleResetPositions = () => {
+    onPositionsChange({});
+    const storageKey = `item-positions-${slug}`;
+    sessionStorage.removeItem(storageKey);
+  };
+
+  const hasCustomPositions = Object.keys(itemPositions).length > 0;
+
   return (
     <div className="space-y-4">
       <p className="text-[11px] text-card/40">
         가방 안 물건의 이름, 설명, 소개 문구를 자유롭게 수정하세요. 눈 아이콘으로 표시/숨기기를 전환할 수 있어요.
       </p>
+
+      <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 space-y-2">
+        <h4 className="text-xs font-semibold text-card/70">📐 물건 배치</h4>
+        <p className="text-[10px] text-card/30">
+          가방을 닫고 물건을 드래그해서 원하는 위치에 놓은 후, 아래 버튼으로 저장하세요.
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleCaptureCurrentPositions}
+            className="flex-1 rounded-lg bg-accent-teal/15 py-2 text-[11px] font-medium text-accent-teal transition-colors hover:bg-accent-teal/25"
+          >
+            현재 배치를 기본 위치로 저장
+          </button>
+          {hasCustomPositions && (
+            <button
+              type="button"
+              onClick={handleResetPositions}
+              className="rounded-lg bg-white/5 px-3 py-2 text-[11px] text-card/40 transition-colors hover:bg-white/10 hover:text-card/60"
+            >
+              초기화
+            </button>
+          )}
+        </div>
+        {hasCustomPositions && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {ITEM_IDS.map((id) => {
+              const pos = itemPositions[id];
+              if (!pos) return null;
+              return (
+                <span key={id} className="rounded bg-white/5 px-2 py-0.5 text-[9px] text-card/30">
+                  {ITEM_EMOJI[id]} ({pos.x}, {pos.y})
+                </span>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {ITEM_IDS.map((id) => {
         const item = labels[id] ?? {};
         const isHidden = hiddenItems.includes(id);
@@ -414,6 +481,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [loadingLang, setLoadingLang] = useState(false);
   const [hiddenItems, setHiddenItems] = useState<string[]>(meta.hiddenItems ?? []);
+  const [itemPositions, setItemPositions] = useState<Record<string, { x: number; y: number }>>(meta.itemPositions ?? {});
 
   const [addingLang, setAddingLang] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
@@ -528,18 +596,20 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
         youtube_playlist_id: ytPlaylistId || null,
         youtube_first_video_id: ytFirstVideoId || null,
         hidden_items: hiddenItems,
+        item_positions: itemPositions,
       })
       .eq('id', meta.id);
     updateMeta({
       youtubePlaylistId: ytPlaylistId || null,
       youtubeFirstVideoId: ytFirstVideoId || null,
       hiddenItems,
+      itemPositions,
     });
 
     setSaving(false);
     setSaveMsg(dataErr ? `Error: ${dataErr.message}` : 'Saved!');
     setTimeout(() => setSaveMsg(null), 3000);
-  }, [meta.id, editLang, draft, ytPlaylistId, ytFirstVideoId, hiddenItems, updateMeta]);
+  }, [meta.id, editLang, draft, ytPlaylistId, ytFirstVideoId, hiddenItems, itemPositions, updateMeta]);
 
   const updateDraft = <K extends keyof PortfolioBundle>(key: K, value: PortfolioBundle[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -672,7 +742,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                 </div>
               ) : (
                 <>
-                  {activeSection === 'itemLabels' && <ItemLabelsEditor labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} hiddenItems={hiddenItems} onToggleItem={handleToggleItem} />}
+                  {activeSection === 'itemLabels' && <ItemLabelsEditor labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} />}
                   {activeSection === 'profile' && <ProfileEditor profile={draft.profile} onChange={(v) => updateDraft('profile', v)} />}
                   {activeSection === 'education' && <EducationEditor items={draft.education} onChange={(v) => updateDraft('education', v)} />}
                   {activeSection === 'certifications' && <CertificationsEditor items={draft.certifications} onChange={(v) => updateDraft('certifications', v)} />}
