@@ -167,6 +167,12 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
 
   const clampedEdges = useRef({ left: false, right: false, top: false, bottom: false });
 
+  const bookShakeRef = useRef<{
+    lastY: number;
+    dir: 'up' | 'down' | null;
+    reversals: number;
+  }>({ lastY: 0, dir: null, reversals: 0 });
+
   const getContainerRect = useCallback(() => containerRef.current?.getBoundingClientRect(), []);
 
   const handlePointerDown = useCallback(
@@ -177,6 +183,9 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       bump.prepare();
       bringToFront(id);
       clampedEdges.current = { left: false, right: false, top: false, bottom: false };
+      if (id === 'book') {
+        bookShakeRef.current = { lastY: e.clientY, dir: null, reversals: 0 };
+      }
       dragState.current = {
         id,
         startPointerX: e.clientX,
@@ -199,17 +208,31 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       const dy = e.clientY - ds.startPointerY;
 
       if (!ds.moved && Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD) return;
-      if (!ds.moved && ds.id === 'book' && !noteReleasedRef.current) {
-        const pos = { x: Math.min(78, ds.startX + 3), y: Math.min(78, ds.startY + 12) };
-        noteReleasedRef.current = true;
-        setNoteReleased(true);
-        setNotePos(pos);
-        setNoteDropping(true);
-        sessionStorage.setItem('note-released', 'true');
-        sessionStorage.setItem('note-pos', JSON.stringify(pos));
-        setTimeout(() => bump.play(), 350);
-      }
       ds.moved = true;
+
+      if (ds.id === 'book' && !noteReleasedRef.current) {
+        const shake = bookShakeRef.current;
+        const deltaY = e.clientY - shake.lastY;
+        const MIN_MOVE = 10;
+        if (Math.abs(deltaY) > MIN_MOVE) {
+          const newDir = deltaY > 0 ? 'down' : 'up';
+          if (shake.dir && newDir !== shake.dir) {
+            shake.reversals++;
+            if (shake.reversals >= 4) {
+              const pos = { x: Math.min(78, ds.startX + 3), y: Math.min(78, ds.startY + 12) };
+              noteReleasedRef.current = true;
+              setNoteReleased(true);
+              setNotePos(pos);
+              setNoteDropping(true);
+              sessionStorage.setItem('note-released', 'true');
+              sessionStorage.setItem('note-pos', JSON.stringify(pos));
+              setTimeout(() => bump.play(), 350);
+            }
+          }
+          shake.dir = newDir;
+          shake.lastY = e.clientY;
+        }
+      }
 
       const el = e.currentTarget as HTMLElement;
       const maxX = Math.max(5, ((rect.width - el.offsetWidth) / rect.width) * 100);
@@ -288,7 +311,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
 
         {noteReleased && (
           <motion.div
-            className="absolute cursor-pointer"
+            className="group absolute cursor-pointer"
             style={{ left: `${notePos.x}%`, top: `${notePos.y}%`, zIndex: 0 }}
             initial={noteDropping ? { y: -30, opacity: 0, rotate: -20 } : false}
             animate={{ y: 0, opacity: 1, rotate: 8 }}
@@ -308,12 +331,17 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
               if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setNoteOpen(true); }
             }}
           >
-            <img
-              src={noteImg}
-              alt={t('note.title', lang)}
-              className="w-[35px] sm:w-[45px] md:w-[55px] drop-shadow-lg"
-              draggable={false}
-            />
+            <div className="p-1 drop-shadow-lg group-hover:drop-shadow-2xl">
+              <img
+                src={noteImg}
+                alt={t('note.title', lang)}
+                className="w-[35px] sm:w-[45px] md:w-[55px]"
+                draggable={false}
+              />
+            </div>
+            <span className="mt-1 block text-center font-accent text-xs text-gold/80 opacity-0 transition-opacity group-hover:opacity-100">
+              {t('note.title', lang)}
+            </span>
           </motion.div>
         )}
 
