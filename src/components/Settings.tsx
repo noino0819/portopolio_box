@@ -84,7 +84,24 @@ export default function Settings() {
               <div className="border-t border-white/5 px-4 py-3">
                 {user ? (
                   <div className="space-y-2">
-                    <p className="truncate text-[10px] text-card/40">{user.email}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="min-w-0 flex-1 truncate text-[10px] text-card/40">{user.email}</p>
+                      {(() => {
+                        const provider = (user.app_metadata?.provider as string) ?? 'email';
+                        const badge: Record<string, { icon: string; label: string }> = {
+                          google: { icon: '🔵', label: 'Google' },
+                          kakao: { icon: '🟡', label: 'Kakao' },
+                          github: { icon: '⚫', label: 'GitHub' },
+                          email: { icon: '✉️', label: 'Email' },
+                        };
+                        const b = badge[provider] ?? badge.email;
+                        return (
+                          <span className="shrink-0 rounded bg-white/5 px-1.5 py-0.5 text-[9px] text-card/40">
+                            {b.icon} {b.label}
+                          </span>
+                        );
+                      })()}
+                    </div>
                     <button
                       type="button"
                       onClick={async () => { await signOut(); setOpen(false); }}
