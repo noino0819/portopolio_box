@@ -51,6 +51,9 @@ export default function App() {
     if (id === 'cd') setMusicActivated(true);
   }, []);
 
+  const handleEditOpen = useCallback(() => setEditOpen(true), []);
+  const handleEditClose = useCallback(() => setEditOpen(false), []);
+
   const lastCloseRef = useRef(0);
 
   useEffect(() => {
@@ -105,8 +108,8 @@ export default function App() {
 
         <MusicPlayer activated={musicActivated} />
 
-        <EditButton onClick={() => setEditOpen(true)} />
-        <EditPanel open={editOpen} onClose={() => setEditOpen(false)} />
+        <EditButton onClick={handleEditOpen} />
+        <EditPanel open={editOpen} onClose={handleEditClose} />
       </main>
     </>
   );

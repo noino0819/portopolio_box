@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SuitcaseOpen from '@/assets/SuitcaseOpen';
 import ItemNametag from '@/assets/ItemNametag';
@@ -84,9 +84,109 @@ const DRAG_THRESHOLD_MOUSE = 6;
 const DRAG_THRESHOLD_TOUCH = 12;
 const EDGE_HYST = 4;
 
+const TAP_TRANSITION = { scale: { duration: 0.15, ease: 'easeOut' } } as const;
+const HOVER_SCALE = { scale: 1.12 } as const;
+const EMPTY_INITIAL = {} as const;
+const CENTER_STYLE = { translateX: '-50%', translateY: '-50%' } as const;
+const NOTE_SPRING = { type: 'spring', damping: 20, stiffness: 300 } as const;
+
 function useCanHover() {
   return useMemo(() => window.matchMedia('(hover: hover) and (pointer: fine)').matches, []);
 }
+
+interface DraggableItemProps {
+  item: ItemDef;
+  posX: number;
+  posY: number;
+  zIndex: number;
+  isTapped: boolean;
+  isNudging: boolean;
+  canHover: boolean;
+  reduced: boolean;
+  index: number;
+  label: string;
+  sublabel: string;
+  dragHint: string;
+  onPointerDown: (e: React.PointerEvent, id: ItemId) => void;
+  onPointerMove: (e: React.PointerEvent) => void;
+  onPointerUp: (e: React.PointerEvent, id: ItemId) => void;
+  onSelect: (id: ItemId) => void;
+  onResetIdle: () => void;
+  onBringToFront: (id: ItemId | 'note') => void;
+  playSound: () => void;
+  onNudgeEnd: () => void;
+}
+
+const DraggableItem = memo(function DraggableItem({
+  item, posX, posY, zIndex, isTapped, isNudging,
+  canHover, reduced, index, label, sublabel, dragHint,
+  onPointerDown, onPointerMove, onPointerUp,
+  onSelect, onResetIdle, onBringToFront, playSound, onNudgeEnd,
+}: DraggableItemProps) {
+  const { id, Component, rotation, size, color } = item;
+
+  const handleDown = useCallback(
+    (e: React.PointerEvent) => onPointerDown(e, id),
+    [onPointerDown, id],
+  );
+  const handleUp = useCallback(
+    (e: React.PointerEvent) => onPointerUp(e, id),
+    [onPointerUp, id],
+  );
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onResetIdle();
+        playSound();
+        onBringToFront(id);
+        onSelect(id);
+      }
+    },
+    [id, onResetIdle, playSound, onBringToFront, onSelect],
+  );
+
+  const transition = useMemo(
+    () =>
+      isTapped
+        ? TAP_TRANSITION
+        : {
+            delay: reduced ? 0 : 0.3 + index * 0.08,
+            duration: reduced ? 0 : 0.4,
+            ease: 'easeOut' as const,
+            scale: { duration: 0.1, ease: 'easeOut' as const, delay: 0 },
+          },
+    [isTapped, reduced, index],
+  );
+
+  return (
+    <motion.div
+      className={`absolute w-max ${rotation} group touch-none`}
+      style={{ left: `${posX}%`, top: `${posY}%`, cursor: 'grab', zIndex }}
+      initial={reduced ? EMPTY_INITIAL : { opacity: 0, y: 20, scale: 1 }}
+      animate={{ opacity: 1, y: 0, scale: isTapped ? 1.15 : 1 }}
+      transition={transition}
+      whileHover={reduced || !canHover ? undefined : HOVER_SCALE}
+      onPointerDown={handleDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={handleUp}
+      role="button"
+      tabIndex={0}
+      aria-label={`${label} - ${sublabel} (${dragHint})`}
+      onKeyDown={handleKeyDown}
+    >
+      <div
+        className={`p-2 transition-shadow duration-300 ${canHover ? color : ''} rounded-lg drop-shadow-lg hover-hover:group-hover:drop-shadow-2xl ${isNudging ? 'animate-nudge' : ''}`}
+        onAnimationEnd={isNudging ? onNudgeEnd : undefined}
+      >
+        <Component className={size} />
+      </div>
+      <span className="mt-1 block text-center font-accent text-xs text-gold/80 opacity-0 transition-opacity hover-hover:group-hover:opacity-100">
+        {label}
+      </span>
+    </motion.div>
+  );
+});
 
 export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInteriorProps) {
   const reduced = useReducedMotion();
@@ -197,6 +297,11 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     }
   }, [portfolioMeta.itemPositions, storageKey]);
 
+  const positionsRef = useRef(positions);
+  positionsRef.current = positions;
+  const notePosRef = useRef(notePos);
+  notePosRef.current = notePos;
+
   const didPlayOpen = useRef(false);
   useEffect(() => {
     if (didPlayOpen.current) return;
@@ -242,17 +347,18 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       if (id === 'book') {
         bookShakeRef.current = { lastY: e.clientY, dir: null, reversals: 0 };
       }
+      const pos = positionsRef.current[id];
       dragState.current = {
         id,
         startPointerX: e.clientX,
         startPointerY: e.clientY,
-        startX: positions[id].x,
-        startY: positions[id].y,
+        startX: pos.x,
+        startY: pos.y,
         moved: false,
         pointerType: e.pointerType,
       };
     },
-    [positions, bringToFront, resetIdleTimer, bump],
+    [bringToFront, resetIdleTimer, bump],
   );
 
   const handlePointerMove = useCallback(
@@ -343,16 +449,17 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       bump.prepare();
       bringToFront('note');
       noteEdges.current = { left: false, right: false, top: false, bottom: false };
+      const pos = notePosRef.current;
       noteDragRef.current = {
         startPointerX: e.clientX,
         startPointerY: e.clientY,
-        startX: notePos.x,
-        startY: notePos.y,
+        startX: pos.x,
+        startY: pos.y,
         moved: false,
         pointerType: e.pointerType,
       };
     },
-    [notePos, bringToFront, resetIdleTimer, bump],
+    [bringToFront, resetIdleTimer, bump],
   );
 
   const handleNotePointerMove = useCallback(
@@ -427,6 +534,9 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     [sounds, onSelectItem, bringToFront],
   );
 
+  const handleNudgeEnd = useCallback(() => setNudgeItem(null), []);
+  const dragHint = t('detail.dragHint', lang);
+
   return (
     <motion.div
       className="flex min-h-dvh items-center justify-center px-4"
@@ -466,7 +576,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
                 : { duration: 0 }
             }
             onAnimationComplete={() => setNoteDropping(false)}
-            whileHover={canHover ? { scale: 1.12 } : undefined}
+            whileHover={canHover ? HOVER_SCALE : undefined}
             onPointerDown={handleNotePointerDown}
             onPointerMove={handleNotePointerMove}
             onPointerUp={handleNotePointerUp}
@@ -492,64 +602,33 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         )}
 
         {visibleItems.map((item, i) => {
-          const { id, Component, rotation, size, color } = item;
+          const { id } = item;
           const custom = portfolioData.itemLabels?.[id];
-          const label = custom?.label || t(`items.${id}.label`, lang);
-          const sublabel = custom?.sublabel || t(`items.${id}.sublabel`, lang);
           const pos = positions[id];
           return (
-            <motion.div
+            <DraggableItem
               key={id}
-              className={`absolute w-max ${rotation} group touch-none`}
-              style={{
-                left: `${pos.x}%`,
-                top: `${pos.y}%`,
-                cursor: dragState.current?.id === id ? 'grabbing' : 'grab',
-                zIndex: zOrders[id],
-              }}
-              initial={reduced ? {} : { opacity: 0, y: 20, scale: 1 }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                scale: tappedItem === id ? 1.15 : 1,
-              }}
-              transition={
-                tappedItem === id
-                  ? { scale: { duration: 0.15, ease: 'easeOut' } }
-                  : {
-                      delay: reduced ? 0 : 0.3 + i * 0.08,
-                      duration: reduced ? 0 : 0.4,
-                      ease: 'easeOut',
-                      scale: { duration: 0.1, ease: 'easeOut', delay: 0 },
-                    }
-              }
-              whileHover={reduced || !canHover ? undefined : { scale: 1.12 }}
-              onPointerDown={(e) => handlePointerDown(e, id)}
+              item={item}
+              posX={pos.x}
+              posY={pos.y}
+              zIndex={zOrders[id]}
+              isTapped={tappedItem === id}
+              isNudging={nudgeItem === id}
+              canHover={canHover}
+              reduced={reduced}
+              index={i}
+              label={custom?.label || t(`items.${id}.label`, lang)}
+              sublabel={custom?.sublabel || t(`items.${id}.sublabel`, lang)}
+              dragHint={dragHint}
+              onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
-              onPointerUp={(e) => handlePointerUp(e, id)}
-              role="button"
-              tabIndex={0}
-              aria-label={`${label} - ${sublabel} (${t('detail.dragHint', lang)})`}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  resetIdleTimer();
-                  sounds[id]();
-                  bringToFront(id);
-                  onSelectItem(id);
-                }
-              }}
-            >
-              <div
-                className={`p-2 transition-shadow duration-300 ${canHover ? color : ''} rounded-lg drop-shadow-lg hover-hover:group-hover:drop-shadow-2xl ${nudgeItem === id ? 'animate-nudge' : ''}`}
-                onAnimationEnd={() => { if (nudgeItem === id) setNudgeItem(null); }}
-              >
-                <Component className={size} />
-              </div>
-              <span className="mt-1 block text-center font-accent text-xs text-gold/80 opacity-0 transition-opacity hover-hover:group-hover:opacity-100">
-                {label}
-              </span>
-            </motion.div>
+              onPointerUp={handlePointerUp}
+              onSelect={onSelectItem}
+              onResetIdle={resetIdleTimer}
+              onBringToFront={bringToFront}
+              playSound={sounds[id]}
+              onNudgeEnd={handleNudgeEnd}
+            />
           );
         })}
       </div>
@@ -566,11 +645,11 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
             />
             <motion.div
               className="fixed left-1/2 top-1/2 z-[61] w-[260px]"
-              style={{ translateX: '-50%', translateY: '-50%' }}
+              style={CENTER_STYLE}
               initial={{ scale: 0.7, opacity: 0, rotate: -5 }}
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               exit={{ scale: 0.7, opacity: 0, rotate: 5 }}
-              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              transition={NOTE_SPRING}
             >
               <div className="relative overflow-hidden rounded-lg bg-amber-50 px-6 pb-7 pt-5 shadow-2xl">
                 <button

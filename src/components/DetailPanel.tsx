@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ItemId } from './SuitcaseInterior';
 import NametagDetail from './details/NametagDetail';
@@ -33,7 +33,10 @@ const detailComponents: Record<ItemId, React.FC> = {
   cd: CDDetail,
 };
 
-export default function DetailPanel({ activeItem, onClose }: DetailPanelProps) {
+const PANEL_SPRING = { type: 'spring', damping: 30, stiffness: 300 } as const;
+const EMPTY_INITIAL = {} as const;
+
+export default memo(function DetailPanel({ activeItem, onClose }: DetailPanelProps) {
   const reduced = useReducedMotion();
   const { lang } = useLanguage();
   const portfolioData = usePortfolioData();
@@ -77,15 +80,10 @@ export default function DetailPanel({ activeItem, onClose }: DetailPanelProps) {
             aria-label={portfolioData.itemLabels?.[activeItem]?.label || t(`items.${activeItem}.label`, lang)}
             aria-modal="true"
             className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[90dvh] w-full max-w-[900px] flex-col overflow-hidden rounded-t-3xl bg-bg-dark shadow-2xl md:inset-y-4 md:inset-x-4 md:rounded-3xl lg:inset-y-8 lg:inset-x-auto"
-            initial={reduced ? {} : { y: '100%', opacity: 0.5 }}
+            initial={reduced ? EMPTY_INITIAL : { y: '100%', opacity: 0.5 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={reduced ? {} : { y: '100%', opacity: 0 }}
-            transition={{
-              type: 'spring',
-              damping: 30,
-              stiffness: 300,
-              duration: reduced ? 0 : 0.35,
-            }}
+            exit={reduced ? EMPTY_INITIAL : { y: '100%', opacity: 0 }}
+            transition={{ ...PANEL_SPRING, duration: reduced ? 0 : 0.35 }}
           >
             {/* Close button */}
             <div className="flex items-center justify-end p-4">
@@ -105,7 +103,7 @@ export default function DetailPanel({ activeItem, onClose }: DetailPanelProps) {
               {/* Left: Item illustration */}
               <div className="flex flex-col items-center gap-3 md:w-1/3 md:sticky md:top-0">
                 <motion.div
-                  initial={reduced ? {} : { scale: 0.8, opacity: 0 }}
+                  initial={reduced ? EMPTY_INITIAL : { scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: reduced ? 0 : 0.15, duration: reduced ? 0 : 0.2 }}
                 >
@@ -125,7 +123,7 @@ export default function DetailPanel({ activeItem, onClose }: DetailPanelProps) {
               {/* Right: Detail content */}
               <motion.div
                 className="flex-1"
-                initial={reduced ? {} : { opacity: 0, x: 20 }}
+                initial={reduced ? EMPTY_INITIAL : { opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: reduced ? 0 : 0.2, duration: reduced ? 0 : 0.3 }}
               >
@@ -140,4 +138,4 @@ export default function DetailPanel({ activeItem, onClose }: DetailPanelProps) {
       )}
     </AnimatePresence>
   );
-}
+});

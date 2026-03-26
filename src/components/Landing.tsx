@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, memo } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import SuitcaseClosed from '@/assets/SuitcaseClosed';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -10,7 +10,10 @@ interface LandingProps {
   onOpen: () => void;
 }
 
-export default function Landing({ onOpen }: LandingProps) {
+const EMPTY_HOVER = {} as const;
+const LANDING_HOVER = { scale: 1.03 } as const;
+
+export default memo(function Landing({ onOpen }: LandingProps) {
   const reduced = useReducedMotion();
   const playKnock = useKnockSound();
   const { lang } = useLanguage();
@@ -76,7 +79,7 @@ export default function Landing({ onOpen }: LandingProps) {
         initial={{ scale: 1, opacity: 1, y: 0, rotate: 0 }}
         animate={controls}
         className="group relative cursor-pointer border-none bg-transparent p-0"
-        whileHover={isOpening || reduced ? {} : { scale: 1.03 }}
+        whileHover={isOpening || reduced ? EMPTY_HOVER : LANDING_HOVER}
         transition={{ duration: 0.3, ease: 'easeOut' }}
         role="button"
         aria-label={t('landing.ariaLabel', lang)}
@@ -100,4 +103,4 @@ export default function Landing({ onOpen }: LandingProps) {
       </p>
     </motion.div>
   );
-}
+});

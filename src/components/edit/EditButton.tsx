@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import { useIsOwner } from '@/contexts/PortfolioContext';
 
 interface EditButtonProps {
   onClick: () => void;
 }
 
-export default function EditButton({ onClick }: EditButtonProps) {
+export default memo(function EditButton({ onClick }: EditButtonProps) {
   const isOwner = useIsOwner();
   if (!isOwner) return null;
 
@@ -21,4 +22,4 @@ export default function EditButton({ onClick }: EditButtonProps) {
       </svg>
     </button>
   );
-}
+});

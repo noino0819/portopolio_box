@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { usePortfolioMeta } from '@/contexts/PortfolioContext';
 
 interface MusicPlayerProps {
@@ -20,7 +20,7 @@ function useIsDesktop() {
   return desktop;
 }
 
-export default function MusicPlayer({ activated }: MusicPlayerProps) {
+export default memo(function MusicPlayer({ activated }: MusicPlayerProps) {
   const [expanded, setExpanded] = useState(false);
   const isDesktop = useIsDesktop();
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -100,4 +100,4 @@ export default function MusicPlayer({ activated }: MusicPlayerProps) {
       />
     </div>
   );
-}
+});
