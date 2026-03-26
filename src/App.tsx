@@ -21,6 +21,10 @@ export default function App() {
   const [editOpen, setEditOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<ItemId | null>(null);
   const [musicActivated, setMusicActivated] = useState(false);
+  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+
+  const editOpenRef = useRef(false);
+  const editDirtyRef = useRef(false);
 
   useEffect(() => {
     const title = meta.pageTitle || `${meta.slug}의 여행가방`;
@@ -51,8 +55,24 @@ export default function App() {
     if (id === 'cd') setMusicActivated(true);
   }, []);
 
-  const handleEditOpen = useCallback(() => setEditOpen(true), []);
-  const handleEditClose = useCallback(() => setEditOpen(false), []);
+  const handleEditOpen = useCallback(() => {
+    history.pushState({ ...(history.state ?? {}), edit: true }, '');
+    editOpenRef.current = true;
+    setEditOpen(true);
+  }, []);
+
+  const handleEditConfirmedClose = useCallback(() => {
+    if (editOpenRef.current) {
+      editOpenRef.current = false;
+      setEditOpen(false);
+      setShowUnsavedWarning(false);
+      history.back();
+    }
+  }, []);
+
+  const handleEditDirtyChange = useCallback((dirty: boolean) => {
+    editDirtyRef.current = dirty;
+  }, []);
 
   const lastCloseRef = useRef(0);
 
@@ -74,7 +94,17 @@ export default function App() {
     history.replaceState({ screen: 'landing' }, '');
 
     const onPopState = (e: PopStateEvent) => {
-      const state = e.state as { screen?: Screen; item?: ItemId } | null;
+      const state = e.state as { screen?: Screen; item?: ItemId; edit?: boolean } | null;
+
+      if (editOpenRef.current && !state?.edit) {
+        if (editDirtyRef.current) {
+          history.pushState({ ...state, edit: true }, '');
+          setShowUnsavedWarning(true);
+          return;
+        }
+        editOpenRef.current = false;
+        setEditOpen(false);
+      }
 
       if (!state || state.screen === 'landing') {
         navigateTo('landing');
@@ -108,8 +138,14 @@ export default function App() {
 
         <MusicPlayer activated={musicActivated} />
 
-        <EditButton onClick={handleEditOpen} />
-        <EditPanel open={editOpen} onClose={handleEditClose} />
+        {screen === 'interior' && <EditButton onClick={handleEditOpen} />}
+        <EditPanel
+          open={editOpen}
+          onClose={handleEditConfirmedClose}
+          onDirtyChange={handleEditDirtyChange}
+          showUnsavedWarning={showUnsavedWarning}
+          onUnsavedWarningDismiss={() => setShowUnsavedWarning(false)}
+        />
       </main>
     </>
   );

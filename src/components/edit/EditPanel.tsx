@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
 import { usePortfolioMeta, usePortfolioData, useUpdatePortfolio, useAvailableLangs } from '@/contexts/PortfolioContext';
@@ -14,6 +14,9 @@ const ALL_LANGUAGES: Language[] = ['ko', 'en', 'ja', 'zh'];
 interface EditPanelProps {
   open: boolean;
   onClose: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
+  showUnsavedWarning?: boolean;
+  onUnsavedWarningDismiss?: () => void;
 }
 
 type TopTab = 'config' | 'nametag' | 'book' | 'switch' | 'cd' | 'note';
@@ -625,7 +628,7 @@ const EMPTY_BUNDLE: PortfolioBundle = {
   games: [], albums: [], books: [], hobbies: [], cdStory: [],
 };
 
-export default function EditPanel({ open, onClose }: EditPanelProps) {
+export default function EditPanel({ open, onClose, onDirtyChange, showUnsavedWarning, onUnsavedWarningDismiss }: EditPanelProps) {
   const { lang } = useLanguage();
   const meta = usePortfolioMeta();
   const currentData = usePortfolioData();
@@ -649,6 +652,53 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
   const [addingLang, setAddingLang] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [deleteLangTarget, setDeleteLangTarget] = useState<Language | null>(null);
+  const [localUnsavedDialog, setLocalUnsavedDialog] = useState(false);
+
+  const isDirtyRef = useRef(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  const markDirty = useCallback(() => {
+    if (!isDirtyRef.current) {
+      isDirtyRef.current = true;
+      setIsDirty(true);
+      onDirtyChange?.(true);
+    }
+  }, [onDirtyChange]);
+
+  const clearDirty = useCallback(() => {
+    isDirtyRef.current = false;
+    setIsDirty(false);
+    onDirtyChange?.(false);
+  }, [onDirtyChange]);
+
+  useEffect(() => {
+    if (!open || !isDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [open, isDirty]);
+
+  const handleRequestClose = useCallback(() => {
+    if (isDirtyRef.current) {
+      setLocalUnsavedDialog(true);
+    } else {
+      onClose();
+    }
+  }, [onClose]);
+
+  const handleDiscardAndClose = useCallback(() => {
+    setLocalUnsavedDialog(false);
+    onUnsavedWarningDismiss?.();
+    clearDirty();
+    onClose();
+  }, [onClose, clearDirty, onUnsavedWarningDismiss]);
+
+  const handleCancelClose = useCallback(() => {
+    setLocalUnsavedDialog(false);
+    onUnsavedWarningDismiss?.();
+  }, [onUnsavedWarningDismiss]);
 
   const loadLangData = useCallback((targetLang: Language) => {
     setLoadingLang(true);
@@ -717,7 +767,8 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
       updateMeta({ hiddenItems: next });
       return next;
     });
-  }, [updateMeta]);
+    markDirty();
+  }, [updateMeta, markDirty]);
 
   useEffect(() => {
     if (editLang === lang) {
@@ -780,12 +831,14 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
     updateCacheMeta(meta.slug, metaPartial);
 
     setSaving(false);
+    if (!dataErr) clearDirty();
     setSaveMsg(dataErr ? `Error: ${dataErr.message}` : 'Saved!');
     setTimeout(() => setSaveMsg(null), 3000);
-  }, [meta.id, meta.slug, editLang, draft, ytPlaylistId, ytFirstVideoId, hiddenItems, itemPositions, pageTitle, pageDescription, updateMeta]);
+  }, [meta.id, meta.slug, editLang, draft, ytPlaylistId, ytFirstVideoId, hiddenItems, itemPositions, pageTitle, pageDescription, updateMeta, clearDirty]);
 
   const updateDraft = <K extends keyof PortfolioBundle>(key: K, value: PortfolioBundle[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
+    markDirty();
   };
 
   const typedAvailableLangs = availableLangs as Language[];
@@ -800,7 +853,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={handleRequestClose}
           />
           <motion.div
             className="fixed inset-y-0 right-0 z-[110] flex w-full max-w-lg flex-col bg-bg-dark shadow-2xl"
@@ -826,7 +879,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>
-                <button type="button" onClick={onClose} className="rounded p-1 text-card/50 hover:text-card">
+                <button type="button" onClick={handleRequestClose} className="rounded p-1 text-card/50 hover:text-card">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
                 </button>
               </div>
@@ -951,8 +1004,8 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
               ) : (
                 <>
                   {/* 구성 */}
-                  {activeTopTab === 'config' && activeSubTab === 'pageMeta' && <PageMetaEditor pageTitle={pageTitle} pageDescription={pageDescription} onTitleChange={setPageTitle} onDescriptionChange={setPageDescription} slug={meta.slug} />}
-                  {activeTopTab === 'config' && activeSubTab === 'items' && <ItemConfigEditor hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} />}
+                  {activeTopTab === 'config' && activeSubTab === 'pageMeta' && <PageMetaEditor pageTitle={pageTitle} pageDescription={pageDescription} onTitleChange={(v) => { setPageTitle(v); markDirty(); }} onDescriptionChange={(v) => { setPageDescription(v); markDirty(); }} slug={meta.slug} />}
+                  {activeTopTab === 'config' && activeSubTab === 'items' && <ItemConfigEditor hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={(v) => { setItemPositions(v); markDirty(); }} slug={meta.slug} />}
 
                   {/* 이름표 */}
                   {activeTopTab === 'nametag' && activeSubTab === 'label' && <SingleItemEditor itemId="nametag" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('nametag')} onToggleItem={handleToggleItem} />}
@@ -977,8 +1030,8 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                   {activeTopTab === 'cd' && activeSubTab === 'cdStory' && <CdStoryEditor items={draft.cdStory} onChange={(v) => updateDraft('cdStory', v)} />}
                   {activeTopTab === 'cd' && activeSubTab === 'youtube' && (
                     <div className="space-y-4">
-                      <TextInput label="YouTube Playlist ID" value={ytPlaylistId} onChange={setYtPlaylistId} />
-                      <TextInput label="YouTube First Video ID" value={ytFirstVideoId} onChange={setYtFirstVideoId} />
+                      <TextInput label="YouTube Playlist ID" value={ytPlaylistId} onChange={(v) => { setYtPlaylistId(v); markDirty(); }} />
+                      <TextInput label="YouTube First Video ID" value={ytFirstVideoId} onChange={(v) => { setYtFirstVideoId(v); markDirty(); }} />
                     </div>
                   )}
 
@@ -1027,6 +1080,48 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                 className="flex-1 rounded-lg bg-red-500/20 py-2 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/30"
               >
                 삭제
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+
+      {(localUnsavedDialog || showUnsavedWarning) && (
+        <>
+          <motion.div
+            className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleCancelClose}
+          />
+          <motion.div
+            className="fixed left-1/2 top-1/2 z-[210] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-bg-dark p-5 shadow-2xl"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <h3 className="mb-3 font-display text-sm font-bold text-card">
+              저장하지 않은 변경사항
+            </h3>
+            <p className="mb-4 text-xs leading-relaxed text-card/60">
+              아직 저장하지 않은 변경사항이 있습니다.{'\n'}
+              Save 버튼을 누르지 않으면 수정한 내용이 사라집니다.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleCancelClose}
+                className="flex-1 rounded-lg bg-white/5 py-2 text-xs text-card/70 transition-colors hover:bg-white/10"
+              >
+                계속 수정
+              </button>
+              <button
+                type="button"
+                onClick={handleDiscardAndClose}
+                className="flex-1 rounded-lg bg-red-500/20 py-2 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/30"
+              >
+                닫기
               </button>
             </div>
           </motion.div>

@@ -98,7 +98,7 @@ export default memo(function Landing({ onOpen }: LandingProps) {
         </span>
       </motion.p>
 
-      <p className="fixed bottom-4 right-4 text-[10px] leading-relaxed text-card/20">
+      <p className="fixed bottom-4 left-4 right-4 text-center text-[10px] leading-relaxed text-card/20 sm:left-auto sm:text-right">
         {t('landing.credit', lang)}
       </p>
     </motion.div>
