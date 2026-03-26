@@ -584,7 +584,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
   const { availableLangs, setAvailableLangs } = useAvailableLangs();
 
   const [editLang, setEditLang] = useState<Language>(lang);
-  const [activeSection, setActiveSection] = useState<Section>('profile');
+  const [activeSection, setActiveSection] = useState<Section | null>('profile');
   const [draft, setDraft] = useState<PortfolioBundle>({ ...currentData });
   const [ytPlaylistId, setYtPlaylistId] = useState(meta.youtubePlaylistId ?? '');
   const [ytFirstVideoId, setYtFirstVideoId] = useState(meta.youtubeFirstVideoId ?? '');
@@ -840,46 +840,60 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
               )}
             </div>
 
-            {/* Section tabs */}
-            <div className="flex gap-1 overflow-x-auto border-b border-white/5 px-4 py-2 scrollbar-hide">
-              {SECTION_IDS.map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setActiveSection(id)}
-                  className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${activeSection === id ? 'bg-accent-purple/15 text-accent-purple' : 'text-card/40 hover:bg-white/5 hover:text-card/60'}`}
-                >
-                  {SECTION_LABELS[id][lang]}
-                </button>
-              ))}
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto px-4 py-4">
+            {/* Accordion sections */}
+            <div className="flex-1 overflow-y-auto">
               {loadingLang ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-gold/30 border-t-gold" />
                 </div>
               ) : (
-                <>
-                  {activeSection === 'itemLabels' && <ItemLabelsEditor labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} noteContent={draft.noteContent ?? {}} onNoteContentChange={(v) => updateDraft('noteContent', v)} />}
-                  {activeSection === 'profile' && <ProfileEditor profile={draft.profile} onChange={(v) => updateDraft('profile', v)} />}
-                  {activeSection === 'education' && <EducationEditor items={draft.education} onChange={(v) => updateDraft('education', v)} />}
-                  {activeSection === 'certifications' && <CertificationsEditor items={draft.certifications} onChange={(v) => updateDraft('certifications', v)} />}
-                  {activeSection === 'projects' && <ProjectsEditor items={draft.projects} onChange={(v) => updateDraft('projects', v)} />}
-                  {activeSection === 'awards' && <AwardsEditor items={draft.awards} onChange={(v) => updateDraft('awards', v)} />}
-                  {activeSection === 'games' && <GamesEditor items={draft.games} onChange={(v) => updateDraft('games', v)} />}
-                  {activeSection === 'albums' && <AlbumsEditor items={draft.albums} onChange={(v) => updateDraft('albums', v)} />}
-                  {activeSection === 'books' && <BooksEditor items={draft.books} onChange={(v) => updateDraft('books', v)} />}
-                  {activeSection === 'hobbies' && <HobbiesEditor items={draft.hobbies} onChange={(v) => updateDraft('hobbies', v)} />}
-                  {activeSection === 'cdStory' && <CdStoryEditor items={draft.cdStory} onChange={(v) => updateDraft('cdStory', v)} />}
-                  {activeSection === 'youtube' && (
-                    <div className="space-y-4">
-                      <TextInput label="YouTube Playlist ID" value={ytPlaylistId} onChange={setYtPlaylistId} />
-                      <TextInput label="YouTube First Video ID" value={ytFirstVideoId} onChange={setYtFirstVideoId} />
-                    </div>
-                  )}
-                </>
+                <div className="divide-y divide-white/5">
+                  {SECTION_IDS.map((id) => {
+                    const isOpen = activeSection === id;
+                    return (
+                      <div key={id}>
+                        <button
+                          type="button"
+                          onClick={() => setActiveSection(isOpen ? null : id)}
+                          className={`flex w-full items-center justify-between px-4 py-3 text-left transition-colors ${
+                            isOpen
+                              ? 'bg-accent-purple/[0.06] text-accent-purple'
+                              : 'text-card/50 hover:bg-white/[0.03] hover:text-card/70'
+                          }`}
+                        >
+                          <span className="text-xs font-semibold">{SECTION_LABELS[id][lang]}</span>
+                          <svg
+                            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                            className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                          >
+                            <path d="M6 9l6 6 6-6" />
+                          </svg>
+                        </button>
+                        {isOpen && (
+                          <div className="border-t border-white/5 bg-white/[0.01] px-4 py-4">
+                            {id === 'itemLabels' && <ItemLabelsEditor labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} noteContent={draft.noteContent ?? {}} onNoteContentChange={(v) => updateDraft('noteContent', v)} />}
+                            {id === 'profile' && <ProfileEditor profile={draft.profile} onChange={(v) => updateDraft('profile', v)} />}
+                            {id === 'education' && <EducationEditor items={draft.education} onChange={(v) => updateDraft('education', v)} />}
+                            {id === 'certifications' && <CertificationsEditor items={draft.certifications} onChange={(v) => updateDraft('certifications', v)} />}
+                            {id === 'projects' && <ProjectsEditor items={draft.projects} onChange={(v) => updateDraft('projects', v)} />}
+                            {id === 'awards' && <AwardsEditor items={draft.awards} onChange={(v) => updateDraft('awards', v)} />}
+                            {id === 'games' && <GamesEditor items={draft.games} onChange={(v) => updateDraft('games', v)} />}
+                            {id === 'albums' && <AlbumsEditor items={draft.albums} onChange={(v) => updateDraft('albums', v)} />}
+                            {id === 'books' && <BooksEditor items={draft.books} onChange={(v) => updateDraft('books', v)} />}
+                            {id === 'hobbies' && <HobbiesEditor items={draft.hobbies} onChange={(v) => updateDraft('hobbies', v)} />}
+                            {id === 'cdStory' && <CdStoryEditor items={draft.cdStory} onChange={(v) => updateDraft('cdStory', v)} />}
+                            {id === 'youtube' && (
+                              <div className="space-y-4">
+                                <TextInput label="YouTube Playlist ID" value={ytPlaylistId} onChange={setYtPlaylistId} />
+                                <TextInput label="YouTube First Video ID" value={ytFirstVideoId} onChange={setYtFirstVideoId} />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           </motion.div>
