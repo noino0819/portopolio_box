@@ -44,7 +44,7 @@ export default function MusicPlayer({ activated }: MusicPlayerProps) {
 
   if (!activated) return null;
 
-  const iframeSrc = `https://www.youtube.com/embed/${youtubeFirstVideoId}?list=${youtubePlaylistId}&autoplay=1&enablejsapi=1&origin=${window.location.origin}`;
+  const iframeSrc = `https://www.youtube.com/embed/${youtubeFirstVideoId}?list=${youtubePlaylistId}&index=1&autoplay=1&enablejsapi=1&origin=${window.location.origin}`;
 
   if (!isDesktop) {
     return (
