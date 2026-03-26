@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useLanguage, LANGUAGE_LABELS, LANGUAGE_FLAGS, sortLanguages, type Language } from '@/i18n/LanguageContext';
+import { useLanguage, LANGUAGE_LABELS, LANGUAGE_FLAGS, sortLanguages } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAvailableLangs, usePortfolioMeta } from '@/contexts/PortfolioContext';
