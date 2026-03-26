@@ -172,6 +172,31 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     sessionStorage.setItem(storageKey, JSON.stringify(positions));
   }, [positions, storageKey]);
 
+  const prevCustomPosRef = useRef(customPos);
+  useEffect(() => {
+    const prev = prevCustomPosRef.current;
+    const curr = portfolioMeta.itemPositions ?? {};
+    if (prev === curr) return;
+    prevCustomPosRef.current = curr;
+
+    const isEmpty = Object.keys(curr).length === 0;
+    if (isEmpty && Object.keys(prev).length > 0) {
+      const defaults = Object.fromEntries(
+        itemDefs.map((d) => [d.id, { x: d.defaultX, y: d.defaultY }]),
+      ) as Record<ItemId, { x: number; y: number }>;
+      setPositions(defaults);
+      sessionStorage.removeItem(storageKey);
+    } else if (!isEmpty) {
+      const updated = Object.fromEntries(
+        itemDefs.map((d) => [d.id, {
+          x: curr[d.id]?.x ?? d.defaultX,
+          y: curr[d.id]?.y ?? d.defaultY,
+        }]),
+      ) as Record<ItemId, { x: number; y: number }>;
+      setPositions(updated);
+    }
+  }, [portfolioMeta.itemPositions, storageKey]);
+
   const didPlayOpen = useRef(false);
   useEffect(() => {
     if (didPlayOpen.current) return;
