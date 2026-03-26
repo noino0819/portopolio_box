@@ -101,7 +101,7 @@ export default function BookDetail() {
       </nav>
 
       <div className="space-y-8">
-        <section ref={(el) => { sectionRefs.current.education = el; }} data-section="education">
+        <section ref={(el) => { sectionRefs.current.education = el; }} data-section="education" className="scroll-mt-14">
           <h3 className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold">{t('book.educationCareer', lang)}</h3>
           <div className="relative space-y-5 pl-6 before:absolute before:left-2 before:top-1 before:h-[calc(100%-8px)] before:w-0.5 before:bg-accent-purple/30">
             {education.map((entry) => (
@@ -122,7 +122,7 @@ export default function BookDetail() {
           </div>
         </section>
 
-        <section ref={(el) => { sectionRefs.current.certifications = el; }} data-section="certifications">
+        <section ref={(el) => { sectionRefs.current.certifications = el; }} data-section="certifications" className="scroll-mt-14">
           <h3 className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold">{t('book.certifications', lang)}</h3>
           <div className="space-y-3">
             {certifications.map((cat) => (
@@ -142,7 +142,7 @@ export default function BookDetail() {
           </div>
         </section>
 
-        <section ref={(el) => { sectionRefs.current.projects = el; }} data-section="projects">
+        <section ref={(el) => { sectionRefs.current.projects = el; }} data-section="projects" className="scroll-mt-14">
           <h3 className="mb-4 font-display text-sm font-semibold uppercase tracking-widest text-gold">{t('book.projects', lang)}</h3>
           <div className="space-y-3">
             {projects.map((project) => (

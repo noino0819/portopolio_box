@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 
 export default function LoginPage() {
   const { signIn } = useAuth();
@@ -27,6 +28,15 @@ export default function LoginPage() {
     <div className="flex min-h-dvh items-center justify-center bg-bg-dark px-4">
       <div className="w-full max-w-sm">
         <h1 className="mb-8 text-center font-display text-2xl font-bold text-card">Login</h1>
+
+        <SocialLoginButtons />
+
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="text-xs text-card/40">or</span>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="mb-1 block text-xs text-card/60">Email</label>
