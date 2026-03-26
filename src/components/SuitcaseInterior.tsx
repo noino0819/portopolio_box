@@ -80,6 +80,7 @@ const itemDefs: ItemDef[] = [
 ];
 
 const DRAG_THRESHOLD = 6;
+const EDGE_HYST = 4;
 
 export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInteriorProps) {
   const reduced = useReducedMotion();
@@ -248,12 +249,12 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       const clampedX = Math.max(2, Math.min(maxX, rawX));
       const clampedY = Math.max(2, Math.min(maxY, rawY));
 
-      const hitLeft = rawX < 2;
-      const hitRight = rawX > maxX;
-      const hitTop = rawY < 2;
-      const hitBottom = rawY > maxY;
-
       const prev = clampedEdges.current;
+      const hitLeft = prev.left ? rawX < 2 + EDGE_HYST : rawX < 2;
+      const hitRight = prev.right ? rawX > maxX - EDGE_HYST : rawX > maxX;
+      const hitTop = prev.top ? rawY < 2 + EDGE_HYST : rawY < 2;
+      const hitBottom = prev.bottom ? rawY > maxY - EDGE_HYST : rawY > maxY;
+
       const newEdgeHit =
         (hitLeft && !prev.left) ||
         (hitRight && !prev.right) ||
@@ -319,8 +320,12 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       const cx = Math.max(2, Math.min(maxX, rawX));
       const cy = Math.max(2, Math.min(maxY, rawY));
 
-      const hitL = rawX < 2, hitR = rawX > maxX, hitT = rawY < 2, hitB = rawY > maxY;
       const prev = noteEdges.current;
+      const hitL = prev.left ? rawX < 2 + EDGE_HYST : rawX < 2;
+      const hitR = prev.right ? rawX > maxX - EDGE_HYST : rawX > maxX;
+      const hitT = prev.top ? rawY < 2 + EDGE_HYST : rawY < 2;
+      const hitB = prev.bottom ? rawY > maxY - EDGE_HYST : rawY > maxY;
+
       if ((hitL && !prev.left) || (hitR && !prev.right) || (hitT && !prev.top) || (hitB && !prev.bottom)) bump.play();
       noteEdges.current = { left: hitL, right: hitR, top: hitT, bottom: hitB };
 
