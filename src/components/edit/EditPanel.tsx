@@ -109,45 +109,43 @@ function ProfileEditor({ profile, onChange }: { profile: Profile; onChange: (p: 
   const update = <K extends keyof Profile>(key: K, value: Profile[K]) => onChange({ ...profile, [key]: value });
   return (
     <div className="space-y-4">
-      <TextInput label="Name" value={profile.name} onChange={(v) => update('name', v)} />
-      <TextInput label="Title" value={profile.title} onChange={(v) => update('title', v)} />
-      <TextInput label="Greeting (인사말)" value={profile.greeting ?? ''} onChange={(v) => update('greeting', v || undefined)} />
-      <TextInput label="Headline" value={profile.headline} onChange={(v) => update('headline', v)} multiline />
+      <TextInput label="인사말" value={profile.greeting ?? ''} onChange={(v) => update('greeting', v || undefined)} />
+      <TextInput label="소개" value={profile.headline} onChange={(v) => update('headline', v)} multiline />
 
       <div>
-        <label className="mb-2 block text-[11px] font-medium text-card/50">Bio Points</label>
+        <label className="mb-2 block text-[11px] font-medium text-card/50">자기소개</label>
         <ArrayManager
           items={profile.bioPoints}
           onUpdate={(v) => update('bioPoints', v)}
-          itemLabel="Bio"
+          itemLabel="항목"
           createItem={() => ({ emoji: '💡', text: '' })}
           renderItem={(item, _, upd) => (
             <div className="flex gap-2">
               <EmojiInput value={item.emoji} onChange={(v) => upd({ ...item, emoji: v })} className="h-9 w-12" />
-              <input type="text" value={item.text} onChange={(e) => upd({ ...item, text: e.target.value })} placeholder="Text" className="flex-1 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
+              <input type="text" value={item.text} onChange={(e) => upd({ ...item, text: e.target.value })} placeholder="내용" className="flex-1 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
             </div>
           )}
         />
       </div>
 
-      <StringListEditor items={profile.skills} onChange={(v) => update('skills', v)} label="Skills" />
+      <StringListEditor items={profile.skills} onChange={(v) => update('skills', v)} label="기술 스택" />
 
       <div>
-        <label className="mb-2 block text-[11px] font-medium text-card/50">Contacts</label>
+        <label className="mb-2 block text-[11px] font-medium text-card/50">연락처</label>
         <ArrayManager
           items={profile.contacts}
           onUpdate={(v) => update('contacts', v)}
-          itemLabel="Contact"
+          itemLabel="연락처"
           createItem={() => ({ label: '', value: '', icon: '📌', url: '', tooltip: '' })}
           renderItem={(item, _, upd) => (
             <div className="space-y-2">
               <div className="flex gap-2">
                 <EmojiInput value={item.icon} onChange={(v) => upd({ ...item, icon: v })} className="h-9 w-12" />
-                <input type="text" value={item.label} onChange={(e) => upd({ ...item, label: e.target.value })} placeholder="Label" className="w-20 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
-                <input type="text" value={item.value} onChange={(e) => upd({ ...item, value: e.target.value })} placeholder="Value" className="flex-1 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
+                <input type="text" value={item.label} onChange={(e) => upd({ ...item, label: e.target.value })} placeholder="라벨" className="w-20 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
+                <input type="text" value={item.value} onChange={(e) => upd({ ...item, value: e.target.value })} placeholder="값" className="flex-1 rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
               </div>
-              <input type="text" value={item.url ?? ''} onChange={(e) => upd({ ...item, url: e.target.value || undefined })} placeholder="URL (optional)" className="w-full rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
-              <input type="text" value={item.tooltip ?? ''} onChange={(e) => upd({ ...item, tooltip: e.target.value || undefined })} placeholder="Tooltip (optional)" className="w-full rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
+              <input type="text" value={item.url ?? ''} onChange={(e) => upd({ ...item, url: e.target.value || undefined })} placeholder="URL (선택)" className="w-full rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
+              <input type="text" value={item.tooltip ?? ''} onChange={(e) => upd({ ...item, tooltip: e.target.value || undefined })} placeholder="툴팁 (선택)" className="w-full rounded border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-card outline-none focus:border-gold/50" />
             </div>
           )}
         />
