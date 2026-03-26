@@ -9,16 +9,27 @@ import EditButton from '@/components/edit/EditButton';
 import EditPanel from '@/components/edit/EditPanel';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
+import { usePortfolioMeta } from '@/contexts/PortfolioContext';
 import type { ItemId } from '@/components/SuitcaseInterior';
 
 type Screen = 'landing' | 'interior';
 
 export default function App() {
   const { lang } = useLanguage();
+  const meta = usePortfolioMeta();
   const [screen, setScreen] = useState<Screen>('landing');
   const [editOpen, setEditOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<ItemId | null>(null);
   const [musicActivated, setMusicActivated] = useState(false);
+
+  useEffect(() => {
+    const title = meta.pageTitle || `${meta.slug}의 여행가방`;
+    document.title = title;
+    const descTag = document.querySelector('meta[name="description"]');
+    if (descTag && meta.pageDescription) {
+      descTag.setAttribute('content', meta.pageDescription);
+    }
+  }, [meta.pageTitle, meta.pageDescription, meta.slug]);
 
   const navigateTo = useCallback((target: Screen, item: ItemId | null = null) => {
     setScreen(target);

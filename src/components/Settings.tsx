@@ -1,22 +1,59 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
 import { t } from '@/i18n/ui';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAvailableLangs } from '@/contexts/PortfolioContext';
+import { useAvailableLangs, usePortfolioMeta } from '@/contexts/PortfolioContext';
+import QRCode from 'qrcode';
 import gearImg from '@/assets/gear.png';
 
 export default function Settings() {
   const { lang, setLang } = useLanguage();
   const { user, signOut, deleteAccount } = useAuth();
   const { availableLangs } = useAvailableLangs();
+  const meta = usePortfolioMeta();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const langOptions = (availableLangs.length > 0 ? availableLangs : ['ko']) as Language[];
+
+  const portfolioUrl = `${window.location.origin}/${meta.slug}`;
+
+  const generateQr = useCallback(async () => {
+    setQrOpen(true);
+    try {
+      const url = await QRCode.toDataURL(portfolioUrl, {
+        width: 512,
+        margin: 2,
+        color: { dark: '#1a1a2e', light: '#ffffff' },
+        errorCorrectionLevel: 'H',
+      });
+      setQrDataUrl(url);
+    } catch {
+      setQrDataUrl(null);
+    }
+  }, [portfolioUrl]);
+
+  const downloadQr = useCallback(async () => {
+    try {
+      const url = await QRCode.toDataURL(portfolioUrl, {
+        width: 1024,
+        margin: 2,
+        color: { dark: '#1a1a2e', light: '#ffffff' },
+        errorCorrectionLevel: 'H',
+      });
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${meta.slug}-qr.png`;
+      a.click();
+    } catch { /* ignore */ }
+  }, [portfolioUrl, meta.slug]);
 
   return (
     <>
@@ -79,6 +116,17 @@ export default function Settings() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="border-t border-white/5 px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => { setOpen(false); generateQr(); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-card/70 transition-colors hover:bg-white/[0.06] hover:text-card"
+                >
+                  <span className="text-base">📱</span>
+                  <span>QR 코드 내보내기</span>
+                </button>
               </div>
 
               <div className="border-t border-white/5 px-4 py-3">
@@ -201,6 +249,75 @@ export default function Settings() {
                   {deleting ? '처리 중...' : '탈퇴하기'}
                 </button>
               </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {qrOpen && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setQrOpen(false)}
+            />
+            <motion.div
+              className="fixed left-1/2 top-1/2 z-[110] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-bg-dark p-6 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display text-sm font-bold text-card">QR 코드</h3>
+                <button
+                  onClick={() => setQrOpen(false)}
+                  className="rounded-full p-1 text-card/40 transition-colors hover:text-card"
+                  aria-label="닫기"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="flex flex-col items-center gap-4">
+                {qrDataUrl ? (
+                  <div className="rounded-xl bg-white p-3">
+                    <img src={qrDataUrl} alt="QR Code" className="h-48 w-48" draggable={false} />
+                  </div>
+                ) : (
+                  <div className="flex h-48 w-48 items-center justify-center">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-gold/30 border-t-gold" />
+                  </div>
+                )}
+
+                <p className="max-w-full truncate text-center text-[10px] text-card/40">
+                  {portfolioUrl}
+                </p>
+
+                <div className="flex w-full gap-2">
+                  <button
+                    type="button"
+                    onClick={downloadQr}
+                    className="flex-1 rounded-lg bg-gold/15 py-2.5 text-xs font-medium text-gold transition-colors hover:bg-gold/25"
+                  >
+                    PNG 다운로드
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(portfolioUrl);
+                    }}
+                    className="rounded-lg bg-white/5 px-4 py-2.5 text-xs text-card/60 transition-colors hover:bg-white/10 hover:text-card"
+                  >
+                    URL 복사
+                  </button>
+                </div>
+              </div>
+              <canvas ref={qrCanvasRef} className="hidden" />
             </motion.div>
           </>
         )}

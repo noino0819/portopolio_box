@@ -11,6 +11,8 @@ interface PortfolioRow {
   youtube_first_video_id: string | null;
   hidden_items: string[] | null;
   item_positions: Record<string, { x: number; y: number }> | null;
+  page_title: string | null;
+  page_description: string | null;
 }
 
 interface PortfolioDataRow {
@@ -116,6 +118,8 @@ export function usePortfolio(slug: string | undefined, lang: Language): UsePortf
           itemPositions: (p.item_positions && typeof p.item_positions === 'object' && !Array.isArray(p.item_positions))
             ? p.item_positions as Record<string, { x: number; y: number }>
             : {},
+          pageTitle: p.page_title ?? null,
+          pageDescription: p.page_description ?? null,
         };
 
         if (dataError || !portfolioData) {

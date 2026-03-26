@@ -29,7 +29,10 @@ const TOP_TAB_IDS = Object.keys(TOP_TAB_LABELS) as TopTab[];
 
 type SubTab = string;
 const SUB_TAB_MAP: Record<TopTab, { id: SubTab; label: Record<Language, string> }[]> = {
-  config: [],
+  config: [
+    { id: 'pageMeta', label: { ko: '페이지 설정', en: 'Page', ja: 'ページ', zh: '页面' } },
+    { id: 'items', label: { ko: '물건 구성', en: 'Items', ja: 'アイテム', zh: '物品' } },
+  ],
   nametag: [
     { id: 'label', label: { ko: '물건 설정', en: 'Item', ja: 'アイテム', zh: '物品' } },
     { id: 'profile', label: { ko: '프로필', en: 'Profile', ja: 'プロフィール', zh: '简介' } },
@@ -352,6 +355,36 @@ const ITEM_IDS = ['nametag', 'book', 'switch', 'cd'] as const;
 const ITEM_EMOJI: Record<string, string> = { nametag: '🏷️', book: '📖', switch: '🎮', cd: '💿', note: '📝' };
 const ITEM_NAMES: Record<string, string> = { nametag: '이름표', book: '책', switch: '게임기', cd: 'CD' };
 
+function PageMetaEditor({ pageTitle, pageDescription, onTitleChange, onDescriptionChange, slug }: {
+  pageTitle: string;
+  pageDescription: string;
+  onTitleChange: (v: string) => void;
+  onDescriptionChange: (v: string) => void;
+  slug: string;
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <p className="mb-2 text-[11px] font-medium text-card/50">🌐 브라우저 탭 / 링크 공유</p>
+        <p className="mb-3 text-[10px] text-card/30">
+          카카오톡, SNS 등에 링크를 공유할 때 표시되는 제목과 설명입니다.
+        </p>
+      </div>
+      <TextInput
+        label="페이지 제목"
+        value={pageTitle || `${slug}의 여행가방`}
+        onChange={onTitleChange}
+      />
+      <TextInput
+        label="페이지 설명"
+        value={pageDescription}
+        onChange={onDescriptionChange}
+        multiline
+      />
+    </div>
+  );
+}
+
 function ItemConfigEditor({ hiddenItems, onToggleItem, itemPositions, onPositionsChange, slug }: {
   hiddenItems: string[];
   onToggleItem: (id: string) => void;
@@ -604,6 +637,8 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
   const [draft, setDraft] = useState<PortfolioBundle>({ ...currentData });
   const [ytPlaylistId, setYtPlaylistId] = useState(meta.youtubePlaylistId ?? '');
   const [ytFirstVideoId, setYtFirstVideoId] = useState(meta.youtubeFirstVideoId ?? '');
+  const [pageTitle, setPageTitle] = useState(meta.pageTitle ?? '');
+  const [pageDescription, setPageDescription] = useState(meta.pageDescription ?? '');
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [loadingLang, setLoadingLang] = useState(false);
@@ -733,6 +768,8 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
         youtube_first_video_id: ytFirstVideoId || null,
         hidden_items: hiddenItems,
         item_positions: itemPositions,
+        page_title: pageTitle || null,
+        page_description: pageDescription || null,
       })
       .eq('id', meta.id);
     updateMeta({
@@ -740,12 +777,14 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
       youtubeFirstVideoId: ytFirstVideoId || null,
       hiddenItems,
       itemPositions,
+      pageTitle: pageTitle || null,
+      pageDescription: pageDescription || null,
     });
 
     setSaving(false);
     setSaveMsg(dataErr ? `Error: ${dataErr.message}` : 'Saved!');
     setTimeout(() => setSaveMsg(null), 3000);
-  }, [meta.id, editLang, draft, ytPlaylistId, ytFirstVideoId, hiddenItems, itemPositions, updateMeta]);
+  }, [meta.id, editLang, draft, ytPlaylistId, ytFirstVideoId, hiddenItems, itemPositions, pageTitle, pageDescription, updateMeta]);
 
   const updateDraft = <K extends keyof PortfolioBundle>(key: K, value: PortfolioBundle[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -914,7 +953,8 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
               ) : (
                 <>
                   {/* 구성 */}
-                  {activeTopTab === 'config' && <ItemConfigEditor hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} />}
+                  {activeTopTab === 'config' && activeSubTab === 'pageMeta' && <PageMetaEditor pageTitle={pageTitle} pageDescription={pageDescription} onTitleChange={setPageTitle} onDescriptionChange={setPageDescription} slug={meta.slug} />}
+                  {activeTopTab === 'config' && activeSubTab === 'items' && <ItemConfigEditor hiddenItems={hiddenItems} onToggleItem={handleToggleItem} itemPositions={itemPositions} onPositionsChange={setItemPositions} slug={meta.slug} />}
 
                   {/* 이름표 */}
                   {activeTopTab === 'nametag' && activeSubTab === 'label' && <SingleItemEditor itemId="nametag" labels={draft.itemLabels ?? {}} onChange={(v) => updateDraft('itemLabels', v)} editLang={editLang} isHidden={hiddenItems.includes('nametag')} onToggleItem={handleToggleItem} />}

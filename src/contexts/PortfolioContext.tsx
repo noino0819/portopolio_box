@@ -50,6 +50,8 @@ export interface PortfolioMeta {
   youtubeFirstVideoId: string | null;
   hiddenItems: string[];
   itemPositions: Record<string, ItemPosition>;
+  pageTitle: string | null;
+  pageDescription: string | null;
 }
 
 interface PortfolioContextType {
