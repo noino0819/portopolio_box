@@ -29,7 +29,7 @@ export default function SignupPage() {
       setError(err);
       setLoading(false);
     } else {
-      navigate('/login');
+      navigate('/onboarding');
     }
   };
 

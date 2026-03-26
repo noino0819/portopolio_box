@@ -1,7 +1,18 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
+
+async function getPortfolioSlug(userId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('portfolios')
+    .select('slug')
+    .eq('user_id', userId)
+    .limit(1);
+  if (data && data.length > 0) return (data[0] as { slug: string }).slug;
+  return null;
+}
 
 export default function LoginPage() {
   const { signIn } = useAuth();
@@ -19,6 +30,12 @@ export default function LoginPage() {
     if (err) {
       setError(err);
       setLoading(false);
+      return;
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const slug = await getPortfolioSlug(user.id);
+      navigate(slug ? `/${slug}` : '/onboarding', { replace: true });
     } else {
       navigate('/');
     }

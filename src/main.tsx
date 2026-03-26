@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import PricingPage from './pages/PricingPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
+import OnboardingPage from './pages/OnboardingPage';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
@@ -21,6 +22,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/:slug" element={<PortfolioPage />} />
           </Routes>
         </AuthProvider>
