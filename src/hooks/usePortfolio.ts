@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { getCached, setCache } from '@/lib/portfolioCache';
 import type { PortfolioBundle, PortfolioMeta } from '@/contexts/PortfolioContext';
 import type { Language } from '@/i18n/LanguageContext';
 
@@ -16,6 +17,7 @@ interface PortfolioRow {
 }
 
 interface PortfolioDataRow {
+  lang: string;
   profile: unknown;
   education: unknown;
   certifications: unknown;
@@ -47,6 +49,22 @@ function mapDataRow(row: PortfolioDataRow): PortfolioBundle {
   };
 }
 
+function buildMeta(p: PortfolioRow): PortfolioMeta {
+  return {
+    id: p.id,
+    slug: p.slug,
+    userId: p.user_id,
+    youtubePlaylistId: p.youtube_playlist_id,
+    youtubeFirstVideoId: p.youtube_first_video_id,
+    hiddenItems: Array.isArray(p.hidden_items) ? p.hidden_items as string[] : [],
+    itemPositions: (p.item_positions && typeof p.item_positions === 'object' && !Array.isArray(p.item_positions))
+      ? p.item_positions as Record<string, { x: number; y: number }>
+      : {},
+    pageTitle: p.page_title ?? null,
+    pageDescription: p.page_description ?? null,
+  };
+}
+
 interface UsePortfolioResult {
   meta: PortfolioMeta | null;
   data: PortfolioBundle | null;
@@ -75,6 +93,21 @@ export function usePortfolio(slug: string | undefined, lang: Language): UsePortf
       setLoading(true);
       setError(null);
 
+      const cached = getCached(slug!);
+      if (cached) {
+        if (cancelled) return;
+        setMeta(cached.meta);
+        setAvailableLangs(cached.availableLangs);
+        const langData = cached.langData[lang] ?? cached.langData['ko'] ?? null;
+        if (langData) {
+          setData(langData);
+        } else {
+          setError('Portfolio data not found');
+        }
+        setLoading(false);
+        return;
+      }
+
       const { data: portfolio, error: portfolioError } = await supabase
         .from('portfolios')
         .select('*')
@@ -90,58 +123,34 @@ export function usePortfolio(slug: string | undefined, lang: Language): UsePortf
       }
 
       const p = portfolio as unknown as PortfolioRow;
+      const metaObj = buildMeta(p);
 
-      const { data: langRows } = await supabase
-        .from('portfolio_data')
-        .select('lang')
-        .eq('portfolio_id', p.id);
-      const langs = langRows
-        ? (langRows as { lang: string }[]).map((r) => r.lang)
-        : ['ko'];
-      if (!cancelled) setAvailableLangs(langs.length > 0 ? langs : ['ko']);
-
-      const { data: portfolioData, error: dataError } = await supabase
+      const { data: allRows } = await supabase
         .from('portfolio_data')
         .select('*')
-        .eq('portfolio_id', p.id)
-        .eq('lang', lang)
-        .single();
+        .eq('portfolio_id', p.id);
 
-      if (!cancelled) {
-        const metaObj: PortfolioMeta = {
-          id: p.id,
-          slug: p.slug,
-          userId: p.user_id,
-          youtubePlaylistId: p.youtube_playlist_id,
-          youtubeFirstVideoId: p.youtube_first_video_id,
-          hiddenItems: Array.isArray(p.hidden_items) ? p.hidden_items as string[] : [],
-          itemPositions: (p.item_positions && typeof p.item_positions === 'object' && !Array.isArray(p.item_positions))
-            ? p.item_positions as Record<string, { x: number; y: number }>
-            : {},
-          pageTitle: p.page_title ?? null,
-          pageDescription: p.page_description ?? null,
-        };
+      if (cancelled) return;
 
-        if (dataError || !portfolioData) {
-          const { data: fallbackData } = await supabase
-            .from('portfolio_data')
-            .select('*')
-            .eq('portfolio_id', p.id)
-            .eq('lang', 'ko')
-            .single();
-
-          if (fallbackData) {
-            setMeta(metaObj);
-            setData(mapDataRow(fallbackData as unknown as PortfolioDataRow));
-          } else {
-            setError('Portfolio data not found');
-          }
-        } else {
-          setMeta(metaObj);
-          setData(mapDataRow(portfolioData as unknown as PortfolioDataRow));
-        }
-        setLoading(false);
+      const rows = (allRows ?? []) as unknown as PortfolioDataRow[];
+      const langs = rows.length > 0 ? rows.map((r) => r.lang) : ['ko'];
+      const langDataMap: Record<string, PortfolioBundle> = {};
+      for (const row of rows) {
+        langDataMap[row.lang] = mapDataRow(row);
       }
+
+      setCache(slug!, metaObj, langDataMap, langs);
+
+      setMeta(metaObj);
+      setAvailableLangs(langs);
+
+      const resolved = langDataMap[lang] ?? langDataMap['ko'] ?? null;
+      if (resolved) {
+        setData(resolved);
+      } else {
+        setError('Portfolio data not found');
+      }
+      setLoading(false);
     }
 
     fetchPortfolio();

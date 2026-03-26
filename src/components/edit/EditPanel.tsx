@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, LANGUAGE_LABELS, type Language } from '@/i18n/LanguageContext';
 import { usePortfolioMeta, usePortfolioData, useUpdatePortfolio, useAvailableLangs } from '@/contexts/PortfolioContext';
 import { supabase } from '@/lib/supabase';
+import { getCached, updateCacheLangData, updateCacheMeta, addCacheLang, removeCacheLang } from '@/lib/portfolioCache';
 import type { PortfolioBundle, ItemLabel, NoteContent } from '@/contexts/PortfolioContext';
 import type { Profile, Education, Certification, Project, Award, Game, Album, Book, Hobby } from '@/data/portfolio';
 import { t } from '@/i18n/ui';
@@ -649,40 +650,21 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [deleteLangTarget, setDeleteLangTarget] = useState<Language | null>(null);
 
-  const loadLangData = useCallback(async (targetLang: Language) => {
+  const loadLangData = useCallback((targetLang: Language) => {
     setLoadingLang(true);
-    const { data } = await supabase
-      .from('portfolio_data')
-      .select('*')
-      .eq('portfolio_id', meta.id)
-      .eq('lang', targetLang)
-      .single();
-
-    if (data) {
-      const loaded: PortfolioBundle = {
-        profile: data.profile as PortfolioBundle['profile'],
-        education: data.education as PortfolioBundle['education'],
-        certifications: data.certifications as PortfolioBundle['certifications'],
-        projects: data.projects as PortfolioBundle['projects'],
-        awards: data.awards as PortfolioBundle['awards'],
-        games: data.games as PortfolioBundle['games'],
-        albums: data.albums as PortfolioBundle['albums'],
-        books: data.books as PortfolioBundle['books'],
-        hobbies: data.hobbies as PortfolioBundle['hobbies'],
-        cdStory: data.cd_story as string[],
-        itemLabels: (data.item_labels as PortfolioBundle['itemLabels']) ?? {},
-        noteContent: (data.note_content as PortfolioBundle['noteContent']) ?? {},
-      };
-      setDraft(loaded);
-    } else {
-      setDraft({ ...EMPTY_BUNDLE });
+    const cached = getCached(meta.slug);
+    if (cached && cached.langData[targetLang]) {
+      setDraft(cached.langData[targetLang]);
+      setLoadingLang(false);
+      return;
     }
+    setDraft({ ...EMPTY_BUNDLE });
     setLoadingLang(false);
-  }, [meta.id]);
+  }, [meta.slug]);
 
-  const handleLangSwitch = useCallback(async (targetLang: Language) => {
+  const handleLangSwitch = useCallback((targetLang: Language) => {
     setEditLang(targetLang);
-    await loadLangData(targetLang);
+    loadLangData(targetLang);
   }, [loadLangData]);
 
   const handleAddLang = useCallback(async (targetLang: Language) => {
@@ -698,12 +680,14 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
       note_content: {},
     }, { onConflict: 'portfolio_id,lang' });
 
+    addCacheLang(meta.slug, targetLang, { ...EMPTY_BUNDLE });
+
     const newLangs = [...availableLangs, targetLang] as Language[];
     setAvailableLangs(newLangs);
     setEditLang(targetLang);
     setDraft({ ...EMPTY_BUNDLE });
     setAddingLang(false);
-  }, [meta.id, availableLangs, setAvailableLangs]);
+  }, [meta.id, meta.slug, availableLangs, setAvailableLangs]);
 
   const handleDeleteLang = useCallback((targetLang: Language) => {
     if (targetLang === 'ko') return;
@@ -717,12 +701,15 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
       .delete()
       .eq('portfolio_id', meta.id)
       .eq('lang', deleteLangTarget);
+
+    removeCacheLang(meta.slug, deleteLangTarget);
+
     const newLangs = availableLangs.filter((l) => l !== deleteLangTarget);
     setAvailableLangs(newLangs);
     setEditLang('ko');
-    await loadLangData('ko');
+    loadLangData('ko');
     setDeleteLangTarget(null);
-  }, [deleteLangTarget, meta.id, loadLangData, availableLangs, setAvailableLangs]);
+  }, [deleteLangTarget, meta.id, meta.slug, loadLangData, availableLangs, setAvailableLangs]);
 
   const handleToggleItem = useCallback((id: string) => {
     setHiddenItems((prev) => {
@@ -781,10 +768,21 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
       pageDescription: pageDescription || null,
     });
 
+    updateCacheLangData(meta.slug, editLang, draft);
+    const metaPartial = {
+      youtubePlaylistId: ytPlaylistId || null,
+      youtubeFirstVideoId: ytFirstVideoId || null,
+      hiddenItems,
+      itemPositions,
+      pageTitle: pageTitle || null,
+      pageDescription: pageDescription || null,
+    };
+    updateCacheMeta(meta.slug, metaPartial);
+
     setSaving(false);
     setSaveMsg(dataErr ? `Error: ${dataErr.message}` : 'Saved!');
     setTimeout(() => setSaveMsg(null), 3000);
-  }, [meta.id, editLang, draft, ytPlaylistId, ytFirstVideoId, hiddenItems, itemPositions, pageTitle, pageDescription, updateMeta]);
+  }, [meta.id, meta.slug, editLang, draft, ytPlaylistId, ytFirstVideoId, hiddenItems, itemPositions, pageTitle, pageDescription, updateMeta]);
 
   const updateDraft = <K extends keyof PortfolioBundle>(key: K, value: PortfolioBundle[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
