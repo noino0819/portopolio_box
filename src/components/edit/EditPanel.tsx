@@ -557,6 +557,7 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
 
   const [addingLang, setAddingLang] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [deleteLangTarget, setDeleteLangTarget] = useState<Language | null>(null);
 
   const loadLangData = useCallback(async (targetLang: Language) => {
     setLoadingLang(true);
@@ -614,19 +615,24 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
     setAddingLang(false);
   }, [meta.id, availableLangs, setAvailableLangs]);
 
-  const handleDeleteLang = useCallback(async (targetLang: Language) => {
+  const handleDeleteLang = useCallback((targetLang: Language) => {
     if (targetLang === 'ko') return;
-    if (!confirm(`${LANGUAGE_LABELS[targetLang]} 데이터를 삭제하시겠습니까?`)) return;
+    setDeleteLangTarget(targetLang);
+  }, []);
+
+  const confirmDeleteLang = useCallback(async () => {
+    if (!deleteLangTarget) return;
     await supabase
       .from('portfolio_data')
       .delete()
       .eq('portfolio_id', meta.id)
-      .eq('lang', targetLang);
-    const newLangs = availableLangs.filter((l) => l !== targetLang);
+      .eq('lang', deleteLangTarget);
+    const newLangs = availableLangs.filter((l) => l !== deleteLangTarget);
     setAvailableLangs(newLangs);
     setEditLang('ko');
     await loadLangData('ko');
-  }, [meta.id, loadLangData, availableLangs, setAvailableLangs]);
+    setDeleteLangTarget(null);
+  }, [deleteLangTarget, meta.id, loadLangData, availableLangs, setAvailableLangs]);
 
   const handleToggleItem = useCallback((id: string) => {
     setHiddenItems((prev) => {
@@ -836,6 +842,48 @@ export default function EditPanel({ open, onClose }: EditPanelProps) {
                   )}
                 </>
               )}
+            </div>
+          </motion.div>
+        </>
+      )}
+
+      {deleteLangTarget && (
+        <>
+          <motion.div
+            className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setDeleteLangTarget(null)}
+          />
+          <motion.div
+            className="fixed left-1/2 top-1/2 z-[210] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-bg-dark p-5 shadow-2xl"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <h3 className="mb-3 font-display text-sm font-bold text-card">
+              언어 삭제
+            </h3>
+            <p className="mb-4 text-xs leading-relaxed text-card/60">
+              <span className="font-semibold text-gold">{LANGUAGE_LABELS[deleteLangTarget]}</span> 데이터를 삭제하시겠습니까?{'\n'}
+              해당 언어의 모든 포트폴리오 내용이 삭제되며 복구할 수 없습니다.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteLangTarget(null)}
+                className="flex-1 rounded-lg bg-white/5 py-2 text-xs text-card/70 transition-colors hover:bg-white/10"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteLang}
+                className="flex-1 rounded-lg bg-red-500/20 py-2 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/30"
+              >
+                삭제
+              </button>
             </div>
           </motion.div>
         </>
