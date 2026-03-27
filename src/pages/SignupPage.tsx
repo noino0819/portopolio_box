@@ -13,6 +13,7 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -34,12 +35,15 @@ export default function SignupPage() {
     }
     setLoading(true);
     setError(null);
-    const { error: err } = await signUp(email, password);
+    const { error: err, needsEmailConfirmation } = await signUp(email, password);
     if (err) {
       setError(err);
       setLoading(false);
+    } else if (needsEmailConfirmation) {
+      setEmailSent(true);
+      setLoading(false);
     } else {
-      navigate('/onboarding');
+      // 세션이 바로 생성된 경우 useEffect가 user 상태 변화를 감지해서 리다이렉트
     }
   };
 
@@ -47,6 +51,29 @@ export default function SignupPage() {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-bg-dark">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-gold/30 border-t-gold" />
+      </div>
+    );
+  }
+
+  if (emailSent) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-bg-dark px-4">
+        <div className="w-full max-w-sm text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/15">
+            <span className="text-3xl">✉️</span>
+          </div>
+          <h1 className="mb-3 font-display text-2xl font-bold text-card">이메일을 확인해주세요</h1>
+          <p className="mb-6 text-sm leading-relaxed text-card/60">
+            <span className="font-medium text-gold">{email}</span>로 인증 메일을 보냈습니다.<br />
+            메일함을 확인하고 인증 링크를 클릭해주세요.
+          </p>
+          <Link
+            to="/login"
+            className="inline-block rounded-lg bg-gold/90 px-6 py-2.5 text-sm font-semibold text-bg-dark transition-colors hover:bg-gold"
+          >
+            로그인 페이지로 이동
+          </Link>
+        </div>
       </div>
     );
   }

@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: string | null; needsEmailConfirmation: boolean }>;
   signInWithProvider: (provider: Provider) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<{ error: string | null }>;
@@ -18,7 +18,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   signIn: async () => ({ error: null }),
-  signUp: async () => ({ error: null }),
+  signUp: async () => ({ error: null, needsEmailConfirmation: false }),
   signInWithProvider: async () => ({ error: null }),
   signOut: async () => {},
   deleteAccount: async () => ({ error: null }),
@@ -50,8 +50,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    return { error: error?.message ?? null };
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) return { error: error.message, needsEmailConfirmation: false };
+    const needsEmailConfirmation = !!data.user && !data.session;
+    return { error: null, needsEmailConfirmation };
   }, []);
 
   const signInWithProvider = useCallback(async (provider: Provider) => {
