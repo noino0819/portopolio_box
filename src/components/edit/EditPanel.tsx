@@ -8,6 +8,7 @@ import type { PortfolioBundle, ItemLabel, NoteContent } from '@/contexts/Portfol
 import type { Profile, Education, Certification, Project, Award, Game, Album, Book, Hobby } from '@/data/portfolio';
 import { t } from '@/i18n/ui';
 import EmojiInput from './EmojiInput';
+import TranslateModal from './TranslateModal';
 
 const ALL_LANGUAGES: Language[] = [...LANGUAGE_ORDER];
 
@@ -653,6 +654,7 @@ export default function EditPanel({ open, onClose, onDirtyChange, showUnsavedWar
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [deleteLangTarget, setDeleteLangTarget] = useState<Language | null>(null);
   const [localUnsavedDialog, setLocalUnsavedDialog] = useState(false);
+  const [translateOpen, setTranslateOpen] = useState(false);
 
   const isDirtyRef = useRef(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -738,6 +740,26 @@ export default function EditPanel({ open, onClose, onDirtyChange, showUnsavedWar
     setDraft({ ...EMPTY_BUNDLE });
     setAddingLang(false);
   }, [meta.id, meta.slug, availableLangs, setAvailableLangs]);
+
+  const handleTranslateImport = useCallback(async (bundle: PortfolioBundle, targetLang: Language) => {
+    const typedLangs = availableLangs as Language[];
+    if (!typedLangs.includes(targetLang)) {
+      await supabase.from('portfolio_data').upsert({
+        portfolio_id: meta.id,
+        lang: targetLang,
+        profile: EMPTY_BUNDLE.profile as unknown as Record<string, unknown>,
+        education: [], certifications: [], projects: [], awards: [],
+        games: [], albums: [], books: [], hobbies: [], cd_story: [],
+        item_labels: {},
+        note_content: {},
+      }, { onConflict: 'portfolio_id,lang' });
+      addCacheLang(meta.slug, targetLang, bundle);
+      setAvailableLangs([...availableLangs, targetLang]);
+    }
+    setEditLang(targetLang);
+    setDraft(bundle);
+    markDirty();
+  }, [meta.id, meta.slug, availableLangs, setAvailableLangs, markDirty]);
 
   const handleDeleteLang = useCallback((targetLang: Language) => {
     if (targetLang === 'ko') return;
@@ -871,6 +893,14 @@ export default function EditPanel({ open, onClose, onDirtyChange, showUnsavedWar
                     {saveMsg}
                   </span>
                 )}
+                <button
+                  type="button"
+                  onClick={() => setTranslateOpen(true)}
+                  className="rounded-lg bg-accent-purple/15 px-3 py-1.5 text-xs font-medium text-accent-purple transition-colors hover:bg-accent-purple/25"
+                  title="번역"
+                >
+                  🌐 번역
+                </button>
                 <button
                   type="button"
                   onClick={handleSave}
@@ -1127,6 +1157,16 @@ export default function EditPanel({ open, onClose, onDirtyChange, showUnsavedWar
           </motion.div>
         </>
       )}
+
+      <TranslateModal
+        open={translateOpen}
+        onClose={() => setTranslateOpen(false)}
+        editLang={editLang}
+        availableLangs={typedAvailableLangs}
+        draft={draft}
+        slug={meta.slug}
+        onImport={handleTranslateImport}
+      />
     </AnimatePresence>
   );
 }
