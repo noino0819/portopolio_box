@@ -233,7 +233,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     return { x: 62, y: 28 };
   });
   const noteReleasedRef = useRef(noteReleased);
-  const [noteZ, setNoteZ] = useState(0);
+  const [noteZ, setNoteZ] = useState(noteReleased ? 2 : 0);
 
   const resetIdleTimer = useCallback(() => {
     setNudgeItem(null);
@@ -247,7 +247,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
     return () => { if (idleTimer.current) clearTimeout(idleTimer.current); };
   }, [resetIdleTimer, reduced]);
 
-  const [, setZCounter] = useState(1);
+  const [, setZCounter] = useState(noteReleased ? 2 : 1);
   const [zOrders, setZOrders] = useState<Record<ItemId, number>>({
     nametag: 1, book: 1, switch: 1, cd: 1,
   });
@@ -403,6 +403,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
               setNoteReleased(true);
               setNotePos(pos);
               setNoteDropping(true);
+              bringToFront('note');
               sessionStorage.setItem('note-released', 'true');
               sessionStorage.setItem('note-pos', JSON.stringify(pos));
               setTimeout(() => bump.play(), 350);
@@ -443,7 +444,7 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
         [ds.id]: { x: clampedX, y: clampedY },
       }));
     },
-    [getContainerRect, bump],
+    [getContainerRect, bump, bringToFront],
   );
 
   const noteDragRef = useRef<{
@@ -594,6 +595,39 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
       <div ref={containerRef} className="relative aspect-square w-full max-w-[500px] touch-none">
         <SuitcaseOpen className="absolute inset-0 h-full w-full pointer-events-none" />
 
+        {visibleItems.map((item, i) => {
+          const { id } = item;
+          const custom = portfolioData.itemLabels?.[id];
+          const pos = positions[id];
+          return (
+            <DraggableItem
+              key={id}
+              item={item}
+              posX={pos.x}
+              posY={pos.y}
+              zIndex={zOrders[id]}
+              isTapped={tappedItem === id}
+              isNudging={nudgeItem === id}
+              canHover={canHover}
+              reduced={reduced}
+              index={i}
+              label={custom?.label || t(`items.${id}.label`, lang)}
+              sublabel={custom?.sublabel || t(`items.${id}.sublabel`, lang)}
+              dragHint={dragHint}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerCancel}
+              onClick={handleItemClick}
+              onSelect={onSelectItem}
+              onResetIdle={resetIdleTimer}
+              onBringToFront={bringToFront}
+              playSound={sounds[id]}
+              onNudgeEnd={handleNudgeEnd}
+            />
+          );
+        })}
+
         {noteEnabled && noteReleased && (
           <motion.div
             className="group absolute w-max touch-none select-none"
@@ -636,39 +670,6 @@ export default function SuitcaseInterior({ onSelectItem, onBack }: SuitcaseInter
             </span>
           </motion.div>
         )}
-
-        {visibleItems.map((item, i) => {
-          const { id } = item;
-          const custom = portfolioData.itemLabels?.[id];
-          const pos = positions[id];
-          return (
-            <DraggableItem
-              key={id}
-              item={item}
-              posX={pos.x}
-              posY={pos.y}
-              zIndex={zOrders[id]}
-              isTapped={tappedItem === id}
-              isNudging={nudgeItem === id}
-              canHover={canHover}
-              reduced={reduced}
-              index={i}
-              label={custom?.label || t(`items.${id}.label`, lang)}
-              sublabel={custom?.sublabel || t(`items.${id}.sublabel`, lang)}
-              dragHint={dragHint}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerCancel}
-              onClick={handleItemClick}
-              onSelect={onSelectItem}
-              onResetIdle={resetIdleTimer}
-              onBringToFront={bringToFront}
-              playSound={sounds[id]}
-              onNudgeEnd={handleNudgeEnd}
-            />
-          );
-        })}
       </div>
 
       <AnimatePresence>
