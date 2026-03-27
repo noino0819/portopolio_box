@@ -4,7 +4,7 @@ import { LANGUAGE_LABELS, LANGUAGE_FLAGS, LANGUAGE_ORDER, type Language } from '
 import type { PortfolioBundle } from '@/contexts/PortfolioContext';
 import { downloadMarkdown, readMarkdownFile, markdownToBundle } from '@/lib/portfolioMarkdown';
 
-type Step = 'choose' | 'loading' | 'done' | 'error';
+type Step = 'choose' | 'guide' | 'loading' | 'done' | 'error';
 
 interface TranslateModalProps {
   open: boolean;
@@ -39,11 +39,14 @@ export default function TranslateModal({
   const fileRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const [promptCopied, setPromptCopied] = useState(false);
+
   const resetState = useCallback(() => {
     setStep('choose');
     setTargetLang(null);
     setLoadingIdx(0);
     setErrorMsg('');
+    setPromptCopied(false);
     if (timerRef.current) clearInterval(timerRef.current);
   }, []);
 
@@ -98,7 +101,36 @@ export default function TranslateModal({
     });
   };
 
+  const buildPrompt = (lang: Language | null) => {
+    const target = lang ? LANGUAGE_LABELS[lang] : '___';
+    return `아래 마크다운 파일의 내용을 ${target}(으)로 번역해주세요.
+
+규칙:
+1. \`#\`, \`##\`, \`###\`, \`---\` 같은 마크다운 구조는 절대 변경하지 마세요
+2. \`name:\`, \`title:\` 같은 필드명(콜론 앞)은 절대 변경하지 마세요
+3. 콜론(:) 뒤의 값만 자연스럽게 번역해주세요
+4. URL, 이모지, 기술 스택 이름은 변경하지 마세요
+5. 번역 결과만 마크다운 형식 그대로 출력해주세요
+
+[아래에 .md 파일의 전체 내용을 붙여넣으세요]`;
+  };
+
+  const handleCopyPrompt = async () => {
+    await navigator.clipboard.writeText(buildPrompt(targetLang));
+    setPromptCopied(true);
+    setTimeout(() => setPromptCopied(false), 2000);
+  };
+
   const allLangs = LANGUAGE_ORDER.filter((l) => l !== editLang);
+
+  const guideSteps = [
+    { icon: '📥', text: '"마크다운 가져오기"로 현재 데이터를 다운로드하세요' },
+    { icon: '🤖', text: 'ChatGPT, Claude 등 AI 챗봇을 여세요' },
+    { icon: '📋', text: '아래 프롬프트를 복사해서 AI에게 붙여넣으세요' },
+    { icon: '📎', text: '다운로드한 .md 파일을 열어서 내용도 함께 붙여넣으세요' },
+    { icon: '💾', text: 'AI가 번역해준 결과를 .md 파일로 저장하세요' },
+    { icon: '📤', text: '"번역 파일 가져오기"로 업로드하면 끝!' },
+  ];
 
   return (
     <AnimatePresence>
@@ -112,7 +144,9 @@ export default function TranslateModal({
             onClick={handleClose}
           />
           <motion.div
-            className="fixed left-1/2 top-1/2 z-[310] w-[360px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-white/10 bg-bg-dark shadow-2xl"
+            className={`fixed left-1/2 top-1/2 z-[310] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-white/10 bg-bg-dark shadow-2xl transition-[width] duration-300 ${
+              step === 'guide' ? 'w-[400px]' : 'w-[360px]'
+            }`}
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -164,8 +198,8 @@ export default function TranslateModal({
                       📥
                     </span>
                     <div>
-                      <p className="text-xs font-medium text-card">마크다운 내보내기</p>
-                      <p className="text-[10px] text-card/40">현재 언어 데이터를 .md 파일로 다운로드</p>
+                      <p className="text-xs font-medium text-card">마크다운 가져오기</p>
+                      <p className="text-[10px] text-card/40">현재 언어 데이터를 .md 파일로 내보내기</p>
                     </div>
                   </button>
 
@@ -199,10 +233,99 @@ export default function TranslateModal({
 
                 <button
                   type="button"
+                  onClick={() => setStep('guide')}
+                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-gold/5 py-2.5 text-[11px] text-gold/70 transition-colors hover:bg-gold/10 hover:text-gold"
+                >
+                  <span>💡</span>
+                  처음이신가요? AI로 번역하는 방법 보기
+                </button>
+
+                <button
+                  type="button"
                   onClick={handleClose}
-                  className="mt-4 w-full rounded-lg py-2 text-[11px] text-card/40 transition-colors hover:text-card/60"
+                  className="mt-2 w-full rounded-lg py-2 text-[11px] text-card/40 transition-colors hover:text-card/60"
                 >
                   닫기
+                </button>
+              </div>
+            )}
+
+            {step === 'guide' && (
+              <div className="p-5">
+                <button
+                  type="button"
+                  onClick={() => setStep('choose')}
+                  className="mb-3 flex items-center gap-1 text-[11px] text-card/40 transition-colors hover:text-card/60"
+                >
+                  ← 돌아가기
+                </button>
+
+                <h3 className="mb-1 font-display text-sm font-bold text-card">
+                  AI로 번역하는 방법
+                </h3>
+                <p className="mb-4 text-[10px] leading-relaxed text-card/40">
+                  ChatGPT, Claude 등 AI 챗봇을 활용하면 무료로 쉽게 번역할 수 있어요.
+                </p>
+
+                {/* Steps */}
+                <ol className="mb-4 space-y-2">
+                  {guideSteps.map((s, i) => (
+                    <li key={i} className="flex items-start gap-2.5">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/5 text-[10px] text-card/50">
+                        {i + 1}
+                      </span>
+                      <p className="pt-0.5 text-[11px] leading-relaxed text-card/70">
+                        <span className="mr-1">{s.icon}</span>
+                        {s.text}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+
+                {/* Prompt preview & copy */}
+                <div className="mb-3 rounded-xl border border-white/5 bg-white/[0.02] p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[10px] font-medium text-card/50">복사할 프롬프트</span>
+                    <button
+                      type="button"
+                      onClick={handleCopyPrompt}
+                      className={`rounded-md px-2 py-1 text-[10px] transition-all ${
+                        promptCopied
+                          ? 'bg-accent-teal/20 text-accent-teal'
+                          : 'bg-white/5 text-card/50 hover:bg-white/10 hover:text-card/70'
+                      }`}
+                    >
+                      {promptCopied ? '✓ 복사됨!' : '복사하기'}
+                    </button>
+                  </div>
+                  <pre className="max-h-28 overflow-y-auto whitespace-pre-wrap text-[10px] leading-relaxed text-card/40">
+                    {buildPrompt(targetLang)}
+                  </pre>
+                </div>
+
+                {!targetLang && (
+                  <p className="mb-3 rounded-lg bg-gold/5 px-3 py-2 text-[10px] text-gold/60">
+                    💡 돌아가서 번역할 언어를 먼저 선택하면 프롬프트에 자동으로 반영돼요!
+                  </p>
+                )}
+
+                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
+                  <p className="mb-1.5 text-[10px] font-medium text-card/50">💬 AI에게 이렇게 보내세요</p>
+                  <div className="space-y-1.5 text-[10px] text-card/40">
+                    <p>1. 위 프롬프트를 복사해서 AI 채팅창에 붙여넣기</p>
+                    <p>2. 다운로드한 .md 파일을 메모장으로 열기</p>
+                    <p>3. 파일 내용 전체를 복사해서 프롬프트 아래에 붙여넣기</p>
+                    <p>4. AI가 번역해주면 결과를 복사해서 메모장에 붙여넣기</p>
+                    <p>5. <span className="text-card/60">.md</span> 확장자로 저장 (예: <span className="text-card/60">portfolio-en.md</span>)</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setStep('choose')}
+                  className="mt-4 w-full rounded-xl bg-gold/10 py-2.5 text-xs font-medium text-gold transition-colors hover:bg-gold/20"
+                >
+                  확인했어요, 번역하러 가기
                 </button>
               </div>
             )}
