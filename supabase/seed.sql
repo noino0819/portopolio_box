@@ -1,5 +1,5 @@
 -- 예시 포트폴리오 (user_id는 null — 데모용)
-insert into public.portfolios (id, user_id, slug, is_active, youtube_playlist_id, youtube_first_video_id)
+insert into public.portfolio_box_portfolios (id, user_id, slug, is_active, youtube_playlist_id, youtube_first_video_id)
 values (
   '00000000-0000-0000-0000-000000000001',
   null,
@@ -10,7 +10,7 @@ values (
 );
 
 -- Korean
-insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+insert into public.portfolio_box_portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
 values (
   '00000000-0000-0000-0000-000000000001',
   'ko',
@@ -27,7 +27,7 @@ values (
 );
 
 -- English
-insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+insert into public.portfolio_box_portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
 values (
   '00000000-0000-0000-0000-000000000001',
   'en',
@@ -44,7 +44,7 @@ values (
 );
 
 -- Japanese
-insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+insert into public.portfolio_box_portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
 values (
   '00000000-0000-0000-0000-000000000001',
   'ja',
@@ -61,7 +61,7 @@ values (
 );
 
 -- Chinese
-insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+insert into public.portfolio_box_portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
 values (
   '00000000-0000-0000-0000-000000000001',
   'zh',
@@ -80,7 +80,7 @@ values (
 -- ==============================================
 -- 예시 포트폴리오 (example) — 개인정보 없는 데모용
 -- ==============================================
-insert into public.portfolios (id, user_id, slug, is_active, youtube_playlist_id, youtube_first_video_id)
+insert into public.portfolio_box_portfolios (id, user_id, slug, is_active, youtube_playlist_id, youtube_first_video_id)
 values (
   '00000000-0000-0000-0000-000000000002',
   null,
@@ -91,7 +91,7 @@ values (
 );
 
 -- Example Korean
-insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+insert into public.portfolio_box_portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
 values (
   '00000000-0000-0000-0000-000000000002',
   'ko',
@@ -108,7 +108,7 @@ values (
 );
 
 -- Example English
-insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+insert into public.portfolio_box_portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
 values (
   '00000000-0000-0000-0000-000000000002',
   'en',
@@ -125,7 +125,7 @@ values (
 );
 
 -- Example Japanese
-insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+insert into public.portfolio_box_portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
 values (
   '00000000-0000-0000-0000-000000000002',
   'ja',
@@ -142,7 +142,7 @@ values (
 );
 
 -- Example Chinese
-insert into public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+insert into public.portfolio_box_portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
 values (
   '00000000-0000-0000-0000-000000000002',
   'zh',

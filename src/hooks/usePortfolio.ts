@@ -109,7 +109,7 @@ export function usePortfolio(slug: string | undefined, lang: Language): UsePortf
       }
 
       const { data: portfolio, error: portfolioError } = await supabase
-        .from('portfolios')
+        .from('portfolio_box_portfolios')
         .select('*')
         .eq('slug', slug!)
         .single();
@@ -126,7 +126,7 @@ export function usePortfolio(slug: string | undefined, lang: Language): UsePortf
       const metaObj = buildMeta(p);
 
       const { data: allRows } = await supabase
-        .from('portfolio_data')
+        .from('portfolio_box_portfolio_data')
         .select('*')
         .eq('portfolio_id', p.id);
 

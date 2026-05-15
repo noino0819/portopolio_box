@@ -1,7 +1,7 @@
 -- noino0819 포트폴리오에 독일어(de), 프랑스어(fr), 스페인어(es) 데이터 추가
 
 -- ========== German (de) ==========
-INSERT INTO public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+INSERT INTO public.portfolio_box_portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
 VALUES (
   '00000000-0000-0000-0000-000000000001',
   'de',
@@ -29,7 +29,7 @@ ON CONFLICT (portfolio_id, lang) DO UPDATE SET
   cd_story = EXCLUDED.cd_story;
 
 -- ========== French (fr) ==========
-INSERT INTO public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+INSERT INTO public.portfolio_box_portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
 VALUES (
   '00000000-0000-0000-0000-000000000001',
   'fr',
@@ -57,7 +57,7 @@ ON CONFLICT (portfolio_id, lang) DO UPDATE SET
   cd_story = EXCLUDED.cd_story;
 
 -- ========== Spanish (es) ==========
-INSERT INTO public.portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
+INSERT INTO public.portfolio_box_portfolio_data (portfolio_id, lang, profile, education, certifications, projects, awards, games, albums, books, hobbies, cd_story)
 VALUES (
   '00000000-0000-0000-0000-000000000001',
   'es',

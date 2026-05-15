@@ -25,7 +25,7 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (!user) return;
     supabase
-      .from('portfolios')
+      .from('portfolio_box_portfolios')
       .select('slug')
       .eq('user_id', user.id)
       .limit(1)
@@ -61,7 +61,7 @@ export default function OnboardingPage() {
     setError(null);
     debounceRef.current = setTimeout(async () => {
       const { data } = await supabase
-        .from('portfolios')
+        .from('portfolio_box_portfolios')
         .select('id')
         .eq('slug', normalized)
         .limit(1);
@@ -89,7 +89,7 @@ export default function OnboardingPage() {
     setError(null);
 
     const { data: portfolio, error: createErr } = await supabase
-      .from('portfolios')
+      .from('portfolio_box_portfolios')
       .insert({
         user_id: user.id,
         slug,
@@ -163,7 +163,7 @@ export default function OnboardingPage() {
       note_content: {},
     };
 
-    await supabase.from('portfolio_data').insert(defaultData);
+    await supabase.from('portfolio_box_portfolio_data').insert(defaultData);
 
     navigate(`/${slug}`, { replace: true });
   };

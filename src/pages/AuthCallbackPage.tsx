@@ -9,7 +9,7 @@ export default function AuthCallbackPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         const { data } = await supabase
-          .from('portfolios')
+          .from('portfolio_box_portfolios')
           .select('slug')
           .eq('user_id', session.user.id)
           .limit(1);

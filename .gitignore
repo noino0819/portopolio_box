@@ -25,3 +25,7 @@ dist-ssr
 
 # Supabase CLI
 supabase/.temp/
+.vercel
+
+# 임시 마이그레이션 dump (작업 후 삭제)
+.migration_temp/

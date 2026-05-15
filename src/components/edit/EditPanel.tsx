@@ -722,7 +722,7 @@ export default function EditPanel({ open, onClose, onDirtyChange, showUnsavedWar
   const handleAddLang = useCallback(async (targetLang: Language) => {
     setAddingLang(true);
     setLangMenuOpen(false);
-    await supabase.from('portfolio_data').upsert({
+    await supabase.from('portfolio_box_portfolio_data').upsert({
       portfolio_id: meta.id,
       lang: targetLang,
       profile: EMPTY_BUNDLE.profile as unknown as Record<string, unknown>,
@@ -744,7 +744,7 @@ export default function EditPanel({ open, onClose, onDirtyChange, showUnsavedWar
   const handleTranslateImport = useCallback(async (bundle: PortfolioBundle, targetLang: Language) => {
     const typedLangs = availableLangs as Language[];
     if (!typedLangs.includes(targetLang)) {
-      await supabase.from('portfolio_data').upsert({
+      await supabase.from('portfolio_box_portfolio_data').upsert({
         portfolio_id: meta.id,
         lang: targetLang,
         profile: EMPTY_BUNDLE.profile as unknown as Record<string, unknown>,
@@ -769,7 +769,7 @@ export default function EditPanel({ open, onClose, onDirtyChange, showUnsavedWar
   const confirmDeleteLang = useCallback(async () => {
     if (!deleteLangTarget) return;
     await supabase
-      .from('portfolio_data')
+      .from('portfolio_box_portfolio_data')
       .delete()
       .eq('portfolio_id', meta.id)
       .eq('lang', deleteLangTarget);
@@ -803,7 +803,7 @@ export default function EditPanel({ open, onClose, onDirtyChange, showUnsavedWar
     setSaveMsg(null);
 
     const { error: dataErr } = await supabase
-      .from('portfolio_data')
+      .from('portfolio_box_portfolio_data')
       .upsert({
         portfolio_id: meta.id,
         lang: editLang,
@@ -822,7 +822,7 @@ export default function EditPanel({ open, onClose, onDirtyChange, showUnsavedWar
       }, { onConflict: 'portfolio_id,lang' });
 
     await supabase
-      .from('portfolios')
+      .from('portfolio_box_portfolios')
       .update({
         youtube_playlist_id: ytPlaylistId || null,
         youtube_first_video_id: ytFirstVideoId || null,

@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 
 export async function getPortfolioSlug(userId: string): Promise<string | null> {
   const { data } = await supabase
-    .from('portfolios')
+    .from('portfolio_box_portfolios')
     .select('slug')
     .eq('user_id', userId)
     .limit(1);

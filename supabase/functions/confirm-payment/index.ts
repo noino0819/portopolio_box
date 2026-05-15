@@ -97,7 +97,7 @@ serve(async (req) => {
       expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
     }
 
-    await adminClient.from('payments').insert({
+    await adminClient.from('portfolio_box_payments').insert({
       user_id: user.id,
       email: user.email ?? '',
       plan_type: planType,
@@ -111,13 +111,13 @@ serve(async (req) => {
     });
 
     const { data: existing } = await adminClient
-      .from('portfolios')
+      .from('portfolio_box_portfolios')
       .select('id')
       .eq('slug', slug)
       .single();
 
     if (!existing) {
-      await adminClient.from('portfolios').insert({
+      await adminClient.from('portfolio_box_portfolios').insert({
         user_id: user.id,
         slug,
         is_active: true,

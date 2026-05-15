@@ -43,7 +43,7 @@ serve(async (req) => {
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const { data: portfolios } = await adminClient
-      .from('portfolios')
+      .from('portfolio_box_portfolios')
       .select('id')
       .eq('user_id', userId);
 
@@ -51,18 +51,18 @@ serve(async (req) => {
       const portfolioIds = portfolios.map((p: { id: string }) => p.id);
 
       await adminClient
-        .from('portfolio_data')
+        .from('portfolio_box_portfolio_data')
         .delete()
         .in('portfolio_id', portfolioIds);
 
       await adminClient
-        .from('portfolios')
+        .from('portfolio_box_portfolios')
         .delete()
         .eq('user_id', userId);
     }
 
     await adminClient
-      .from('payments')
+      .from('portfolio_box_payments')
       .delete()
       .eq('user_id', userId);
 

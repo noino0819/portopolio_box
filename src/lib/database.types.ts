@@ -59,17 +59,17 @@ export interface PaymentRow {
 export interface Database {
   public: {
     Tables: {
-      portfolios: {
+      portfolio_box_portfolios: {
         Row: PortfolioRow;
         Insert: Omit<PortfolioRow, 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Omit<PortfolioRow, 'id' | 'created_at'>>;
       };
-      portfolio_data: {
+      portfolio_box_portfolio_data: {
         Row: PortfolioDataRow;
         Insert: Omit<PortfolioDataRow, 'id' | 'updated_at'>;
         Update: Partial<Omit<PortfolioDataRow, 'id'>>;
       };
-      payments: {
+      portfolio_box_payments: {
         Row: PaymentRow;
         Insert: Omit<PaymentRow, 'id' | 'created_at'>;
         Update: Partial<Omit<PaymentRow, 'id' | 'created_at'>>;
